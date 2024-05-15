@@ -810,6 +810,7 @@ public class CroquetBuilder
             copyDetails["package-lock.json"] = ".js-build/package-lock.json";
             copyDetails[".eslintrc.json"] = ".eslintrc.json";
             copyDetails["tools-gitignore"] = ".gitignore";
+            copyDetails[".babelrc"] = ".js-build/.babelrc";
             foreach (KeyValuePair<string,string> keyValuePair in copyDetails)
             {
                 string from = keyValuePair.Key;

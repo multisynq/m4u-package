@@ -50,6 +50,17 @@ module.exports = env => ({
         rules: [
             {
                 test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env'],
+                        plugins: ['@babel/plugin-transform-modules-commonjs']
+                    }
+                }
+            },
+            {
+                test: /\.js$/,
                 enforce: "pre",
                 use: ["source-map-loader"],
             },
@@ -72,5 +83,8 @@ module.exports = env => ({
             bufferutil: 'commonjs bufferutil',
         },
     ],
-    target: env.buildTarget || 'web'
+    target: env.buildTarget || 'web',
+    experiments: {
+        outputModule: true
+    }
 });
