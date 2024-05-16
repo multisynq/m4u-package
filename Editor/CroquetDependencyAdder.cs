@@ -17,6 +17,7 @@ public class CroquetDependencyAdder
 
         AddDependency();
         CopyWebGLTemplatesFolder();
+        SetWebGLTemplate();
     }
 
     static void AddDependency()
@@ -50,6 +51,23 @@ public class CroquetDependencyAdder
         else
         {
             Debug.LogError("Could not find the manifest.json file.");
+        }
+    }
+    static void SetWebGLTemplate()
+    {
+        string templateName = "CroquetLoader"; // Replace with the name of your WebGL template folder
+        string templatePath = Path.Combine("WebGLTemplates", templateName);
+
+        Debug.Log("Setting WebGL template to: " + templateName + " at path: " + templatePath);
+
+        if (Directory.Exists(Path.Combine(Application.dataPath, templatePath)))
+        {
+            PlayerSettings.WebGL.template = "PROJECT:"+templateName;//templatePath;
+            Debug.Log("WebGL template set to: " + templateName);
+        }
+        else
+        {
+            Debug.LogError("WebGL template folder does not exist: " + Path.Combine(Application.dataPath, templatePath));
         }
     }
 
