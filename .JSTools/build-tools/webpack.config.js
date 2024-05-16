@@ -6,7 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
-module.exports = env => ({
+module.exports = env => ({ 
     entry: () => {
         // if this is a node build, look for index-node.js in the app directory
         if (env.buildTarget === 'node') {
@@ -22,7 +22,9 @@ module.exports = env => ({
         return index;
     },
     output: {
-        path: path.join(__dirname, `../../../StreamingAssets/${env.appName}/`),
+        path: env.buildTarget === 'web'
+            ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
+            : path.join(__dirname, `../../../Assets/WebGLTemplates/CroquetLoader/`),
         pathinfo: false,
         filename: env.buildTarget === 'node' ? 'node-main.js' : 'index-[contenthash:8].js',
         chunkFilename: 'chunk-[contenthash:8].js',
