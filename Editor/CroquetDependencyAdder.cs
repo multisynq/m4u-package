@@ -41,7 +41,7 @@ public class CroquetDependencyAdder
                     dependencies[dependencyKey] = dependencyValue;
                     string newManifestJson = MiniJSON.Json.Serialize(manifestDict);
                     File.WriteAllText(manifestPath, newManifestJson);
-
+ 
                     AssetDatabase.Refresh();
 
                     Debug.Log(dependencyKey + " dependency added to manifest.json");
@@ -49,7 +49,7 @@ public class CroquetDependencyAdder
             }
         }
         else
-        {
+        { 
             Debug.LogError("Could not find the manifest.json file.");
         }
     }

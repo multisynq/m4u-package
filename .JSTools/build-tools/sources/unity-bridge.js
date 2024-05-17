@@ -28,12 +28,14 @@ let theGameInputManager, session, sessionOffsetEstimator;
 // theGameEngineBridge is a singleton instance of BridgeToUnity, built immediately
 // on loading of this file.  it is never rebuilt.
 class BridgeToUnity {
-    get preloadingView() { return session?.view }
+    get preloadingView() {
+        return session?.view;
+    }
 
     constructor() {
         this.bridgeIsConnected = false;
-        this.startWS();
         this.measureIndex = 0;
+        this.initConnection();
     }
 
     setCommandHandler(handler) {
@@ -41,28 +43,35 @@ class BridgeToUnity {
     }
 
     resetMessageStats() {
-        this.msgStats = { outMessageCount: 0, outBundleCount: 0, inBundleCount: 0, inMessageCount: 0, inBundleDelayMS: 0, inProcessingTimeMS: 0, lastMessageDiagnostics: Date.now() };
+        this.msgStats = {
+            outMessageCount: 0,
+            outBundleCount: 0,
+            inBundleCount: 0,
+            inMessageCount: 0,
+            inBundleDelayMS: 0,
+            inProcessingTimeMS: 0,
+            lastMessageDiagnostics: Date.now()
+        };
+    }
+
+    initConnection() {
+        if (globalThis.CROQUET_NODE) {
+            this.startWS();
+        } else {
+            this.startInterops();
+        }
     }
 
     startWS() {
         globalThis.timedLog('starting socket client');
         const portStr = this.socketPortStr = (!globalThis.CROQUET_NODE
             ? window.location.port
-            : process.argv[2])
-            || '5555';
-console.log(`PORT ${portStr}`);
+            : process.argv[2]) || '5555';
+        console.log(`PORT ${portStr}`);
         const sock = this.socket = new WebSocket(`ws://127.0.0.1:${portStr}/Bridge`);
         sock.onopen = _evt => {
-            // until Unity tells us otherwise (with 'setJSLogForwarding'), forward
-            // all JS logs across the bridge
-            if (!console.q_log) {
-                console.q_log = console.log;
-                console.q_warn = console.warn;
-                console.q_error = console.error;
-            }
             this.resetMessageStats();
             this.setJSLogForwarding(['log', 'warn', 'error']);
-
             globalThis.timedLog('opened socket');
             this.bridgeIsConnected = true;
             sock.onmessage = event => {
@@ -72,13 +81,20 @@ console.log(`PORT ${portStr}`);
             };
         };
         sock.onclose = _evt => {
-            this.setJSLogForwarding([]); // restore to local logging
+            this.setJSLogForwarding([]);
             globalThis.timedLog('bridge websocket closed');
             this.bridgeIsConnected = false;
             if (session) session.leave();
-            if (globalThis.CROQUET_NODE) process.exit(); // if on node, bail out
+            if (globalThis.CROQUET_NODE) process.exit();
         };
         sock.onerror = evt => console.error("bridge WebSocket error", evt);
+    }
+
+    startInterops() {
+        globalThis.timedLog('starting interop client');
+        this.resetMessageStats();
+        this.setJSLogForwarding(['log', 'warn', 'error']);
+        this.bridgeIsConnected = true;
     }
 
     sendCommand(...args) {
@@ -88,32 +104,38 @@ console.log(`PORT ${portStr}`);
         }
         const msg = [...args].join('\x01');
         this.sendToUnity(msg);
-
-        this.msgStats.outMessageCount++; // @@ stats don't really expect non-bundled messages
+        this.msgStats.outMessageCount++;
     }
 
     sendBundleToUnity(messages) {
-        // prepend the current time
         messages.unshift(String(Date.now()));
         const multiMsg = messages.join('\x02');
         this.sendToUnity(multiMsg);
-
         const { msgStats } = this;
         msgStats.outBundleCount++;
         msgStats.outMessageCount += messages.length;
-
         return multiMsg.length;
     }
 
     sendToUnity(msg) {
-        if (!this.socket) return; // @@ need to do better than just silently dropping
-        // console.log('sending to Unity', msg);
-        this.socket.send(msg);
+        if (globalThis.CROQUET_NODE) {
+            if (!this.socket) return;
+            this.socket.send(msg);
+        } else {
+            this.sendToUnityViaInterop(msg);
+        }
+    }
+
+    sendToUnityViaInterop(msg) {
+        // Replace with actual interop method for sending messages to Unity
+        if (typeof window.unityInstance !== 'undefined') {
+            window.unityInstance.SendMessage('Bridge', 'OnMessageFromJS', msg);
+        } else {
+            console.error("Unity instance not found.");
+        }
     }
 
     encodeValueAsString(arg) {
-        // when sending a property value as part of a message over the bridge,
-        // elements of an array are separated with \x03
         return Array.isArray(arg)
             ? arg.join('\x03')
             : typeof arg === 'boolean'
@@ -122,7 +144,6 @@ console.log(`PORT ${portStr}`);
     }
 
     handleUnityMessageOrBundle(msg) {
-        // handle a single or multiple message from Unity
         const start = performance.now();
         const { msgStats } = this;
         const msgs = msg.split('\x02');
@@ -143,18 +164,12 @@ console.log(`PORT ${portStr}`);
     }
 
     handleUnityCommand(command, args) {
-        // console.log('command from Unity: ', { command, args });
         switch (command) {
             case 'setJSLogForwarding': {
-                // args[0] is comma-separated list of log types (log,warn,error)
-                // that are to be sent over to Unity
-                // args[1] is a flag debugUsingExternalSession
                 const toForward = args[0].split(',');
                 const debugUsingExternalSession = args[1] === "True";
                 console.log("categories of JS log forwarded to Unity:", toForward);
                 this.setJSLogForwarding(toForward);
-                // disable performance.mark and performance.measure if running in a webview,
-                // or on Node, so we don't accumulate measure objects.
                 if (!debugUsingExternalSession || globalThis.CROQUET_NODE) this.disablePerformanceMeasures();
                 break;
             }
@@ -166,17 +181,13 @@ console.log(`PORT ${portStr}`);
                 this.appName = appName;
                 this.packageVersion = packageVersion;
                 this.sessionName = sessionName;
-                this.debugFlags = debugFlags; // comma-separated list
+                this.debugFlags = debugFlags;
                 this.runOffline = debugFlags.includes('offline');
                 this.isEditor = isEditor;
                 unityDrivenStartSession();
                 break;
             }
             case 'requestToLoadScene': {
-                // args are
-                //   scene name - if different from model's existing scene, request will always be accepted
-                //   forceReload - "True" or "False", determining whether init can override *same* scene in model
-                //   forceRebuild - "True" or "False", determining whether init can use cached scene details if available
                 if (this.preloadingView) {
                     const sceneName = args[0];
                     const forceReload = args[1] === 'True';
@@ -186,15 +197,7 @@ console.log(`PORT ${portStr}`);
                 break;
             }
             case 'defineScene': {
-                // args are
-                //   scene name - if different from model's existing scene, init will always be accepted
-                //   earlySubscriptionTopics
-                //   assetManifestString
-                //   object string 1 (string  prop1:val1|prop2:val2...)
-                //   object string 2
-                //   etc
                 const [sceneName, ...initStrings] = args;
-                // console.log(`defineScene for ${sceneName}`);
                 this.readySceneInUnity = sceneName;
                 const view = this.preloadingView;
                 if (view) {
@@ -204,13 +207,7 @@ console.log(`PORT ${portStr}`);
                 break;
             }
             case 'readyToRunScene': {
-                // the unity side has read the prefab assets that are available
-                // for the specified scene, and is thus ready to make pawns for
-                // the scene's actors.
-                // tell the PreloadingViewRoot that we're ready to build the
-                // real root.
                 const sceneName = args[0];
-                // console.log(`readyToRunScene for ${sceneName}`);
                 this.readySceneInUnity = sceneName;
                 const view = this.preloadingView;
                 if (view) view.readyToBuildSceneInUnity(sceneName);
@@ -218,22 +215,11 @@ console.log(`PORT ${portStr}`);
                 break;
             }
             case 'event': {
-                // used for all interaction events (keyDown, keyUp, pointerHit etc)
                 if (theGameInputManager) theGameInputManager.handleEvent(args);
                 break;
             }
             case 'publish': {
-                // args[0] is scope
-                // args[1] is eventName
-                // args[2] - if supplied - is a string describing the format of the next argument:
-                //      s - single string
-                //      ss - string array
-                //      f - single float
-                //      ff - float array
-                //      b - boolean
-                // args[3] - the encoded arg
-                const [ scope, eventName, argFormat, argString ] = args;
-                // console.log({scope, eventName, argFormat, argString});
+                const [scope, eventName, argFormat, argString] = args;
                 if (argFormat === undefined) this.preloadingView?.publish(scope, eventName);
                 else {
                     let eventArgs = argString.split('\x03');
@@ -258,15 +244,12 @@ console.log(`PORT ${portStr}`);
                 break;
             }
             case 'unityPong':
-                // args[0] is Date.now() when sent
                 globalThis.timedLog(`PONG after ${Date.now() - Number(args[0])}ms`);
                 break;
             case 'log':
-                // args[0] is loggable string
                 globalThis.timedLog(`[Unity] ${args[0]}`);
                 break;
             case 'measure': {
-                // args are [name, startDateNow, durationMS[, annotation]
                 const [markName, startDateNow, durationMS, annotation] = args;
                 const startPerf = performance.now() - Date.now() + Number(startDateNow);
                 const index = ++this.measureIndex;
@@ -278,8 +261,6 @@ console.log(`PORT ${portStr}`);
                 this.simulateNetworkGlitch(Number(args[0]));
                 break;
             case 'shutdown':
-                // close any running session, but keep the bridge
-                // arg 0 - if present - is a reference (name or buildIndex) to the scene that Unity should switch to after tearing down the session
                 globalThis.timedLog('shutdown event received');
                 this.postShutdownSceneInUnity = args.length ? args[0] : null;
                 shutDownSession();
@@ -302,30 +283,29 @@ console.log(`PORT ${portStr}`);
     }
 
     tearDownSession() {
-        this.readySceneInUnity = null; // can't harm
+        this.readySceneInUnity = null;
         const sceneStr = this.postShutdownSceneInUnity || "";
         this.postShutdownSceneInUnity = null;
         if (this.bridgeIsConnected) this.sendCommand('tearDownSession', sceneStr);
     }
 
     setJSLogForwarding(toForward) {
-        const stringify = obj => { try { return JSON.stringify(obj) } catch (e) { return "[non-JSONable object]" }};
+        const stringify = obj => {
+            try { return JSON.stringify(obj) } catch (e) { return "[non-JSONable object]" }
+        };
         const timeStamper = logVals => `${(globalThis.CroquetViewDate || Date).now() % 100000}: ` + logVals.map(a => typeof a === 'object' ? stringify(a) : String(a)).join(' ');
         const forwarder = (logType, logVals) => this.sendCommand('logFromJS', logType, timeStamper(logVals));
         ['log', 'warn', 'error'].forEach(logType => {
             const wantsForwarding = toForward.includes(logType);
             if (wantsForwarding) console[logType] = (...logVals) => {
-                console[`q_${logType}`](...logVals); // log locally
-                forwarder(logType, logVals); // and also forward
+                console[`q_${logType}`](...logVals);
+                forwarder(logType, logVals);
             };
-            else console[logType] = console[`q_${logType}`]; // use system default
+            else console[logType] = console[`q_${logType}`];
         });
     }
 
     disablePerformanceMeasures() {
-        // note: attempting basic reassignment
-        //    performance.mark = performance.measure = () => { };
-        // raises an error on Node.js v18
         Object.defineProperty(performance, "mark", {
             value: () => { },
             configurable: true,
@@ -339,56 +319,43 @@ console.log(`PORT ${portStr}`);
     }
 
     update(_time) {
-        // sent by the gameViewManager on each update()
         const now = Date.now();
         if (now - (this.lastTimeAnnouncement || 0) >= 1000) {
             this.announceSessionTime();
             this.lastTimeAnnouncement = now;
         }
-
         if (now - this.msgStats.lastMessageDiagnostics > 1000) {
             const { inMessageCount, inBundleCount, inBundleDelayMS, inProcessingTimeMS, _outMessageCount, _outBundleCount } = this.msgStats;
             if (inMessageCount || inBundleCount) {
-                globalThis.timedLog(`from Unity: ${inMessageCount} messages with ${inBundleCount} bundles (${Math.round(inBundleDelayMS/inBundleCount)}ms avg delay) handled in ${Math.round(inProcessingTimeMS)}ms");`);
+                globalThis.timedLog(`from Unity: ${inMessageCount} messages with ${inBundleCount} bundles (${Math.round(inBundleDelayMS / inBundleCount)}ms avg delay) handled in ${Math.round(inProcessingTimeMS)}ms");`);
             }
-            // globalThis.timedLog(`to Unity: ${outMessageCount} messages with ${outBundleCount} bundles`);
             this.resetMessageStats();
         }
     }
 
     announceSessionTime() {
-        // the sessionOffsetEstimator provides an estimate of how far the reflector's
-        // raw time is ahead of this client's performance.now().
-        // from that, and the current values of performance.now and Date.now, we
-        // calculate an estimate of what our Date.now would have been when the
-        // reflector's raw time was zero.  that gets sent over the bridge.
-
-        // if the Croquet session is running offline, the estimator
-        // will return a constant offset of 1.
         const offset = sessionOffsetEstimator?.getOffsetEstimate();
         if (!offset) return;
-
         const perfNow = performance.now();
         const reflectorNow = sessionOffsetEstimator.offsetEstimate + perfNow;
         const dateNowAtReflectorZero = Date.now() - reflectorNow;
-
         this.sendCommand('croquetTime', String(Math.floor(dateNowAtReflectorZero)));
     }
 
     simulateNetworkGlitch(milliseconds) {
         console.warn(`simulating network glitch of ${milliseconds}ms`);
-        const vm = globalThis.CROQUETVM; // @@ privileged information
+        const vm = globalThis.CROQUETVM;
         vm.controller.connection.reconnectDelay = milliseconds;
         vm.controller.connection.socket.close(4000, 'simulate glitch');
         timerClient.setTimeout(() => vm.controller.connection.reconnectDelay = 0, 500);
     }
 
-showSetupStats() {
-    // pawns keep stats on how long they took to set up.  if this isn't called, the stats will keep building up (but basically harmless).
-    console.log(`build: ${Object.entries(buildStats).map(([k, v]) => `${k}:${v}`).join(' ')} total: ${Object.entries(setupStats).map(([k, v]) => `${k}:${v}`).join(' ')}`);
-    buildStats.length = setupStats.length = 0;
+    showSetupStats() {
+        console.log(`build: ${Object.entries(buildStats).map(([k, v]) => `${k}:${v}`).join(' ')} total: ${Object.entries(setupStats).map(([k, v]) => `${k}:${v}`).join(' ')}`);
+        buildStats.length = setupStats.length = 0;
+    }
 }
-}
+
 export const theGameEngineBridge = new BridgeToUnity();
 
 
