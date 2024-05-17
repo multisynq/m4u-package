@@ -24,11 +24,11 @@ module.exports = env => ({
     output: {
         path: env.buildTarget === 'web'
             ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
-            : path.join(__dirname, `../../../Assets/WebGLTemplates/CroquetLoader/`),
+            : path.join(__dirname, `../../../StreamingAssets/${env.appName}/`),
         pathinfo: false,
         filename: env.buildTarget === 'node' ? 'node-main.js' : 'index-[contenthash:8].js',
         chunkFilename: 'chunk-[contenthash:8].js',
-        clean: true
+        clean: false
     },
     cache: {
         type: 'filesystem',
