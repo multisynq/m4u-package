@@ -11,6 +11,42 @@
 
 
 import { mix, Pawn, View, ViewRoot, ViewService, GetViewService, StartWorldcore, PawnManager, v3_equals, q_equals } from "@croquet/worldcore-kernel";
+console.log("unity-bridge.js loaded");
+
+// Backup original console methods
+const originalConsole = {
+    log: console.log,
+    error: console.error,
+    warn: console.warn,
+    info: console.info
+};
+
+// Define the function to handle messages from Unity
+globalThis.handleUnityMessage = function(message) {
+    originalConsole.log("Message received in JavaScript: " + message);
+
+    // Send a response back to Unity
+    if (typeof window.unityInstance !== "undefined") {
+        window.unityInstance.SendMessage('CroquetBridge', 'OnMessageFromJS', "Response from JS: " + message);
+    } else {
+        originalConsole.error("Unity instance not found.");
+    }
+};
+
+// Define a test function that can be called from Unity
+globalThis.unityBridgeTest = function() {
+    originalConsole.log("unityBridgeTest function called");
+    return "Unity Bridge Test Successful";
+};
+
+// Restore console methods if they are being overridden elsewhere in the code
+console.log = originalConsole.log;
+console.error = originalConsole.error;
+console.warn = originalConsole.warn;
+console.info = originalConsole.info;
+
+// Existing code...
+// Ensure that this existing code does not override or interfere with the global functions defined above
 
 globalThis.timedLog = msg => {
     // timing on the message itself is now added when forwarding
@@ -34,9 +70,31 @@ class BridgeToUnity {
 
     constructor() {
         this.bridgeIsConnected = false;
-        this.measureIndex = 0;
         this.initConnection();
-    }
+        this.measureIndex = 0;
+        originalConsole.log("Starting BridgeToUnity interop layer");
+    
+        window.addEventListener("MessageFromUnity", (event) => {
+          const message = event.data;
+          originalConsole.log("Received message from Unity:", message);
+    
+          // Process the message and send a response back to Unity
+          const responseMessage = `Received message: ${message}`;
+          this.SendMessageToUnity(
+            "UnityMessageManager",
+            "OnMessageReceivedFromJS",
+            responseMessage
+          );
+        });
+      }
+    
+      SendMessageToUnity(objectName, methodName, message) {
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage(objectName, methodName, message);
+        } else {
+          originalConsole.log("Unity instance not found!");
+        }
+      }
 
     setCommandHandler(handler) {
         this.commandHandler = handler;
@@ -367,6 +425,7 @@ export const theGameEngineBridge = new BridgeToUnity();
 // on disconnection and then rebuilt when the session re-connects.
 export const GameViewManager = class extends ViewService {
     constructor(name) {
+        
         super(name || "GameViewManager");
 
         this.lastGameHandle = 0;
