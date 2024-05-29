@@ -19,7 +19,10 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.24.1",
+    "@babel/preset-env": "^7.24.5",
     "@croquet/worldcore-kernel": "^2.0.0-alpha",
-    "@croquet/worldcore-rapier": "^2.0.0-alpha"
+    "@croquet/worldcore-rapier": "^2.0.0-alpha",
+    "babel-loader": "^9.1.3"
   }
 }
