@@ -20,7 +20,7 @@ const originalConsole = {
     warn: console.warn,
     info: console.info
 };
-
+console.log("unity-bridge.js loaded");
 // Define the function to handle messages from Unity
 globalThis.handleUnityMessage = function(message) {
     originalConsole.log("Message received in JavaScript: " + message);
@@ -32,7 +32,7 @@ globalThis.handleUnityMessage = function(message) {
         originalConsole.error("Unity instance not found.");
     }
 };
-
+originalConsole.log("unity-bridge.js loaded");
 // Define a test function that can be called from Unity
 globalThis.unityBridgeTest = function() {
     originalConsole.log("unityBridgeTest function called");
