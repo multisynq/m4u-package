@@ -27,7 +27,7 @@ globalThis.handleUnityMessage = function(message) {
 
     // Send a response back to Unity
     if (typeof window.unityInstance !== "undefined") {
-        window.unityInstance.SendMessage('CroquetBridge', 'OnMessageFromJS', "Response from JS: " + message);
+        window.unityInstance.SendMessage('Croquet', 'OnMessageFromJS', "Response from JS: " + message);
     } else {
         originalConsole.error("Unity instance not found.");
     }
