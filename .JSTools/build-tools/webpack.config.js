@@ -1,10 +1,28 @@
-// invoked with an env.appName argument, which is used to determine the source
-// and the output directories, and env.buildTarget which is either "node" or "web".
-// NB: even if invoked from a different working directory, __dirname is the
-// location of this config
 const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebPackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+
+class CustomHtmlPlugin {
+    apply(compiler) {
+        compiler.hooks.compilation.tap('CustomHtmlPlugin', (compilation) => {
+            HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
+                'CustomHtmlPlugin',
+                (data, cb) => {
+                    // Get the actual filename from the generated assets
+                    const generatedScripts = Object.keys(compilation.assets).filter(asset => asset.endsWith('.js'));
+                    const indexScript = generatedScripts.find(asset => asset.startsWith('index-') && asset.endsWith('.js'));
+                    
+                    if (indexScript) {
+                        const scriptTag = `additionalScript.src = "${indexScript}";`;
+                        data.html = data.html.replace('additionalScript.src = "index-[contenthash:8].js";', scriptTag);
+                    }
+
+                    cb(null, data);
+                }
+            );
+        });
+    }
+}
 
 module.exports = env => ({ 
     entry: () => {
@@ -74,10 +92,12 @@ module.exports = env => ({
                 { from: `../../${env.appName}/scene-definitions.txt`, to: 'scene-definitions.txt', noErrorOnMissing: true }
             ]
         })].concat(env.buildTarget === 'node' ? [] : [
-            new HtmlWebPackPlugin({
-                template: './sources/index.html',   // input
-                filename: 'index.html',   // output filename in build
+            new HtmlWebpackPlugin({
+                template: './sources/index.html',
+                filename: 'index.html',
+                inject: false
             }),
+            new CustomHtmlPlugin(),
         ]),
     externals: env.buildTarget !== 'node' ? [] : [
         {
