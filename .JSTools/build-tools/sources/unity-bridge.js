@@ -348,19 +348,19 @@ class BridgeToUnity {
     }
 
     setJSLogForwarding(toForward) {
-        const stringify = obj => {
-            try { return JSON.stringify(obj) } catch (e) { return "[non-JSONable object]" }
-        };
-        const timeStamper = logVals => `${(globalThis.CroquetViewDate || Date).now() % 100000}: ` + logVals.map(a => typeof a === 'object' ? stringify(a) : String(a)).join(' ');
-        const forwarder = (logType, logVals) => this.sendCommand('logFromJS', logType, timeStamper(logVals));
-        ['log', 'warn', 'error'].forEach(logType => {
-            const wantsForwarding = toForward.includes(logType);
-            if (wantsForwarding) console[logType] = (...logVals) => {
-                console[`q_${logType}`](...logVals);
-                forwarder(logType, logVals);
-            };
-            else console[logType] = console[`q_${logType}`];
-        });
+        // const stringify = obj => {
+        //     try { return JSON.stringify(obj) } catch (e) { return "[non-JSONable object]" }
+        // };
+        // const timeStamper = logVals => `${(globalThis.CroquetViewDate || Date).now() % 100000}: ` + logVals.map(a => typeof a === 'object' ? stringify(a) : String(a)).join(' ');
+        // const forwarder = (logType, logVals) => this.sendCommand('logFromJS', logType, timeStamper(logVals));
+        // ['log', 'warn', 'error'].forEach(logType => {
+        //     const wantsForwarding = toForward.includes(logType);
+        //     if (wantsForwarding) console[logType] = (...logVals) => {
+        //         console[`q_${logType}`](...logVals);
+        //         forwarder(logType, logVals);
+        //     };
+        //     else console[logType] = console[`q_${logType}`];
+        // });
     }
 
     disablePerformanceMeasures() {
