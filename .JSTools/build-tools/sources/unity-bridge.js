@@ -38,7 +38,10 @@ globalThis.unityBridgeTest = function() {
     originalConsole.log("unityBridgeTest function called");
     return "Unity Bridge Test Successful";
 };
-
+globalThis.registerUnityReceiver = function() {
+    console.log("Unity receiver registered");
+    // Additional setup if needed
+};
 // Restore console methods if they are being overridden elsewhere in the code
 console.log = originalConsole.log;
 console.error = originalConsole.error;

@@ -94,7 +94,7 @@ public class CroquetBridge : MonoBehaviour
         public byte[] rawData;
         public string data;
     }
-    
+
     [DllImport("__Internal")]
     private static extern void SendMessageToJS(string message);
 
@@ -110,6 +110,21 @@ public class CroquetBridge : MonoBehaviour
         }
     }
 
+    [DllImport("__Internal")]
+    private static extern void RegisterUnityReceiver();
+
+    private void Start()
+    {
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            RegisterUnityReceiver();
+        }
+        else
+        {
+            StartWS();
+        }
+    }
+
     // This method will be called by JavaScript
     public void OnMessageFromJS(string message)
     {
@@ -119,7 +134,7 @@ public class CroquetBridge : MonoBehaviour
     static ConcurrentQueue<QueuedMessage> messageQueue = new ConcurrentQueue<QueuedMessage>();
     static long estimatedDateNowAtReflectorZero = -1; // an impossible value
 
-    List<(string,string)> deferredMessages = new List<(string,string)>(); // messages with (optionally) a throttleId for removing duplicates
+    List<(string, string)> deferredMessages = new List<(string, string)>(); // messages with (optionally) a throttleId for removing duplicates
     // static float messageThrottle = 0.035f; // should result in deferred messages being sent on every other FixedUpdate tick (20ms)
     // static float tickThrottle = 0.015f; // if not a bunch of messages, at least send a tick every 20ms
     // private float lastMessageSend = 0; // realtimeSinceStartup
@@ -291,7 +306,8 @@ public class CroquetBridge : MonoBehaviour
                 sceneDefinitionManifests.Add(manifest);
                 go.SetActive(false); // keep it around but invisible until we've read the manifest
             }
-            else{
+            else
+            {
                 Destroy(go); // not part of the definition; ditch it immediately
             }
         }
@@ -333,7 +349,7 @@ public class CroquetBridge : MonoBehaviour
             if (clientSock != null)
             {
                 Debug.LogWarning("Rejecting attempt to connect second client");
-                Context.WebSocket.Send(String.Join('\x01', new string[]{ "log", "Rejecting attempt to connect second client" }));
+                Context.WebSocket.Send(String.Join('\x01', new string[] { "log", "Rejecting attempt to connect second client" }));
                 Context.WebSocket.Close(1011, "Rejecting duplicate connection");
                 return;
             }
@@ -445,7 +461,7 @@ public class CroquetBridge : MonoBehaviour
 
         bool success = TryToGetFile(e, path, out byte[] contents);
         res.ContentLength64 = 0;
-        res.StatusCode = success ? (int) HttpStatusCode.OK : (int) HttpStatusCode.NoContent;
+        res.StatusCode = success ? (int)HttpStatusCode.OK : (int)HttpStatusCode.NoContent;
     }
 
     void OnGetHandler(object sender, HttpRequestEventArgs e)
@@ -480,7 +496,7 @@ public class CroquetBridge : MonoBehaviour
         }
         else
         {
-            res.StatusCode = (int) HttpStatusCode.NotFound; // whatever the error
+            res.StatusCode = (int)HttpStatusCode.NotFound; // whatever the error
             // res.Close();  no need; will be done for us
         }
     }
@@ -1039,7 +1055,7 @@ public class CroquetBridge : MonoBehaviour
             if (qm.isBinary)
             {
                 byte[] rawData = qm.rawData;
-                int sepPos = Array.IndexOf(rawData, (byte) 5);
+                int sepPos = Array.IndexOf(rawData, (byte)5);
                 // Debug.Log(BitConverter.ToString(rawData));
                 if (sepPos >= 1)
                 {
@@ -1485,7 +1501,8 @@ public class CroquetBridge : MonoBehaviour
             ? unityActiveScene.name
             : launchViaMenuIntoScene;
 
-        if (waitingForCroquetSceneReset) {
+        if (waitingForCroquetSceneReset)
+        {
             // (a)
             // on session startup in a Unity editor, the first scene load is triggered in
             // HandleSessionRunning.  when the Croquet session reveals that it has arrived at preload
