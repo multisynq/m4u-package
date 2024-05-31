@@ -123,6 +123,16 @@ public class CroquetBridge : MonoBehaviour
         {
             StartWS();
         }
+                // Frame cap
+        Application.targetFrameRate = 60;
+
+        LoadingProgressDisplay loadingObj = FindObjectOfType<LoadingProgressDisplay>();
+        if (loadingObj != null)
+        {
+            DontDestroyOnLoad(loadingObj.gameObject);
+            loadingProgressDisplay = loadingObj.GetComponent<LoadingProgressDisplay>();
+            loadingProgressDisplay.Hide(); // until it's needed
+        }
     }
 
     // This method will be called by JavaScript
@@ -232,20 +242,6 @@ public class CroquetBridge : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             croquetSystems = gameObject.GetComponents<CroquetSystem>();
             Croquet.Subscribe("croquet", "viewCount", HandleViewCount);
-        }
-    }
-
-    void Start()
-    {
-        // Frame cap
-        Application.targetFrameRate = 60;
-
-        LoadingProgressDisplay loadingObj = FindObjectOfType<LoadingProgressDisplay>();
-        if (loadingObj != null)
-        {
-            DontDestroyOnLoad(loadingObj.gameObject);
-            loadingProgressDisplay = loadingObj.GetComponent<LoadingProgressDisplay>();
-            loadingProgressDisplay.Hide(); // until it's needed
         }
     }
 

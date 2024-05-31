@@ -84,7 +84,7 @@ class BridgeToUnity {
           // Process the message and send a response back to Unity
           const responseMessage = `Received message: ${message}`;
           this.SendMessageToUnity(
-            "UnityMessageManager",
+            "Croquet",
             "OnMessageReceivedFromJS",
             responseMessage
           );

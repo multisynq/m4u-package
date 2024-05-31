@@ -105,7 +105,7 @@ public class CroquetBuilder
 #else
         // find the file in a build.  Android needs extra care.
         string src = JSToolsRecordInBuild;
-  #if UNITY_ANDROID
+#if UNITY_ANDROID
         var unityWebRequest = UnityWebRequest.Get(src);
         unityWebRequest.SendWebRequest();
         while (!unityWebRequest.isDone) { } // meh
@@ -119,9 +119,9 @@ public class CroquetBuilder
             installRecordContents = Encoding.UTF8.GetString(contents);
         }
         unityWebRequest.Dispose();
-  #else
+#else
         installRecordContents = File.ReadAllText(src);
-  #endif
+#endif
 #endif
 
         return JsonUtility.FromJson<InstalledToolsRecord>(installRecordContents);
@@ -1005,6 +1005,134 @@ public class CroquetBuilder
         }
 
         return errorCount;
+    }
+     public static async Task<bool> ReCopyBuildItems()
+    {
+        string toolsRoot = CroquetBuildToolsInPackage;
+        string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
+        string jsBuildFolder = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
+
+        try 
+        {
+            if (!Directory.Exists(jsBuildFolder)) Directory.CreateDirectory(jsBuildFolder);
+
+            // Copy various files to CroquetJS
+            Dictionary<string, string> copyDetails = new Dictionary<string, string>();
+            copyDetails["package.json"] = ".js-build/package.json";
+            copyDetails["package-lock.json"] = ".js-build/package-lock.json";
+            copyDetails[".eslintrc.json"] = ".eslintrc.json";
+            copyDetails["tools-gitignore"] = ".gitignore";
+            copyDetails[".babelrc"] = ".js-build/.babelrc";
+
+            foreach (KeyValuePair<string, string> keyValuePair in copyDetails)
+            {
+                string from = keyValuePair.Key;
+                string to = keyValuePair.Value;
+                string fsrc = Path.Combine(toolsRoot, from);
+                string fdest = Path.Combine(croquetJSFolder, to);
+                Debug.Log($"Re-copying {from} to {to}");
+                FileUtil.ReplaceFile(fsrc, fdest);
+            }
+
+            string dir = ".js-build/build-tools";
+            string dsrc = Path.Combine(toolsRoot, Path.GetFileName(dir));
+            string ddest = Path.Combine(croquetJSFolder, dir);
+            Debug.Log($"Re-copying directory {dir}");
+            FileUtil.ReplaceDirectory(dsrc, ddest);
+
+            // Copy the WebGL templates folder
+            CopyWebGLTemplatesFolder();
+
+            Debug.Log("Re-copy of build items completed successfully.");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error during re-copy of build items: {e.Message}");
+            return false;
+        }
+    }
+
+    public static void CopyWebGLTemplatesFolder()
+    {
+        string manifestPath = Path.Combine(Application.dataPath, "..", "Packages", "manifest.json");
+        if (File.Exists(manifestPath))
+        {
+            string manifestJson = File.ReadAllText(manifestPath);
+            var manifestDict = (Dictionary<string, object>)MiniJSON.Json.Deserialize(manifestJson);
+
+            if (manifestDict.TryGetValue("dependencies", out object dependenciesObj))
+            {
+                var dependencies = (Dictionary<string, object>)dependenciesObj;
+
+                if (dependencies.TryGetValue("io.croquet.multiplayer", out object packagePathObj))
+                {
+                    string packagePath = packagePathObj.ToString();
+
+                    if (packagePath.StartsWith("file:"))
+                    {
+                        packagePath = packagePath.Substring(5);
+                    }
+                    else
+                    {
+                        string packageCachePath = Path.Combine(Application.dataPath, "..", "Library", "PackageCache");
+                        string[] directories = Directory.GetDirectories(packageCachePath, "io.croquet.multiplayer@*");
+
+                        if (directories.Length > 0)
+                        {
+                            packagePath = directories[0];
+                        }
+                        else
+                        {
+                            Debug.LogError("Could not find the package in the PackageCache.");
+                            return;
+                        }
+                    }
+
+                    string sourcePath = Path.Combine(packagePath, "Runtime", "WebGLTemplates");
+                    string destinationPath = Path.Combine(Application.dataPath, "WebGLTemplates");
+
+                    if (Directory.Exists(sourcePath))
+                    {
+                        CopyDirectory(sourcePath, destinationPath);
+                        AssetDatabase.Refresh();
+                        Debug.Log("WebGLTemplates folder copied to Assets/");
+                    }
+                    else
+                    {
+                        Debug.LogError("Could not find the WebGLTemplates folder in the package.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("Could not find the io.croquet.multiplayer dependency in the manifest.");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("Could not find the manifest.json file.");
+        }
+    }
+
+    private static void CopyDirectory(string sourceDir, string destinationDir)
+    {
+        if (!Directory.Exists(destinationDir))
+        {
+            Directory.CreateDirectory(destinationDir);
+        }
+
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+            File.Copy(file, destFile, true);
+        }
+
+        foreach (var directory in Directory.GetDirectories(sourceDir))
+        {
+            string destDir = Path.Combine(destinationDir, Path.GetFileName(directory));
+            CopyDirectory(directory, destDir);
+        }
     }
 // this whole class (apart from one static string) is only defined when in the editor
 #endif
