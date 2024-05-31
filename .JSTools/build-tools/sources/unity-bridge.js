@@ -87,7 +87,7 @@ class BridgeToUnity {
             "Croquet",
             "OnMessageReceivedFromJS",
             responseMessage
-          );
+          ); 
         });
       }
     
