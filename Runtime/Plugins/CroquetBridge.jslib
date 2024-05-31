@@ -1,8 +1,12 @@
 mergeInto(LibraryManager.library, {
-    SendMessageToJS: function (msg) {
-        var message = UTF8ToString(msg);
-        if (typeof window.BridgeToUnity !== 'undefined') {
-            window.BridgeToUnity.handleMessageFromUnity(message);
+    SendMessageToJS: function(messagePtr) {
+        var message = UTF8ToString(messagePtr);
+        console.log("Message from Unity:", message);
+
+        if (typeof handleUnityMessage !== "undefined") {
+            handleUnityMessage(message);
+        } else {
+            console.error("handleUnityMessage function not found.");
         }
     },
     

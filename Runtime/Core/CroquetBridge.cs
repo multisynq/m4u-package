@@ -109,7 +109,11 @@ public class CroquetBridge : MonoBehaviour
             Debug.Log("Not running in WebGL");
         }
     }
-
+    public void OnMessageReceivedFromJS(string message)
+    {
+        Debug.Log("Message received from JavaScript: " + message);
+    }
+    
     [DllImport("__Internal")]
     private static extern void RegisterUnityReceiver();
 
