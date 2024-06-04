@@ -109,41 +109,58 @@ public class CroquetBridge : MonoBehaviour
             Debug.Log("Not running in WebGL");
         }
     }
-    public void OnMessageReceivedFromJS(string message)
-    {
-        Debug.Log("Message received from JavaScript: " + message);
-        HandleMessage(message);
-    }
+
 
     [DllImport("__Internal")]
     private static extern void RegisterUnityReceiver();
 
-    private void Start()
+    public void OnMessageReceivedFromJS(string message, bool isBinary = false)
     {
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        if (isBinary)
         {
-            RegisterUnityReceiver();
+            byte[] binaryMessage = Convert.FromBase64String(message);
+            HandleBinaryMessage(binaryMessage);
         }
         else
         {
-            StartWS();
-        }
-        // Frame cap
-        Application.targetFrameRate = 60;
+            // Initialize the shouldFilterLog variable
+            bool shouldFilterLog = false;
 
-        LoadingProgressDisplay loadingObj = FindObjectOfType<LoadingProgressDisplay>();
-        if (loadingObj != null)
-        {
-            DontDestroyOnLoad(loadingObj.gameObject);
-            loadingProgressDisplay = loadingObj.GetComponent<LoadingProgressDisplay>();
-            loadingProgressDisplay.Hide(); // until it's needed
+            // Check if the message should be filtered from logging
+            if (message.Contains("tick") || message.Contains("1717"))
+            {
+                shouldFilterLog = true;
+            }
+            else
+            {
+                // Check if the part after "Response from JS: " is numeric
+                string responsePrefix = "Response from JS: ";
+                if (message.StartsWith(responsePrefix))
+                {
+                    string potentialTimestamp = message.Substring(responsePrefix.Length);
+                    if (long.TryParse(potentialTimestamp, out _))
+                    {
+                        shouldFilterLog = true;
+                    }
+                }
+            }
+
+            // Log the message only if it should not be filtered
+            if (!shouldFilterLog)
+            {
+                Debug.Log("Message received from JavaScript: " + message);
+            }
+
+            // Process the message
+            HandleMessage(message);
         }
     }
+
 
     // This method will be called by JavaScript
     public void OnMessageFromJS(string message)
     {
-        if (message != "tick" && !long.TryParse(message, out _))
+        if (!message.Contains("tick") && !long.TryParse(message, out _) && !message.Contains("1717"))
         {
             Debug.Log("Message received from JavaScript: " + message);
         }
@@ -153,10 +170,10 @@ public class CroquetBridge : MonoBehaviour
     static long estimatedDateNowAtReflectorZero = -1; // an impossible value
 
     List<(string, string)> deferredMessages = new List<(string, string)>(); // messages with (optionally) a throttleId for removing duplicates
-    // static float messageThrottle = 0.035f; // should result in deferred messages being sent on every other FixedUpdate tick (20ms)
-    // static float tickThrottle = 0.015f; // if not a bunch of messages, at least send a tick every 20ms
-    // private float lastMessageSend = 0; // realtimeSinceStartup
-    // private bool sentOnLastUpdate = false;
+                                                                            // static float messageThrottle = 0.035f; // should result in deferred messages being sent on every other FixedUpdate tick (20ms)
+                                                                            // static float tickThrottle = 0.015f; // if not a bunch of messages, at least send a tick every 20ms
+                                                                            // private float lastMessageSend = 0; // realtimeSinceStartup
+                                                                            // private bool sentOnLastUpdate = false;
 
     LoadingProgressDisplay loadingProgressDisplay;
 
@@ -174,8 +191,6 @@ public class CroquetBridge : MonoBehaviour
     Dictionary<string, bool> measureOptions = new Dictionary<string, bool>();
     static string[] measureCategories = new string[] { "update", "bundle", "geom" };
 
-    // [DllImport("__Internal")]
-    // private static extern void CroquetBridge_SendMessage(string message);
     // TODO: Create Counter System in Metric Class
     // diagnostics counters
     int outMessageCount = 0;
@@ -250,6 +265,28 @@ public class CroquetBridge : MonoBehaviour
             DontDestroyOnLoad(gameObject);
             croquetSystems = gameObject.GetComponents<CroquetSystem>();
             Croquet.Subscribe("croquet", "viewCount", HandleViewCount);
+        }
+    }
+
+    private void Start()
+    {
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            RegisterUnityReceiver();
+        }
+        else
+        {
+            Debug.Log("Not running in WebGL");
+        }
+        // Frame cap
+        Application.targetFrameRate = 60;
+
+        LoadingProgressDisplay loadingObj = FindObjectOfType<LoadingProgressDisplay>();
+        if (loadingObj != null)
+        {
+            DontDestroyOnLoad(loadingObj.gameObject);
+            loadingProgressDisplay = loadingObj.GetComponent<LoadingProgressDisplay>();
+            loadingProgressDisplay.Hide(); // until it's needed
         }
     }
 
@@ -501,7 +538,7 @@ public class CroquetBridge : MonoBehaviour
         else
         {
             res.StatusCode = (int)HttpStatusCode.NotFound; // whatever the error
-            // res.Close();  no need; will be done for us
+                                                           // res.Close();  no need; will be done for us
         }
     }
 
@@ -542,30 +579,40 @@ public class CroquetBridge : MonoBehaviour
     // WebSocket messages come in on a separate thread.  Put each message on a queue to be
     // read by the main thread.
     // static because called from a class that doesn't know about this instance.
-static void HandleMessage(MessageEventArgs e)
-{
-    // Add a time so we can tell how long it sits in the queue
-    QueuedMessage qm = new QueuedMessage();
-    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    qm.isBinary = e.IsBinary;
-    if (e.IsBinary) 
+    static void HandleMessage(MessageEventArgs e)
     {
-        qm.rawData = e.RawData;
+        // Add a time so we can tell how long it sits in the queue
+        QueuedMessage qm = new QueuedMessage();
+        qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        qm.isBinary = e.IsBinary;
+        if (e.IsBinary)
+        {
+            qm.rawData = e.RawData;
+        }
+        else
+        {
+            qm.data = e.Data;
+        }
+        messageQueue.Enqueue(qm);
     }
-    else 
-    {
-        qm.data = e.Data;
-    }
-    messageQueue.Enqueue(qm);
-}
 
-static void HandleMessage(string message)
+    static void HandleMessage(string message)
 {
-    // Add a time so we can tell how long it sits in the queue
+    Debug.Log("Handle Message: " + message);
     QueuedMessage qm = new QueuedMessage();
     qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
     qm.isBinary = false;
     qm.data = message;
+    messageQueue.Enqueue(qm);
+}
+
+static void HandleBinaryMessage(byte[] message)
+{
+    Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
+    QueuedMessage qm = new QueuedMessage();
+    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    qm.isBinary = true;
+    qm.rawData = message;
     messageQueue.Enqueue(qm);
 }
 
@@ -589,18 +636,34 @@ static void HandleMessage(string message)
             // the option appears in the UI separately from the logging flags, add it in here.
             debugFlags = debugFlags == "" ? "offline" : $"{debugFlags},offline";
         }
-
-        ReadyForSessionProps props = new ReadyForSessionProps()
+        ReadyForSessionProps props = null;
+        if (!(Application.platform == RuntimePlatform.WebGLPlayer))
         {
-            apiKey = appProperties.apiKey,
-            appId = appProperties.appPrefix + "." + appName,
-            appName = appName,
-            packageVersion =
-                CroquetBuilder.FindJSToolsRecord().packageVersion, // uses different lookups in editor and in a build
-            sessionName = sessionName,
-            debugFlags = debugFlags,
-            isEditor = Application.isEditor
-        };
+            props = new ReadyForSessionProps()
+            {
+                apiKey = appProperties.apiKey,
+                appId = appProperties.appPrefix + "." + appName,
+                appName = appName,
+                packageVersion =
+                   CroquetBuilder.FindJSToolsRecord().packageVersion, // uses different lookups in editor and in a build
+                sessionName = sessionName,
+                debugFlags = debugFlags,
+                isEditor = Application.isEditor
+            };
+        }
+        else
+        {
+            props = new ReadyForSessionProps()
+            {
+                apiKey = appProperties.apiKey,
+                appId = appProperties.appPrefix + "." + appName,
+                appName = appName,
+                packageVersion = "1",
+                sessionName = sessionName,
+                debugFlags = debugFlags,
+                isEditor = Application.isEditor
+            };
+        }
         string propsJson = JsonUtility.ToJson(props);
         string[] command = new string[] {
             "readyForSession",
@@ -734,11 +797,13 @@ static void HandleMessage(string message)
         }
         else
         {
-            clientSock.Send(System.Text.Encoding.UTF8.GetBytes(joinedMsgs));
+            string[] msgs = messageContents.ToArray<string>();
+            clientSock.Send(String.Join('\x02', msgs));
         }
 
         deferredMessages.Clear();
     }
+
 
     void Update()
     {
@@ -749,11 +814,11 @@ static void HandleMessage(string message)
         }
 
 #if UNITY_EDITOR
-        if (sceneHarvestList.Count > 0)
-        {
-            AdvanceHarvestStateWhenReady();
-            return;
-        }
+    if (sceneHarvestList.Count > 0)
+    {
+        AdvanceHarvestStateWhenReady();
+        return;
+    }
 #endif
 
         ProcessCroquetMessages();
@@ -777,7 +842,6 @@ static void HandleMessage(string message)
             }
         }
     }
-
     bool IsSceneReadyToRun(string targetSceneName)
     {
         if (unitySceneState == "waitingToPrepare")
@@ -805,17 +869,16 @@ static void HandleMessage(string message)
 
         return false;
     }
-
+    bool lol = true;
     void AdvanceBridgeStateWhenReady()
     {
-        // go through the asynchronous steps involved in starting the bridge
 #if UNITY_EDITOR
-        if (bridgeState == "needJSBuild")
-        {
-            SetBridgeState("waitingForJSBuild");
-            WaitForJSBuild();
-            return;
-        }
+    if (bridgeState == "needJSBuild")
+    {
+        SetBridgeState("waitingForJSBuild");
+        WaitForJSBuild();
+        return;
+    }
 #endif
 
         if (bridgeState == "foundJSBuild")
@@ -826,7 +889,24 @@ static void HandleMessage(string message)
                 StartWS();
             }
         }
-        else if (bridgeState == "waitingForSocket" && (clientSock != null || Application.platform == RuntimePlatform.WebGLPlayer))
+        else if ((Application.platform == RuntimePlatform.WebGLPlayer) && lol)
+        {
+            lol = false;
+            if (bridgeState != "waitingForSessionName" && bridgeState != "waitingForSession")
+            {
+                // configure which logs are forwarded
+                SetJSLogForwarding(JSLogForwarding.ToString());
+
+                SetBridgeState("waitingForSessionName");
+
+                // if we're not waiting for a menu to launch the session, set the session name immediately
+                if (launchViaMenuIntoScene == "")
+                {
+                    SetSessionName(""); // use the default name
+                }
+            }
+        }
+        else if (bridgeState == "waitingForSocket" && clientSock != null)
         {
             // configure which logs are forwarded
             SetJSLogForwarding(JSLogForwarding.ToString());
@@ -834,8 +914,12 @@ static void HandleMessage(string message)
             SetBridgeState("waitingForSessionName");
 
             // if we're not waiting for a menu to launch the session, set the session name immediately
-            if (launchViaMenuIntoScene == "") SetSessionName(""); // use the default name
+            if (launchViaMenuIntoScene == "")
+            {
+                SetSessionName(""); // use the default name
+            }
         }
+
         // allow to drop through (although we would catch a non-empty sessionName on the next update anyway)
         if (bridgeState == "waitingForSessionName" && sessionName != "")
         {
@@ -922,7 +1006,7 @@ static void HandleMessage(string message)
 
     void WriteAllSceneDefinitions()
     {
-        foreach(KeyValuePair<string, List<string>> appScenes in sceneDefinitionsByApp)
+        foreach (KeyValuePair<string, List<string>> appScenes in sceneDefinitionsByApp)
         {
             string app = appScenes.Key;
             string filePath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", app, "scene-definitions.txt"));
