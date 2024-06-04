@@ -112,6 +112,7 @@ public class CroquetBridge : MonoBehaviour
     public void OnMessageReceivedFromJS(string message)
     {
         Debug.Log("Message received from JavaScript: " + message);
+        HandleMessage(message);
     }
 
     [DllImport("__Internal")]
@@ -142,7 +143,10 @@ public class CroquetBridge : MonoBehaviour
     // This method will be called by JavaScript
     public void OnMessageFromJS(string message)
     {
-        Debug.Log("Message received from JavaScript: " + message);
+        if (message != "tick" && !long.TryParse(message, out _))
+        {
+            Debug.Log("Message received from JavaScript: " + message);
+        }
     }
 
     static ConcurrentQueue<QueuedMessage> messageQueue = new ConcurrentQueue<QueuedMessage>();
@@ -538,16 +542,33 @@ public class CroquetBridge : MonoBehaviour
     // WebSocket messages come in on a separate thread.  Put each message on a queue to be
     // read by the main thread.
     // static because called from a class that doesn't know about this instance.
-    static void HandleMessage(MessageEventArgs e) // string message)
+static void HandleMessage(MessageEventArgs e)
+{
+    // Add a time so we can tell how long it sits in the queue
+    QueuedMessage qm = new QueuedMessage();
+    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    qm.isBinary = e.IsBinary;
+    if (e.IsBinary) 
     {
-        // add a time so we can tell how long it sits in the queue
-        QueuedMessage qm = new QueuedMessage();
-        qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        qm.isBinary = e.IsBinary;
-        if (e.IsBinary) qm.rawData = e.RawData;
-        else qm.data = e.Data;
-        messageQueue.Enqueue(qm);
+        qm.rawData = e.RawData;
     }
+    else 
+    {
+        qm.data = e.Data;
+    }
+    messageQueue.Enqueue(qm);
+}
+
+static void HandleMessage(string message)
+{
+    // Add a time so we can tell how long it sits in the queue
+    QueuedMessage qm = new QueuedMessage();
+    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    qm.isBinary = false;
+    qm.data = message;
+    messageQueue.Enqueue(qm);
+}
+
 
     void StartCroquetSession()
     {
@@ -800,7 +821,10 @@ public class CroquetBridge : MonoBehaviour
         if (bridgeState == "foundJSBuild")
         {
             SetBridgeState("waitingForSocket");
-            StartWS();
+            if (Application.platform != RuntimePlatform.WebGLPlayer)
+            {
+                StartWS();
+            }
         }
         else if (bridgeState == "waitingForSocket" && (clientSock != null || Application.platform == RuntimePlatform.WebGLPlayer))
         {
