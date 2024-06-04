@@ -114,21 +114,13 @@ public class CroquetBridge : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void RegisterUnityReceiver();
 
-public void OnMessageReceivedFromJS(string messageData)
-{
-    var messageObject = JsonUtility.FromJson<MessageObject>(messageData);
-    if (messageObject.isBinary)
-    {
-        byte[] binaryMessage = Convert.FromBase64String(messageObject.message);
-        HandleBinaryMessage(binaryMessage);
-    }
-    else
+    public void OnMessageReceivedFromJS(string messageData)
     {
         // Initialize the shouldFilterLog variable
         bool shouldFilterLog = false;
 
         // Check if the message should be filtered from logging
-        if (messageObject.message.Contains("tick") || messageObject.message.Contains("1717"))
+        if (messageData.Contains("tick") || messageData.Contains("1717"))
         {
             shouldFilterLog = true;
         }
@@ -136,9 +128,9 @@ public void OnMessageReceivedFromJS(string messageData)
         {
             // Check if the part after "Response from JS: " is numeric
             string responsePrefix = "Response from JS: ";
-            if (messageObject.message.StartsWith(responsePrefix))
+            if (messageData.StartsWith(responsePrefix))
             {
-                string potentialTimestamp = messageObject.message.Substring(responsePrefix.Length);
+                string potentialTimestamp = messageData.Substring(responsePrefix.Length);
                 if (long.TryParse(potentialTimestamp, out _))
                 {
                     shouldFilterLog = true;
@@ -149,40 +141,78 @@ public void OnMessageReceivedFromJS(string messageData)
         // Log the message only if it should not be filtered
         if (!shouldFilterLog)
         {
-            Debug.Log("Message received from JavaScript: " + messageObject.message);
+            Debug.Log("Message received from JavaScript: " + messageData);
         }
 
-        // Process the message
-        HandleMessage(messageObject.message);
+        // Try to deserialize the message data as JSON
+        MessageObject messageObject;
+        try
+        {
+            messageObject = JsonUtility.FromJson<MessageObject>(messageData);
+        }
+        catch (ArgumentException)
+        {
+            // If JSON deserialization fails, it might be a base64 encoded string
+            Debug.Log("Message data is not a valid JSON, attempting base64 decoding...");
+            try
+            {
+                byte[] decodedBytes = Convert.FromBase64String(messageData);
+                string decodedString = System.Text.Encoding.UTF8.GetString(decodedBytes);
+                Debug.Log("Decoded message data: " + decodedString);
+                messageObject = JsonUtility.FromJson<MessageObject>(decodedString);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Failed to decode message data: " + ex.Message);
+                return;
+            }
+        }
+
+        if (messageObject != null)
+        {
+            if (messageObject.isBinary)
+            {
+                Debug.Log("Received binary message from JS: " + messageObject.message);
+                byte[] binaryMessage = Convert.FromBase64String(messageObject.message);
+                HandleBinaryMessage(binaryMessage);
+            }
+            else
+            {
+                // Process the message
+                HandleMessage(messageObject.message);
+            }
+        }
+        else
+        {
+            Debug.LogError("MessageObject is null after deserialization.");
+        }
     }
-}
+    [System.Serializable]
+    private class MessageObject
+    {
+        public string message;
+        public bool isBinary;
+    }
 
-[System.Serializable]
-private class MessageObject
-{
-    public string message;
-    public bool isBinary;
-}
+    static void HandleMessage(string message)
+    {
+        Debug.Log("Handle Message: " + message);
+        QueuedMessage qm = new QueuedMessage();
+        qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        qm.isBinary = false;
+        qm.data = message;
+        messageQueue.Enqueue(qm);
+    }
 
-static void HandleMessage(string message)
-{
-    Debug.Log("Handle Message: " + message);
-    QueuedMessage qm = new QueuedMessage();
-    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    qm.isBinary = false;
-    qm.data = message;
-    messageQueue.Enqueue(qm);
-}
-
-static void HandleBinaryMessage(byte[] message)
-{
-    Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
-    QueuedMessage qm = new QueuedMessage();
-    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    qm.isBinary = true;
-    qm.rawData = message;
-    messageQueue.Enqueue(qm);
-}
+    static void HandleBinaryMessage(byte[] message)
+    {
+        Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
+        QueuedMessage qm = new QueuedMessage();
+        qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        qm.isBinary = true;
+        qm.rawData = message;
+        messageQueue.Enqueue(qm);
+    }
 
     // This method will be called by JavaScript
     public void OnMessageFromJS(string message)
