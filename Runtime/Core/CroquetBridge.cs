@@ -113,7 +113,7 @@ public class CroquetBridge : MonoBehaviour
     {
         Debug.Log("Message received from JavaScript: " + message);
     }
-    
+
     [DllImport("__Internal")]
     private static extern void RegisterUnityReceiver();
 
@@ -127,7 +127,7 @@ public class CroquetBridge : MonoBehaviour
         {
             StartWS();
         }
-                // Frame cap
+        // Frame cap
         Application.targetFrameRate = 60;
 
         LoadingProgressDisplay loadingObj = FindObjectOfType<LoadingProgressDisplay>();
@@ -588,7 +588,15 @@ public class CroquetBridge : MonoBehaviour
 
         // send the message directly (bypassing the deferred-message queue)
         string msg = String.Join('\x01', command);
-        clientSock.Send(msg);
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            SendMessageToJavaScript(msg);
+        }
+        else
+        {
+            // Debug.Log("Not running in WebGL"
+            clientSock.Send(msg);
+        }
 
         croquetSessionState = "requested";
     }
@@ -651,7 +659,14 @@ public class CroquetBridge : MonoBehaviour
 
     void SendDeferredMessages()
     {
-        if (clientSock == null || clientSock.ReadyState != WebSocketState.Open) return;
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            //SendMessageToJavaScript(msg);
+        }
+        else
+        {
+            if (clientSock == null || clientSock.ReadyState != WebSocketState.Open) return;
+        }
 
         // we expect this to be called 50 times per second.  usually on every other call we send
         // deferred messages if there are any, otherwise send a tick.  expediting message sends
@@ -668,8 +683,15 @@ public class CroquetBridge : MonoBehaviour
 
         if (deferredMessages.Count == 0)
         {
-            clientSock.Send("tick");
-            return;
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                SendMessageToJavaScript("tick");
+            }
+            else
+            {
+                clientSock.Send(System.Text.Encoding.UTF8.GetBytes("tick"));
+                return;
+            }
         }
 
         outBundleCount++;
@@ -682,8 +704,18 @@ public class CroquetBridge : MonoBehaviour
         {
             messageContents.Add(entry.msg);
         }
-        string[] msgs = messageContents.ToArray<string>();
-        clientSock.Send(String.Join('\x02', msgs));
+
+        string joinedMsgs = String.Join('\x02', messageContents.ToArray());
+
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            SendMessageToJavaScript(joinedMsgs);
+        }
+        else
+        {
+            clientSock.Send(System.Text.Encoding.UTF8.GetBytes(joinedMsgs));
+        }
+
         deferredMessages.Clear();
     }
 
@@ -770,7 +802,7 @@ public class CroquetBridge : MonoBehaviour
             SetBridgeState("waitingForSocket");
             StartWS();
         }
-        else if (bridgeState == "waitingForSocket" && clientSock != null)
+        else if (bridgeState == "waitingForSocket" && (clientSock != null || Application.platform == RuntimePlatform.WebGLPlayer))
         {
             // configure which logs are forwarded
             SetJSLogForwarding(JSLogForwarding.ToString());
@@ -933,7 +965,14 @@ public class CroquetBridge : MonoBehaviour
 
         // send the message directly (bypassing the deferred-message queue)
         string msg = String.Join('\x01', commandStrings.ToArray());
-        clientSock.Send(msg);
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            SendMessageToJavaScript(msg);
+        }
+        else
+        {
+            clientSock.Send(msg);
+        }
     }
 
     List<string> GetSceneObjectStrings()
@@ -1006,7 +1045,14 @@ public class CroquetBridge : MonoBehaviour
 
         // send the message directly (bypassing the deferred-message queue)
         string msg = String.Join('\x01', command);
-        clientSock.Send(msg);
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            SendMessageToJavaScript(msg);
+        }
+        else
+        {
+            clientSock.Send(msg);
+        }
     }
 
     void FixedUpdate()
@@ -1703,7 +1749,14 @@ public class CroquetBridge : MonoBehaviour
         // send the message directly (bypassing the deferred-message queue), because this can
         // be sent regardless of whether a session is running
         string msg = String.Join('\x01', cmdAndArgs);
-        clientSock.Send(msg);
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            SendMessageToJavaScript(msg);
+        }
+        else
+        {
+            clientSock.Send(msg);
+        }
     }
 
     void SetLoadingStage(float ratio, string msg)
