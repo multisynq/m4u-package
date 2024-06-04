@@ -216,9 +216,27 @@ class BridgeToUnity {
     return multiMsg.length;
   }
 
-  sendToUnityViaInterop(msg, isBinary) {
-    const messageData = JSON.stringify({ "message": msg, "isBinary": isBinary });
-    window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
+  sendToUnityViaInterop(buffer, isBinary) {
+    if (isBinary) {
+        // Convert the buffer to a base64 string
+        const base64String = this.arrayBufferToBase64(buffer);
+        // Send the base64 string to Unity
+        window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', base64String);
+    } else {
+        const messageData = JSON.stringify({ "message": buffer, "isBinary": isBinary });
+        window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
+    }
+}
+
+// Helper function to convert ArrayBuffer to base64 string
+arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
 }
 
 sendToUnity(msg) {
@@ -233,15 +251,22 @@ sendToUnity(msg) {
 }
 
 sendBinaryToUnity(buffer) {
-    const command = "updateSpatial";
-    const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
-    const message = new Uint8Array(cmdPrefix.length + buffer.byteLength);
-    for (let i = 0; i < cmdPrefix.length; i++) {
-        message[i] = cmdPrefix.charCodeAt(i);
-    }
-    message.set(new Uint8Array(buffer), cmdPrefix.length);
-    this.sendToUnityViaInterop(message.buffer, true);
+  const command = "updateSpatial";
+  const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
+  const message = new Uint8Array(cmdPrefix.length + buffer.byteLength);
+  
+  for (let i = 0; i < cmdPrefix.length; i++) {
+      message[i] = cmdPrefix.charCodeAt(i);
+  }
+  
+  message.set(new Uint8Array(buffer), cmdPrefix.length);
+  
+  console.dir(buffer, { depth: null });
+  console.dir(message.buffer, { depth: null });
+  
+  this.sendToUnityViaInterop(message.buffer, true);
 }
+
 
 
   encodeValueAsString(arg) {
