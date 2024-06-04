@@ -115,7 +115,7 @@ class BridgeToUnity {
       this.SendMessageToUnity(
         "Croquet",
         "OnMessageReceivedFromJS",
-        responseMessage
+        responseMessage, false
       );
     });
   }
@@ -216,49 +216,33 @@ class BridgeToUnity {
     return multiMsg.length;
   }
 
-  sendToUnity(msg) {
-    if (globalThis.CROQUET_NODE) {
-      if (!this.socket) return;
-      this.socket.send(msg);
-    } else if (typeof msg === "string") {
-      this.sendToUnityViaInterop(msg, false);
-    } else if (msg instanceof ArrayBuffer) {
-      this.sendBinaryToUnity(msg);
-    }
-  }
+  sendToUnityViaInterop(msg, isBinary) {
+    const messageData = JSON.stringify({ "message": msg, "isBinary": isBinary });
+    window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
+}
 
-  sendBinaryToUnity(buffer) {
+sendToUnity(msg) {
+    if (globalThis.CROQUET_NODE) {
+        if (!this.socket) return;
+        this.socket.send(msg);
+    } else if (typeof msg === "string") {
+        this.sendToUnityViaInterop(msg, false);
+    } else if (msg instanceof ArrayBuffer) {
+        this.sendBinaryToUnity(msg);
+    }
+}
+
+sendBinaryToUnity(buffer) {
     const command = "updateSpatial";
     const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
     const message = new Uint8Array(cmdPrefix.length + buffer.byteLength);
     for (let i = 0; i < cmdPrefix.length; i++) {
-      message[i] = cmdPrefix.charCodeAt(i);
+        message[i] = cmdPrefix.charCodeAt(i);
     }
     message.set(new Uint8Array(buffer), cmdPrefix.length);
     this.sendToUnityViaInterop(message.buffer, true);
-  }
+}
 
-  sendToUnityViaInterop(msg, isBinary) {
-    // Implement the interop call to Unity here.
-    // For example, you might use `unityInstance.SendMessage` or similar.
-    // Assuming `unityInstance` is your Unity instance and you have a method called `ReceiveMessageFromJS`.
-    if (isBinary) {
-      const base64Message = btoa(String.fromCharCode(...new Uint8Array(msg)));
-      window.unityInstance.SendMessage(
-        "Croquet",
-        "OnMessageReceivedFromJS",
-        base64Message,
-        true
-      );
-    } else {
-      window.unityInstance.SendMessage(
-        "Croquet",
-        "OnMessageReceivedFromJS",
-        msg,
-        false
-      );
-    }
-  }
 
   encodeValueAsString(arg) {
     return Array.isArray(arg)
@@ -958,7 +942,7 @@ export const GameViewManager = class extends ViewService {
     });
 
     const buffer = array.buffer;
-    this.sendToUnity(buffer);
+    theGameEngineBridge.sendToUnity(buffer);
   }
 };
 
