@@ -104,6 +104,7 @@ public class CroquetBuilder
         installRecordContents = File.ReadAllText(installRecordPath);
 #else
         // find the file in a build.  Android needs extra care.
+        Debug.Log("This was the issue");
         string src = JSToolsRecordInBuild;
 #if UNITY_ANDROID
         var unityWebRequest = UnityWebRequest.Get(src);

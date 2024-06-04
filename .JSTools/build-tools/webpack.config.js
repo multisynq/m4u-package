@@ -89,16 +89,23 @@ module.exports = env => ({
     plugins: [
         new CopyPlugin({
             patterns: [
-                { from: `../../${env.appName}/scene-definitions.txt`, to: 'scene-definitions.txt', noErrorOnMissing: true }
+                { 
+                    from: `../../${env.appName}/scene-definitions.txt`, 
+                    to: env.buildTarget === 'web' 
+                        ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/scene-definitions.txt`)
+                        : path.join(__dirname, `../../../StreamingAssets/${env.appName}/scene-definitions.txt`), 
+                    noErrorOnMissing: true 
+                }
             ]
-        })].concat(env.buildTarget === 'node' ? [] : [
-            new HtmlWebpackPlugin({
-                template: './sources/index.html',
-                filename: 'index.html',
-                inject: false
-            }),
-            new CustomHtmlPlugin(),
-        ]),
+        })
+    ].concat(env.buildTarget === 'node' ? [] : [
+        new HtmlWebpackPlugin({
+            template: './sources/index.html',
+            filename: 'index.html',
+            inject: false
+        }),
+        new CustomHtmlPlugin(),
+    ]),
     externals: env.buildTarget !== 'node' ? [] : [
         {
             'utf-8-validate': 'commonjs utf-8-validate',

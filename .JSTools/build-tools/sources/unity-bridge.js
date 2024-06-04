@@ -84,8 +84,8 @@ globalThis.timedLog = (msg) => {
     (globalThis.CroquetViewDate || Date).now() % 100000
   }: ${msg}`;
   performance.mark(toLog);
-  if (msg.includes("tick") || !isNaN(Number(message))) return;
-  console.log(msg);
+  if (msg.includes("tick") || !isNaN(Number(msg))) return;
+  //   console.log(msg);
 };
 
 // globalThis.WC_Left = true; // NB: this can affect behaviour of both models and views
@@ -220,17 +220,43 @@ class BridgeToUnity {
     if (globalThis.CROQUET_NODE) {
       if (!this.socket) return;
       this.socket.send(msg);
-    } else {
-      this.sendToUnityViaInterop(msg);
+    } else if (typeof msg === "string") {
+      this.sendToUnityViaInterop(msg, false);
+    } else if (msg instanceof ArrayBuffer) {
+      this.sendBinaryToUnity(msg);
     }
   }
 
-  sendToUnityViaInterop(msg) {
-    // Replace with actual interop method for sending messages to Unity
-    if (typeof window.unityInstance !== "undefined") {
-      window.unityInstance.SendMessage("Croquet", "OnMessageFromJS", msg);
+  sendBinaryToUnity(buffer) {
+    const command = "updateSpatial";
+    const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
+    const message = new Uint8Array(cmdPrefix.length + buffer.byteLength);
+    for (let i = 0; i < cmdPrefix.length; i++) {
+      message[i] = cmdPrefix.charCodeAt(i);
+    }
+    message.set(new Uint8Array(buffer), cmdPrefix.length);
+    this.sendToUnityViaInterop(message.buffer, true);
+  }
+
+  sendToUnityViaInterop(msg, isBinary) {
+    // Implement the interop call to Unity here.
+    // For example, you might use `unityInstance.SendMessage` or similar.
+    // Assuming `unityInstance` is your Unity instance and you have a method called `ReceiveMessageFromJS`.
+    if (isBinary) {
+      const base64Message = btoa(String.fromCharCode(...new Uint8Array(msg)));
+      window.unityInstance.SendMessage(
+        "Croquet",
+        "OnMessageReceivedFromJS",
+        base64Message,
+        true
+      );
     } else {
-      console.error("Unity instance not found.");
+      window.unityInstance.SendMessage(
+        "Croquet",
+        "OnMessageReceivedFromJS",
+        msg,
+        false
+      );
     }
   }
 
@@ -742,8 +768,8 @@ export const GameViewManager = class extends ViewService {
     // gathering and sending them as part of the next geometry flush.
     const previousSpec = this.deferredGeometriesByGameHandle[gameHandle];
     if (!previousSpec)
-      this.deferredGeometriesByGameHandle[gameHandle] =
-        updateSpec; // end of story
+      this.deferredGeometriesByGameHandle[gameHandle] = updateSpec;
+    // end of story
     else {
       // each of prev and latest can have updates to scale, translation,
       // rotation (or their snap variants).  overwrite previousSpec with any
@@ -880,9 +906,6 @@ export const GameViewManager = class extends ViewService {
   flushGeometries() {
     const toBeMerged = [];
 
-    // it's possible that some pawns will have an explicit deferred update
-    // in addition to some changes since then that they now want to propagate.
-    // in that situation, we send the explicit update first.
     for (const [gameHandle, update] of Object.entries(
       this.deferredGeometriesByGameHandle
     )) {
@@ -891,14 +914,14 @@ export const GameViewManager = class extends ViewService {
     this.deferredGeometriesByGameHandle = {};
 
     for (const [gameHandle, pawn] of Object.entries(this.pawnsByGameHandle)) {
-      const update = pawn.geometryUpdateIfNeeded?.(); // pawns aren't guaranteed to be spatial
+      const update = pawn.geometryUpdateIfNeeded?.();
       if (update) toBeMerged.push([this.unityId(gameHandle), update]);
     }
 
     if (!toBeMerged.length) return;
 
-    const array = new Float32Array(toBeMerged.length * 11); // maximum length needed
-    const intArray = new Uint32Array(array.buffer); // integer view into same data
+    const array = new Float32Array(toBeMerged.length * 11);
+    const intArray = new Uint32Array(array.buffer);
 
     let pos = 0;
     const writeVector = (vec) => vec.forEach((val) => (array[pos++] = val));
@@ -912,10 +935,7 @@ export const GameViewManager = class extends ViewService {
         rotation,
         rotationSnap,
       } = spec;
-      // first number encodes object gameHandle and (in bits 0 to 5) whether there is an
-      // update to each of scale, rotation, translation, and for each one whether
-      // it should be snapped.
-      const idPos = pos++; // once we know the value
+      const idPos = pos++;
       let encodedId = gameHandle << 6;
       if (scale || scaleSnap) {
         writeVector(scale || scaleSnap);
@@ -937,19 +957,8 @@ export const GameViewManager = class extends ViewService {
       intArray[idPos] = encodedId;
     });
 
-    // send as a single binary-bodied message
     const buffer = array.buffer;
-    const filledBytes = pos * 4;
-    const command = "updateSpatial";
-    const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
-    const message = new Uint8Array(cmdPrefix.length + filledBytes);
-    for (let i = 0; i < cmdPrefix.length; i++)
-      message[i] = cmdPrefix.charCodeAt(i);
-    message.set(
-      new Uint8Array(buffer).subarray(0, filledBytes),
-      cmdPrefix.length
-    );
-    theGameEngineBridge.sendToUnity(message.buffer);
+    this.sendToUnity(buffer);
   }
 };
 
