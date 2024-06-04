@@ -221,7 +221,8 @@ class BridgeToUnity {
         // Convert the buffer to a base64 string
         const base64String = this.arrayBufferToBase64(buffer);
         // Send the base64 string to Unity
-        window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', base64String);
+        const messageData = JSON.stringify({ "message": base64String, "isBinary": isBinary });
+        window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
     } else {
         const messageData = JSON.stringify({ "message": buffer, "isBinary": isBinary });
         window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);

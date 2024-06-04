@@ -68,6 +68,7 @@ public class CroquetMenu
     [MenuItem(BuildNowItem, false, 100)]
     private static async void BuildNow()
     {
+        Debug.Log("Building JS...");
         bool success = await CroquetBuilder.EnsureJSToolsAvailable();
         if (!success) return;
 
@@ -77,6 +78,7 @@ public class CroquetMenu
     [MenuItem(BuildNowItem, true)]
     private static bool ValidateBuildNow()
     {
+        Debug.Log("Validate Build Now");
         // this item is not available if
         //   we don't know how to build for the current scene, or
         //   a watcher for any scene is running (MacOS only), or
