@@ -20,10 +20,18 @@ const originalConsole = {
     warn: console.warn,
     info: console.info
 };
+
 console.log("unity-bridge.js loaded");
 // Define the function to handle messages from Unity
+
 globalThis.handleUnityMessage = function(message) {
     originalConsole.log("Message received in JavaScript: " + message);
+
+    if (typeof window.theGameEngineBridge !== 'undefined' ) {
+        window.theGameEngineBridge.receiveMessageFromUnity(message);
+    } else {
+        originalConsole.error("BridgeToUnity instance not found or incorrect type.");
+    }
 
     // Send a response back to Unity
     if (typeof window.unityInstance !== "undefined") {
@@ -32,6 +40,7 @@ globalThis.handleUnityMessage = function(message) {
         originalConsole.error("Unity instance not found.");
     }
 };
+
 originalConsole.log("unity-bridge.js loaded");
 // Define a test function that can be called from Unity
 globalThis.unityBridgeTest = function() {
@@ -90,7 +99,11 @@ class BridgeToUnity {
           ); 
         });
       }
-    
+        // New method to receive messages from Unity
+        receiveMessageFromUnity(message) {
+            originalConsole.log("Received message from Unity:", message);
+            this.handleUnityMessageOrBundle(message);
+        }
       SendMessageToUnity(objectName, methodName, message) {
         if (window.unityInstance) {
           window.unityInstance.SendMessage(objectName, methodName, message);
@@ -137,7 +150,7 @@ class BridgeToUnity {
             this.bridgeIsConnected = true;
             sock.onmessage = event => {
                 const msg = event.data;
-                if (msg !== 'tick') this.handleUnityMessageOrBundle(msg);
+                if (msg !== 'tick') this.handleUnityMessageOrBundle(msg); // webGLrel all incoming from Unity go here if not a tick
                 if (ticker) ticker();
             };
         };
@@ -417,9 +430,10 @@ class BridgeToUnity {
     }
 }
 
+originalConsole.log("unity-bridge.js loaded 1");
 export const theGameEngineBridge = new BridgeToUnity();
-
-
+window.theGameEngineBridge = theGameEngineBridge;
+originalConsole.log("unity-bridge.js loaded 2");
 // GameViewManager is a new kind of service, created specifically for
 // the bridge to Unity, handling the creation and management of Unity-side
 // gameObjects that track the Croquet pawns.
