@@ -20,8 +20,8 @@ public class BridgeTest : MonoBehaviour
         int count = 0;
         while (true)
         {
-            count++;
-            yield return new WaitForSeconds(1);
+            count = count+60;
+            yield return new WaitForSeconds(60);
             Debug.Log("Tick count: " + count); // Added debug logging
             bridge.SendMessageToJavaScript("Hello from Unity every second, we're on second " + count);
         }
