@@ -114,48 +114,75 @@ public class CroquetBridge : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void RegisterUnityReceiver();
 
-    public void OnMessageReceivedFromJS(string message, bool isBinary = false)
+public void OnMessageReceivedFromJS(string messageData)
+{
+    var messageObject = JsonUtility.FromJson<MessageObject>(messageData);
+    if (messageObject.isBinary)
     {
-        if (isBinary)
+        byte[] binaryMessage = Convert.FromBase64String(messageObject.message);
+        HandleBinaryMessage(binaryMessage);
+    }
+    else
+    {
+        // Initialize the shouldFilterLog variable
+        bool shouldFilterLog = false;
+
+        // Check if the message should be filtered from logging
+        if (messageObject.message.Contains("tick") || messageObject.message.Contains("1717"))
         {
-            byte[] binaryMessage = Convert.FromBase64String(message);
-            HandleBinaryMessage(binaryMessage);
+            shouldFilterLog = true;
         }
         else
         {
-            // Initialize the shouldFilterLog variable
-            bool shouldFilterLog = false;
-
-            // Check if the message should be filtered from logging
-            if (message.Contains("tick") || message.Contains("1717"))
+            // Check if the part after "Response from JS: " is numeric
+            string responsePrefix = "Response from JS: ";
+            if (messageObject.message.StartsWith(responsePrefix))
             {
-                shouldFilterLog = true;
-            }
-            else
-            {
-                // Check if the part after "Response from JS: " is numeric
-                string responsePrefix = "Response from JS: ";
-                if (message.StartsWith(responsePrefix))
+                string potentialTimestamp = messageObject.message.Substring(responsePrefix.Length);
+                if (long.TryParse(potentialTimestamp, out _))
                 {
-                    string potentialTimestamp = message.Substring(responsePrefix.Length);
-                    if (long.TryParse(potentialTimestamp, out _))
-                    {
-                        shouldFilterLog = true;
-                    }
+                    shouldFilterLog = true;
                 }
             }
-
-            // Log the message only if it should not be filtered
-            if (!shouldFilterLog)
-            {
-                Debug.Log("Message received from JavaScript: " + message);
-            }
-
-            // Process the message
-            HandleMessage(message);
         }
-    }
 
+        // Log the message only if it should not be filtered
+        if (!shouldFilterLog)
+        {
+            Debug.Log("Message received from JavaScript: " + messageObject.message);
+        }
+
+        // Process the message
+        HandleMessage(messageObject.message);
+    }
+}
+
+[System.Serializable]
+private class MessageObject
+{
+    public string message;
+    public bool isBinary;
+}
+
+static void HandleMessage(string message)
+{
+    Debug.Log("Handle Message: " + message);
+    QueuedMessage qm = new QueuedMessage();
+    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    qm.isBinary = false;
+    qm.data = message;
+    messageQueue.Enqueue(qm);
+}
+
+static void HandleBinaryMessage(byte[] message)
+{
+    Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
+    QueuedMessage qm = new QueuedMessage();
+    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    qm.isBinary = true;
+    qm.rawData = message;
+    messageQueue.Enqueue(qm);
+}
 
     // This method will be called by JavaScript
     public void OnMessageFromJS(string message)
@@ -596,25 +623,25 @@ public class CroquetBridge : MonoBehaviour
         messageQueue.Enqueue(qm);
     }
 
-    static void HandleMessage(string message)
-{
-    Debug.Log("Handle Message: " + message);
-    QueuedMessage qm = new QueuedMessage();
-    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    qm.isBinary = false;
-    qm.data = message;
-    messageQueue.Enqueue(qm);
-}
+    // static void HandleMessage(string message)
+    // {
+    //     Debug.Log("Handle Message: " + message);
+    //     QueuedMessage qm = new QueuedMessage();
+    //     qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    //     qm.isBinary = false;
+    //     qm.data = message;
+    //     messageQueue.Enqueue(qm);
+    // }
 
-static void HandleBinaryMessage(byte[] message)
-{
-    Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
-    QueuedMessage qm = new QueuedMessage();
-    qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    qm.isBinary = true;
-    qm.rawData = message;
-    messageQueue.Enqueue(qm);
-}
+    // static void HandleBinaryMessage(byte[] message)
+    // {
+    //     Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
+    //     QueuedMessage qm = new QueuedMessage();
+    //     qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    //     qm.isBinary = true;
+    //     qm.rawData = message;
+    //     messageQueue.Enqueue(qm);
+    // }
 
 
     void StartCroquetSession()
