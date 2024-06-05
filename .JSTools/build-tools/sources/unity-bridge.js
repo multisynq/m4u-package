@@ -37,7 +37,7 @@ console.log("unity-bridge.js loaded");
 globalThis.handleUnityMessage = function (message) {
   if (message.includes("tick") || !isNaN(Number(message))) {
   } else {
-    originalConsole.log("Message received in JavaScript: " + message);
+    // originalConsole.log("Message received in JavaScript: " + message);
   }
   if (typeof window.theGameEngineBridge !== "undefined") {
     window.theGameEngineBridge.receiveMessageFromUnity(message);
@@ -108,7 +108,7 @@ class BridgeToUnity {
 
     window.addEventListener("MessageFromUnity", (event) => {
       const message = event.data;
-      originalConsole.log("Received message from Unity:", message);
+      // originalConsole.log("Received message from Unity:", message);
 
       // Process the message and send a response back to Unity
       const responseMessage = `Received message: ${message}`;
@@ -123,7 +123,7 @@ class BridgeToUnity {
   receiveMessageFromUnity(message) {
     if (message.includes("tick") || !isNaN(Number(message))) {
     } else {
-      originalConsole.log("Received message from Unity:", message);
+      // originalConsole.log("Received message from Unity:", message);
     }
     this.handleUnityMessageOrBundle(message);
   }
@@ -262,8 +262,8 @@ sendBinaryToUnity(buffer) {
   
   message.set(new Uint8Array(buffer), cmdPrefix.length);
   
-  console.dir(buffer, { depth: null });
-  console.dir(message.buffer, { depth: null });
+  // console.dir(buffer, { depth: null });
+  // console.dir(message.buffer, { depth: null });
   
   this.sendToUnityViaInterop(message.buffer, true);
 }
