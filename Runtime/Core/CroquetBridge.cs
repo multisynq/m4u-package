@@ -926,7 +926,7 @@ public class CroquetBridge : MonoBehaviour
 
         return false;
     }
-    bool lol = true;
+    bool lol = true; // Interop check for existence
     void AdvanceBridgeStateWhenReady()
     {
 #if UNITY_EDITOR
