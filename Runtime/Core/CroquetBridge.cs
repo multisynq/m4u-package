@@ -141,7 +141,7 @@ public class CroquetBridge : MonoBehaviour
         // Log the message only if it should not be filtered
         if (!shouldFilterLog)
         {
-            Debug.Log("Message received from JavaScript: " + messageData);
+            // Debug.Log("Message received from JavaScript: " + messageData);
         }
 
         // Try to deserialize the message data as JSON
@@ -153,12 +153,12 @@ public class CroquetBridge : MonoBehaviour
         catch (ArgumentException)
         {
             // If JSON deserialization fails, it might be a base64 encoded string
-            Debug.Log("Message data is not a valid JSON, attempting base64 decoding...");
+            // Debug.Log("Message data is not a valid JSON, attempting base64 decoding...");
             try
             {
                 byte[] decodedBytes = Convert.FromBase64String(messageData);
                 string decodedString = System.Text.Encoding.UTF8.GetString(decodedBytes);
-                Debug.Log("Decoded message data: " + decodedString);
+                // Debug.Log("Decoded message data: " + decodedString);
                 messageObject = JsonUtility.FromJson<MessageObject>(decodedString);
             }
             catch (Exception ex)
@@ -172,7 +172,7 @@ public class CroquetBridge : MonoBehaviour
         {
             if (messageObject.isBinary)
             {
-                Debug.Log("Received binary message from JS: " + messageObject.message);
+                // Debug.Log("Received binary message from JS: " + messageObject.message);
                 byte[] binaryMessage = Convert.FromBase64String(messageObject.message);
                 HandleBinaryMessage(binaryMessage);
             }
@@ -196,7 +196,7 @@ public class CroquetBridge : MonoBehaviour
 
     static void HandleMessage(string message)
     {
-        Debug.Log("Handle Message: " + message);
+        // Debug.Log("Handle Message: " + message);
         QueuedMessage qm = new QueuedMessage();
         qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         qm.isBinary = false;
@@ -206,7 +206,7 @@ public class CroquetBridge : MonoBehaviour
 
     static void HandleBinaryMessage(byte[] message)
     {
-        Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
+        // Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
         QueuedMessage qm = new QueuedMessage();
         qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         qm.isBinary = true;
@@ -219,7 +219,7 @@ public class CroquetBridge : MonoBehaviour
     {
         if (!message.Contains("tick") && !long.TryParse(message, out _) && !message.Contains("1717"))
         {
-            Debug.Log("Message received from JavaScript: " + message);
+            // Debug.Log("Message received from JavaScript: " + message);
         }
     }
 
@@ -386,6 +386,7 @@ public class CroquetBridge : MonoBehaviour
         else
         {
             sessionName = newSessionName;
+            defaultSessionName = newSessionName;
             Log("session", $"session name set to {newSessionName}");
         }
     }
@@ -1377,6 +1378,7 @@ public class CroquetBridge : MonoBehaviour
     /// <param name="startIndex"></param>
     void ProcessCroquetMessage(string command, byte[] data, int startIndex)
     {
+        // Debug.Log("ProcessCroquetMessage: " + command);
         foreach (CroquetSystem system in croquetSystems)
         {
             if (system.KnownCommands.Contains(command))

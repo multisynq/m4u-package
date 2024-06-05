@@ -64,7 +64,7 @@ public class CroquetEntitySystem : CroquetSystem
             }
         }
 
-        Debug.Log($"Failed to find object {croquetHandle}");
+        // Debug.Log($"Failed to find object {croquetHandle}");
         return null;
     }
 

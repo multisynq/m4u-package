@@ -97,14 +97,14 @@ public class UserInput : MonoBehaviour
 
     void SendKeyUp(InputControl control)
     {
-        //Debug.Log($"[INPUT] KEYUP: " + control.name);
+        // Debug.Log($"[INPUT] KEYUP: " + control.name);
 
         CroquetBridge.Instance.SendToCroquet("event", "keyUp", control.name);
     }
 
     void SendPointerDown(InputAction.CallbackContext callbackContext)
     {
-        Debug.Log("[INPUT] Pointer Down");
+        // Debug.Log("[INPUT] Pointer Down");
         //CroquetBridge.Instance.SendToCroquet("event", "pointerDown");
     }
 
