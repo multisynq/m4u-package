@@ -1084,7 +1084,8 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
 
                     if (packagePath.StartsWith("file:"))
                     {
-                        packagePath = packagePath.Substring(5);
+                        // packagePath = packagePath.Substring(5);
+                        packagePath = Path.Combine(Application.dataPath, packagePath.Substring(5));
                     }
                     else
                     {

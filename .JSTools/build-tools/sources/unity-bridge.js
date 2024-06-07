@@ -23,6 +23,9 @@ import {
 } from "@croquet/worldcore-kernel";
 console.log("unity-bridge.js loaded");
 
+globalThis.CROQUET_NODE = ((typeof window) === "undefined"); // false if running in a browser, true if running in Node.js
+// globalThis will equal window in a browser environment, and global in Node.js
+
 // Backup original console methods
 const originalConsole = {
   log: console.log,
@@ -31,16 +34,16 @@ const originalConsole = {
   info: console.info,
 };
 
-console.log("unity-bridge.js loaded");
+// console.log("unity-bridge.js loaded");
 // Define the function to handle messages from Unity
 
 globalThis.handleUnityMessage = function (message) {
-  if (message.includes("tick") || !isNaN(Number(message))) {
-  } else {
-    // originalConsole.log("Message received in JavaScript: " + message);
-  }
-  if (typeof window.theGameEngineBridge !== "undefined") {
-    window.theGameEngineBridge.receiveMessageFromUnity(message);
+  // if (message.includes("tick") || !isNaN(Number(message))) {
+  // } else {
+  //   // originalConsole.log("Message received in JavaScript: " + message);
+  // }
+  if (typeof globalThis.theGameEngineBridge !== "undefined") {
+    globalThis.theGameEngineBridge.receiveMessageFromUnity(message);
   } else {
     originalConsole.error(
       "BridgeToUnity instance not found or incorrect type."
@@ -48,23 +51,23 @@ globalThis.handleUnityMessage = function (message) {
   }
 
   // Send a response back to Unity
-  if (typeof window.unityInstance !== "undefined") {
-    window.unityInstance.SendMessage(
-      "Croquet",
-      "OnMessageFromJS",
-      "Response from JS: " + message
-    );
-  } else {
-    originalConsole.error("Unity instance not found.");
-  }
+  // if (typeof globalThis.unityInstance !== "undefined") {
+  //   globalThis.unityInstance.SendMessage(
+  //     "Croquet",
+  //     "OnMessageFromJS",
+  //     "Response from JS: " + message
+  //   );
+  // } else {
+  //   originalConsole.error("Unity instance not found.");
+  // }
 };
 
-originalConsole.log("unity-bridge.js loaded");
+// originalConsole.log("unity-bridge.js loaded");
 // Define a test function that can be called from Unity
-globalThis.unityBridgeTest = function () {
-  originalConsole.log("unityBridgeTest function called");
-  return "Unity Bridge Test Successful";
-};
+// globalThis.unityBridgeTest = function () {
+//   originalConsole.log("unityBridgeTest function called");
+//   return "Unity Bridge Test Successful";
+// };
 globalThis.registerUnityReceiver = function () {
   console.log("Unity receiver registered");
   // Additional setup if needed
@@ -89,7 +92,6 @@ globalThis.timedLog = (msg) => {
 };
 
 // globalThis.WC_Left = true; // NB: this can affect behaviour of both models and views
-globalThis.CROQUET_NODE = typeof window === "undefined";
 
 let theGameInputManager, session, sessionOffsetEstimator;
 
@@ -106,7 +108,7 @@ class BridgeToUnity {
     this.measureIndex = 0;
     // originalConsole.log("Starting BridgeToUnity interop layer");
 
-    // window.addEventListener("MessageFromUnity", (event) => {
+    // globalThis.addEventListener("MessageFromUnity", (event) => {
     //   const message = event.data;
     //   // originalConsole.log("Received message from Unity:", message);
 
@@ -128,8 +130,8 @@ class BridgeToUnity {
     this.handleUnityMessageOrBundle(message);
   }
   SendMessageToUnity(objectName, methodName, message) {
-    if (window.unityInstance) {
-      window.unityInstance.SendMessage(objectName, methodName, message);
+    if (globalThis.unityInstance) {
+      globalThis.unityInstance.SendMessage(objectName, methodName, message);
     } else {
       originalConsole.log("Unity instance not found!");
     }
@@ -164,7 +166,7 @@ class BridgeToUnity {
   startWS() {
     globalThis.timedLog("starting socket client");
     const portStr = (this.socketPortStr =
-      (!globalThis.CROQUET_NODE ? window.location.port : process.argv[2]) ||
+      (!globalThis.CROQUET_NODE ? globalThis.location.port : process.argv[2]) ||
       "5555");
     console.log(`PORT ${portStr}`);
     const sock = (this.socket = new WebSocket(
@@ -224,10 +226,10 @@ class BridgeToUnity {
         const base64String = this.arrayBufferToBase64(buffer);
         // Send the base64 string to Unity
         const messageData = JSON.stringify({ "message": base64String, "isBinary": isBinary });
-        window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
+        globalThis.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
     } else {
         const messageData = JSON.stringify({ "message": buffer, "isBinary": isBinary });
-        window.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
+        globalThis.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
     }
 }
 
@@ -532,10 +534,10 @@ sendBinaryToUnity(buffer) {
   }
 }
 
-originalConsole.log("unity-bridge.js loaded 1");
+// originalConsole.log("unity-bridge.js loaded 1");
 export const theGameEngineBridge = new BridgeToUnity();
-window.theGameEngineBridge = theGameEngineBridge;
-originalConsole.log("unity-bridge.js loaded 2");
+globalThis.theGameEngineBridge = theGameEngineBridge;
+// originalConsole.log("unity-bridge.js loaded 2");
 // GameViewManager is a new kind of service, created specifically for
 // the bridge to Unity, handling the creation and management of Unity-side
 // gameObjects that track the Croquet pawns.
