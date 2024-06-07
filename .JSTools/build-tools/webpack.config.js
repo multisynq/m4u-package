@@ -1,6 +1,7 @@
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+const fs = require('fs');
 
 class CustomHtmlPlugin {
     apply(compiler) {
@@ -15,8 +16,11 @@ class CustomHtmlPlugin {
                     if (indexScript) {
                         const scriptTag = `additionalScript.src = "${indexScript}";`;
                         data.html = data.html.replace('additionalScript.src = "index-[contenthash:8].js";', scriptTag);
+                        const outPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
+                        fs.writeFileSync(path.join(outPath, 'index.html'), data.html);
+                        // copy from __dirname/indes-####.js to outPath/index-####.js
+                        fs.copyFileSync(path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/${indexScript}`), path.join(outPath, indexScript));
                     }
-
                     cb(null, data);
                 }
             );
@@ -40,17 +44,17 @@ module.exports = env => ({
         return index;
     },
     output: {
-        path: env.buildTarget === 'web'
+        path: env.useWebGL === 'true'
             ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
             : path.join(__dirname, `../../../StreamingAssets/${env.appName}/`),
         pathinfo: false,
         filename: env.buildTarget === 'node' ? 'node-main.js' : 'index-[contenthash:8].js',
         chunkFilename: 'chunk-[contenthash:8].js',
-        clean: false
+        clean: false // TODO: delete accuring index-#### files automatically
     },
     cache: {
         type: 'filesystem',
-        name: `${env.appName}-${env.buildTarget}`,
+        name: `${env.appName}-${env.buildTarget}${env.useWebGL?'-WebGL':''}`,
         buildDependencies: {
             config: [__filename],
         }
@@ -63,12 +67,9 @@ module.exports = env => ({
         },
         fallback: { "crypto": false }
     },
-    experiments: {
-        asyncWebAssembly: true,
-    },
     module: {
         rules: [
-            {
+            env.useWebGL==='true' && {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
@@ -84,14 +85,14 @@ module.exports = env => ({
                 enforce: "pre",
                 use: ["source-map-loader"],
             },
-        ],
+        ].filter(x=>x), // removes any undefined by the && predicate being false
     },
     plugins: [
         new CopyPlugin({
             patterns: [
                 { 
                     from: `../../${env.appName}/scene-definitions.txt`, 
-                    to: env.buildTarget === 'web' 
+                    to: env.useWebGL==='true' 
                         ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/scene-definitions.txt`)
                         : path.join(__dirname, `../../../StreamingAssets/${env.appName}/scene-definitions.txt`), 
                     noErrorOnMissing: true 
@@ -102,18 +103,19 @@ module.exports = env => ({
         new HtmlWebpackPlugin({
             template: './sources/index.html',
             filename: 'index.html',
-            inject: false
+            inject: true
         }),
-        new CustomHtmlPlugin(),
-    ]),
+        env.useWebGL==='true' && new CustomHtmlPlugin(), // alters the one line marked with index-#####.js
+    ].filter(x=>x)), // removes any undefined by the && antecedent being false
     externals: env.buildTarget !== 'node' ? [] : [
         {
             'utf-8-validate': 'commonjs utf-8-validate',
             bufferutil: 'commonjs bufferutil',
         },
     ],
-    target: env.buildTarget || 'web',
+    target: env.buildTarget,
     experiments: {
-        outputModule: true
+        outputModule: env.useWebGL==='true',
+        asyncWebAssembly: true,
     }
 });

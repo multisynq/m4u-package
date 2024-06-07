@@ -104,20 +104,20 @@ class BridgeToUnity {
     this.bridgeIsConnected = false;
     this.initConnection();
     this.measureIndex = 0;
-    originalConsole.log("Starting BridgeToUnity interop layer");
+    // originalConsole.log("Starting BridgeToUnity interop layer");
 
-    window.addEventListener("MessageFromUnity", (event) => {
-      const message = event.data;
-      // originalConsole.log("Received message from Unity:", message);
+    // window.addEventListener("MessageFromUnity", (event) => {
+    //   const message = event.data;
+    //   // originalConsole.log("Received message from Unity:", message);
 
-      // Process the message and send a response back to Unity
-      const responseMessage = `Received message: ${message}`;
-      this.SendMessageToUnity(
-        "Croquet",
-        "OnMessageReceivedFromJS",
-        responseMessage, false
-      );
-    });
+    //   // Process the message and send a response back to Unity
+    //   const responseMessage = `Received message: ${message}`;
+    //   this.SendMessageToUnity(
+    //     "Croquet",
+    //     "OnMessageReceivedFromJS",
+    //     responseMessage, false
+    //   );
+    // });
   }
   // New method to receive messages from Unity
   receiveMessageFromUnity(message) {
@@ -152,10 +152,12 @@ class BridgeToUnity {
   }
 
   initConnection() {
-    if (globalThis.CROQUET_NODE) {
+    if (true) {//if (globalThis.CROQUET_NODE) {
       this.startWS();
+      console.log("Starting WebSocket connection");
     } else {
       this.startInterops();
+      console.log("Starting interop connection");
     }
   }
 
@@ -241,7 +243,7 @@ arrayBufferToBase64(buffer) {
 }
 
 sendToUnity(msg) {
-    if (globalThis.CROQUET_NODE) {
+    if (true) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
         if (!this.socket) return;
         this.socket.send(msg);
     } else if (typeof msg === "string") {
@@ -2000,7 +2002,7 @@ class TimerClient {
 }
 
 let timerClient, ticker, sessionStepper;
-if (globalThis.CROQUET_NODE) {
+if (false) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
   timerClient = globalThis;
 } else {
   // install our home-grown timer, and an interim ticker (will be replaced once
@@ -2193,7 +2195,7 @@ async function unityDrivenStartSession() {
 
   const sceneFileName = "scene-definitions.txt";
   let sceneText = "";
-  const sceneFile = globalThis.CROQUET_NODE
+  const sceneFile = false // globalThis.CROQUET_NODE // TODO: NO NO NO NO NOOoOOOOoo 
     ? `http://127.0.0.1:${socketPortStr}/${appName}/${sceneFileName}`
     : `./${sceneFileName}`;
   // our server will respond to HEAD with status 200 if file is found, 204 otherwise
@@ -2256,7 +2258,7 @@ async function unityDrivenStartSession() {
     Promise.resolve().then(() => session.step(now));
   };
 
-  if (globalThis.CROQUET_NODE) {
+  if (false) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
     sessionStepper = setInterval(stepHandler, STEP_DELAY); // as simple as that
   } else {
     ticker = () => {
@@ -2275,7 +2277,7 @@ async function unityDrivenStartSession() {
 function shutDownSession() {
   session.leave();
   session = null;
-  if (globalThis.CROQUET_NODE) {
+  if (false) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
     clearInterval(sessionStepper);
     sessionStepper = null;
   } else {
