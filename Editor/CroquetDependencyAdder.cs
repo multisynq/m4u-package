@@ -89,7 +89,8 @@ public class CroquetDependencyAdder
 
                     if (packagePath.StartsWith("file:"))
                     {
-                        packagePath = packagePath.Substring(5);
+                        // packagePath = packagePath.Substring(5);
+                        packagePath = Path.Combine(Application.dataPath, packagePath.Substring(5));
                     }
                     else
                     {
