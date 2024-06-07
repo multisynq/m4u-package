@@ -6,7 +6,6 @@
     <title>Unity WebGL Player | {{{ PRODUCT_NAME }}}</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico" />
     <link rel="stylesheet" href="TemplateData/style.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@croquet/croquet@1.1.0-30"></script>
     <style>
       html,
       body,
@@ -40,6 +39,7 @@
     </style>
   </head>
   <body>
+    <!--  .JSTools/build-tools/sources/index.html -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas"></canvas>
       <div id="unity-loading-bar">
@@ -179,7 +179,7 @@
                       scriptPlaceholder.appendChild(additionalScript);
 
                       // Send the room parameter to Unity
-                      if (room) {
+                      if (room) { // TODO: look into session mechanism with q= in addition to this
                           unityInstance.SendMessage('Croquet', 'SetSessionName', room);
                       }
                       console.log("Sending isMobile: " + isMobile);

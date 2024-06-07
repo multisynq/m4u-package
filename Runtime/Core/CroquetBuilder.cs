@@ -900,7 +900,16 @@ public class CroquetBuilder
         if (onOSX)
         {
             string nodeExecutable = GetSceneBuildDetails().nodeExecutable;
-            nodePath = Path.GetDirectoryName(nodeExecutable);
+            try {
+                nodePath = Path.GetDirectoryName(nodeExecutable);
+            } catch (Exception e) {
+                Debug.LogError(
+@$"Error: The node executable path is incorrect in Assets/Settings/CroquetSettings.asset
+Currently '{nodeExecutable}'
+Try 'which node' in a terminal or similar to find your active node executable.
+Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Path To Node' value there.
+{e.Message}");
+            }
         }
 
         int errorCount = 0;
@@ -1042,7 +1051,10 @@ public class CroquetBuilder
             FileUtil.ReplaceDirectory(dsrc, ddest);
 
             // Copy the WebGL templates folder
-            CopyWebGLTemplatesFolder();
+            if (Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                CopyWebGLTemplatesFolder();
+            }
 
             Debug.Log("Re-copy of build items completed successfully.");
             return true;

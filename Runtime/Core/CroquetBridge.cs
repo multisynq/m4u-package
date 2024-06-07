@@ -831,7 +831,7 @@ public class CroquetBridge : MonoBehaviour
             }
             else
             {
-                clientSock.Send(System.Text.Encoding.UTF8.GetBytes("tick"));
+                clientSock.Send("tick"); //    NOT   System.Text.Encoding.UTF8.GetBytes("tick"));
                 return;
             }
         }
