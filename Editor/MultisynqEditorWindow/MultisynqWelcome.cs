@@ -57,25 +57,32 @@ public class Colz {
 };
 
 public class MultisynqWelcomeEW : EditorWindow {
+
   //=============================================================================
   public class Status {
     public string message;
+    public string statusStr;
     public Color color;
     public Label label;
     public VisualElement img;
+    public StatusSet statusSet;
     public void Set() {
       label.text = message;
       img.style.unityBackgroundImageTintColor = color;
+      statusSet.status = statusStr;
     }
-    public Status(Label label, VisualElement img, string message, Color color) {
+    public Status(string statusStr, Label label, VisualElement img, string message, Color color, StatusSet statusSet) {
       this.message = message;
       this.color = color;
       this.label = label;
       this.img = img;
+      this.statusSet = statusSet;
+      this.statusStr = statusStr;
     }
   }
-  
+  //=============================================================================
   public class StatusSet {
+    public string status = "blank";
     public Status ready;
     public Status warning;
     public Status error;
@@ -83,14 +90,15 @@ public class MultisynqWelcomeEW : EditorWindow {
     public Status blank;
     public Label label;
     public VisualElement img;
-    public StatusSet(Label label, VisualElement img, string info, string warning, string error, string success) {
-      this.ready   = new Status(label, img, info,    colz.green);
-      this.warning = new Status(label, img, warning, colz.yellow);
-      this.error   = new Status(label, img, error,   colz.red);
-      this.success = new Status(label, img, success, colz.lime);
-      this.blank   = new Status(label, img, "--",    colz.white); 
+    public StatusSet(Label label, VisualElement img, string _info, string _warning, string _error, string _success) {
+      ready   = new Status("ready",   label, img, _info,    colz.green,  this);
+      warning = new Status("warning", label, img, _warning, colz.yellow, this);
+      error   = new Status("error",   label, img, _error,   colz.red,    this);
+      success = new Status("success", label, img, _success, colz.lime,   this);
+      blank   = new Status("blank",   label, img, "--",     colz.white,  this);
     }
   }
+  //=============================================================================
   static public class Statuses {
     static public StatusSet ready;
     static public StatusSet node;
@@ -151,6 +159,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     Statuses.node.blank.Set();
     Statuses.key.blank.Set();
     Statuses.jsBuild.blank.Set();
+    Statuses.settings.blank.Set();
   }
 
   public void CreateGUI() {
@@ -171,12 +180,6 @@ public class MultisynqWelcomeEW : EditorWindow {
 
     SetupUI();
     SetupStatuses();
-
-    Statuses.node.error.Set();
-    Statuses.key.warning.Set();
-    Statuses.jsBuild.success.Set();
-    Statuses.ready.ready.Set();
-
     AllStatusToBlank();
     // // Ready_Status_Img blue!
   }
@@ -214,6 +217,9 @@ public class MultisynqWelcomeEW : EditorWindow {
     SetupVisElem("Key_Status_Img",       ref Key_Status_Img    );
     SetupVisElem("JSBuild_Status_Img",   ref JSBuild_Status_Img);
     SetupVisElem("Settings_Status_Img",  ref Settings_Status_Img);
+
+    // hide Awesome_Btn
+    Awesome_Btn.style.visibility = Visibility.Hidden;
   }
 
   private void SetupStatuses() {
@@ -253,18 +259,75 @@ public class MultisynqWelcomeEW : EditorWindow {
     Statuses.settings = new StatusSet( Settings_Message_Lbl, Settings_Status_Img,
       // ... info, warning, error, success)
       $"Settings are ready to go!",
-      $"Settings are not set",
-      $"Let's get you a free {t_key}. It's easy.",
+      $"Settings are set to defaults! Look for other red items below to fix this.",
+      $"Settings asset is missing! Click <b>Create Settings</b> to make some.",
       $"Settings are configured!!! Well done!"
     );
+    SettingsSelect_Btn.SetEnabled(false);
   }
 
   //=============================================================================
   //=============================================================================
+
+  private void Clk_CheckIfReady() {
+    bool allRdy = true;
+    allRdy &= Check_Settings();
+    allRdy &= Check_Node();
+    //-----
+    if (allRdy) AllAreReady();
+    else        AllAreReady(false);
+  }
+
+  private void CheckAllStatusForReady() {
+    bool allRdy = true;
+    // NEVER: allRdy &= Statuses.ready.status    == "success";
+    allRdy &= Statuses.settings.status == "success";
+    allRdy &= Statuses.node.status     == "success";
+    // allRdy &= Statuses.key.status      == "success";
+    // allRdy &= Statuses.jsBuild.status  == "success";
+    if (allRdy) AllAreReady();
+    else        AllAreReady(false);
+  }
+  private void AllAreReady(bool really = true) {
+    if (really) {
+      Statuses.ready.success.Set();
+      Awesome_Btn.style.visibility = Visibility.Visible;
+    } else {
+      Statuses.ready.error.Set();
+      Awesome_Btn.style.visibility = Visibility.Hidden;
+    }
+  }
+
+  private bool Check_Node() {
+    var cqStgs = FindProjectCqSettings();
+    string nodePath = cqStgs.pathToNode;
+    string nodeVer = TryNodePath(nodePath);
+    if (nodeVer == null) {
+      Statuses.node.error.Set();
+      return false;
+    } else {
+      Statuses.node.success.Set();
+      return true;
+    }
+  }
+  private bool Check_Settings() {
+    var cqStgs = FindProjectCqSettings();
+    if (cqStgs == null) {
+      Statuses.settings.error.Set();
+      SettingsSelect_Btn.SetEnabled(false);
+      return false;
+    } else {
+      SettingsSelect_Btn.SetEnabled(true);
+      Statuses.settings.success.Set();
+      return true;
+    }
+  }
+
 
   private void Clk_SettingsSelect() {
     Clk_TakeMeToSetting();
   }
+
   private void Clk_SettingsCreate() {
     // CroquetSettings in scene
     var cqStgs = EnsureSettingsFile();
@@ -274,18 +337,8 @@ public class MultisynqWelcomeEW : EditorWindow {
     } else {
       Statuses.ready.success.Set();
     }
+    Check_Settings();
     Clk_TakeMeToSetting();
-  }
-
-  private void Clk_CheckIfReady() {
-    // CroquetSettings in scene
-    var cqStgs = EnsureSettingsFile();
-    if (cqStgs == null) {
-      Debug.LogError("Could not find or create CroquetSettings file");
-      Statuses.ready.error.Set();
-    } else {
-
-    }
   }
 
   private void Clk_SignUpApi() {
@@ -340,6 +393,10 @@ public class MultisynqWelcomeEW : EditorWindow {
       case RuntimePlatform.OSXEditor:
         Debug.Log("OSX Editor Detected");
         nodeVer = GetNodeVersion("/usr/local/bin/node", "-v");
+        var cqStgs = FindProjectCqSettings();
+        cqStgs.pathToNode = "/usr/local/bin/node";
+        Check_Node();
+        CheckAllStatusForReady();
         break;
       case RuntimePlatform.WindowsEditor:
         Debug.Log("Windows Editor Detected");
@@ -382,10 +439,18 @@ public class MultisynqWelcomeEW : EditorWindow {
 
   //=============================================================================
   
-  private CroquetSettings EnsureSettingsFile() {
+  private CroquetSettings CopyDefaultSettingsFile() {
+    string path = ewFolder + "resources/CroquetSettings_Template.asset";
+    AssetDatabase.CopyAsset(path, cqSettingsAssetOutputPath);
+    return AssetDatabase.LoadAssetAtPath<CroquetSettings>(cqSettingsAssetOutputPath);
+  }
+
+  private CroquetSettings FindProjectCqSettings() {
     CroquetSettings cqSettings = null;
-    // Check if the file is there
+      // Check if the file is there
     string[] guids = AssetDatabase.FindAssets("t:CroquetSettings");
+    guids = Array.FindAll(guids, guid => !AssetDatabase.GUIDToAssetPath(guid).Contains("Packages/"));
+
     if (guids.Length > 0) {
       cqSettings = AssetDatabase.LoadAssetAtPath<CroquetSettings>(AssetDatabase.GUIDToAssetPath(guids[0]));
       if (guids.Length > 1) {
@@ -399,13 +464,15 @@ public class MultisynqWelcomeEW : EditorWindow {
         }
       }
     }
+    return cqSettings;
+  }
 
+  private CroquetSettings EnsureSettingsFile() {
+    CroquetSettings cqSettings = FindProjectCqSettings();
     // If not, copy file from ./resources/CroquetSettings_Template.asset
     // into Assets/Settings/CroquetSettings.asset
     if (cqSettings == null) {
-      string path = ewFolder + "resources/CroquetSettings_Template.asset";
-      AssetDatabase.CopyAsset(path, cqSettingsAssetOutputPath);
-      cqSettings = AssetDatabase.LoadAssetAtPath<CroquetSettings>(cqSettingsAssetOutputPath);
+      cqSettings = CopyDefaultSettingsFile();
     }
     return cqSettings;
   }
