@@ -134,7 +134,7 @@ public class CroquetMenu
 
 #if !UNITY_EDITOR_WIN
     [MenuItem(StarterItem, false, 100)]
-    private static async void StartWatcher()
+    public static async void StartWatcher()
     {
         bool success = await CroquetBuilder.EnsureJSToolsAvailable();
         if (!success) return;
