@@ -66,7 +66,7 @@ public class CroquetMenu
     private const string ReCopyBuildItemsItem = "Croquet/Re-copy Build Items";
 
     [MenuItem(BuildNowItem, false, 100)]
-    private static async void BuildNow()
+    public static async void BuildNow()
     {
         Debug.Log("Building JS...");
         bool success = await CroquetBuilder.EnsureJSToolsAvailable();
