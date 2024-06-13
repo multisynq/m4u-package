@@ -57,7 +57,7 @@
                             <ui:Label text="Let&apos;s get you a free &lt;b&gt;API Key&lt;/b&gt;. It&apos;s easy." display-tooltip-when-elided="true" name="Key_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Sign Up On the Site" display-tooltip-when-elided="true" name="SignUpApi_Btn" enable-rich-text="false" />
-                                <ui:Button text="Enter My API Key" display-tooltip-when-elided="true" name="TakeMeTo_Btn" enable-rich-text="false" />
+                                <ui:Button text="Enter My API Key" display-tooltip-when-elided="true" name="EnterApiKey_Btn" enable-rich-text="false" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
@@ -67,7 +67,7 @@
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Networking JavaScript needs to build" display-tooltip-when-elided="true" name="JSBuild_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
-                                <ui:Button text="Fix: Build JS Now" display-tooltip-when-elided="true" name="TryAuto_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Build JS Now" display-tooltip-when-elided="true" name="Build_JsNow_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Start JS Build Watcher" display-tooltip-when-elided="true" name="ToggleJSBuild_Btn" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
