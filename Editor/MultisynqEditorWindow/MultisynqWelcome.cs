@@ -118,6 +118,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     static public StatusSet key;
     static public StatusSet jsBuild;
     static public StatusSet settings;
+    static public StatusSet bridge;
 
     static public void SuccessesToReady() {
       ready.SuccessToReady();
@@ -136,47 +137,65 @@ public class MultisynqWelcomeEW : EditorWindow {
   // public StatusSet statuses_jsBuild;
   //=============================================================================
   double lastTime = 0;
+  double deltaTime = 0;
   double countdown_ToConvertSuccesses = -1;
 
-  private Button Awesome_Btn;        
-  private Button TakeMeToSetting_Btn;
-  private Button TryAuto_Btn;
-  private Button SignUpApi_Btn;      
-  private Button ToggleJSBuild_Btn;
-  private Button Top_Ready_Docs_Btn;
-  private Button CheckIfReady_Btn;
-  private Button SettingsSelect_Btn;
-  private Button SettingsCreate_Btn;
-  private Button EnterApiKey_Btn;
-  private Button Build_JsNow_Btn;
+  Button Awesome_Btn;        
+  Button TakeMeToSetting_Btn;
+  Button TryAuto_Btn;
+  Button SignUpApi_Btn;      
+  Button ToggleJSBuild_Btn;
+  Button Top_Ready_Docs_Btn;
+  Button CheckIfReady_Btn;
+  Button SettingsSelect_Btn;
+  Button SettingsCreate_Btn;
+  Button EnterApiKey_Btn;
+  Button Build_JsNow_Btn;
+  Button ApiKey_Docs_Btn;
+  Button SelectBridgeGob_Btn;
+  Button CreateBridgeGob_Btn;
 
-  private Label Ready_Message_Lbl;
-  private Label Node_Message_Lbl;
-  private Label Key_Message_Lbl;
-  private Label JSBuild_Message_Lbl;
-  private Label Settings_Message_Lbl;
+  Label Ready_Message_Lbl;
+  Label Node_Message_Lbl;
+  Label Key_Message_Lbl;
+  Label JSBuild_Message_Lbl;
+  Label Settings_Message_Lbl;
+  Label HaveBridge_Message_Lbl;
 
-  private VisualElement Ready_Status_Img;
-  private VisualElement Node_Status_Img;
-  private VisualElement Key_Status_Img;
-  private VisualElement JSBuild_Status_Img;
-  private VisualElement Settings_Status_Img;
-  private List<Button> allButtons = new();
+  VisualElement Ready_Status_Img;
+  VisualElement Settings_Status_Img;
+  VisualElement Node_Status_Img;
+  VisualElement Key_Status_Img;
+  VisualElement JSBuild_Status_Img;
+  VisualElement HaveBridge_Status_Img;
+  List<Button> allButtons = new();
 
-    void Update() {
+  void Update() {
+    Update_DeltaTime();
+    Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, Ready_Message_Lbl, Statuses.ready, true);
+    // Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, Node_Message_Lbl, Statuses.node);
+    // Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, Key_Message_Lbl, Statuses.key);
+    // Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, JSBuild_Message_Lbl, Statuses.jsBuild);
+    // Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, Settings_Message_Lbl, Statuses.settings);
+  }
+  void Update_DeltaTime()  {
     if (lastTime == 0) lastTime = EditorApplication.timeSinceStartup;
-    var deltaTime = EditorApplication.timeSinceStartup - lastTime;
+    deltaTime = EditorApplication.timeSinceStartup - lastTime;
     lastTime = EditorApplication.timeSinceStartup;
+  }
+  void Update_CountdownAndMessage(ref double countdownSeconds, Label messageField, StatusSet status, bool showTimer = false) {
 
-    if (countdown_ToConvertSuccesses>0f) {
-      countdown_ToConvertSuccesses -= deltaTime;
-      Ready_Message_Lbl.text = Statuses.ready.success.message + "   <b>" + countdown_ToConvertSuccesses.ToString("0.0") + "</b>";
-      if (countdown_ToConvertSuccesses <= 0f) {
-        countdown_ToConvertSuccesses = -1;
+    if (countdownSeconds > 0f) {
+      countdownSeconds -= deltaTime;
+      if (showTimer) messageField.text = status.success.message + "   <b>" + countdownSeconds.ToString("0.0") + "</b>";
+      if (countdownSeconds <= 0f) {
+        countdownSeconds = -1;
+        messageField.text = status.success.message;
         Statuses.SuccessesToReady(); // <=======
       }
     }
-  }
+}
+
   //=============================================================================
 
   // private const string ewFolder = "Assets/Scripts/Editor/MultisynqEditorWindow/";
@@ -241,12 +260,16 @@ public class MultisynqWelcomeEW : EditorWindow {
     SetupButton("SettingsCreate_Btn",  ref SettingsCreate_Btn,  Clk_SettingsCreate );
     SetupButton("EnterApiKey_Btn",     ref EnterApiKey_Btn,     Clk_EnterApiKey    );
     SetupButton("Build_JsNow_Btn",     ref Build_JsNow_Btn,     Clk_Build_JsNow    );
+    SetupButton("ApiKey_Docs_Btn",     ref ApiKey_Docs_Btn,     Clk_ApiKey_Docs    );
+    SetupButton("SelectBridgeGob_Btn", ref SelectBridgeGob_Btn, Clk_SelectBridgeGob);
+    SetupButton("CreateBridgeGob_Btn", ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
 
-    SetupLabel("Ready_Message_Lbl",    ref Ready_Message_Lbl   ); 
-    SetupLabel("Node_Message_Lbl",     ref Node_Message_Lbl    );
-    SetupLabel("Key_Message_Lbl",      ref Key_Message_Lbl     );
-    SetupLabel("JSBuild_Message_Lbl",  ref JSBuild_Message_Lbl );
-    SetupLabel("Settings_Message_Lbl", ref Settings_Message_Lbl);
+    SetupLabel("Ready_Message_Lbl",      ref Ready_Message_Lbl   ); 
+    SetupLabel("Node_Message_Lbl",       ref Node_Message_Lbl    );
+    SetupLabel("Key_Message_Lbl",        ref Key_Message_Lbl     );
+    SetupLabel("JSBuild_Message_Lbl",    ref JSBuild_Message_Lbl );
+    SetupLabel("Settings_Message_Lbl",   ref Settings_Message_Lbl);
+    SetupLabel("HaveBridge_Message_Lbl", ref HaveBridge_Message_Lbl);
 
     // SetupImage("Ready_Status_Img",     ref Ready_Status_Img  );
     // SetupImage("Node_Status_Img",      ref Node_Status_Img   );
@@ -259,19 +282,23 @@ public class MultisynqWelcomeEW : EditorWindow {
     SetupVisElem("JSBuild_Status_Img",   ref JSBuild_Status_Img );
     SetupVisElem("Settings_Status_Img",  ref Settings_Status_Img);
 
-    // foreach (Button button in allButtons) {
-    //   string[] whitelisted = {
-    //     "CheckIfReady_Btn",
-    //     "_Docs_",
-    //   };
-    //   if (whitelisted.Any(button.name.Contains)) {
-    //     button.style.visibility = Visibility.Visible;
-    //   } else {
-    //     button.style.visibility = Visibility.Hidden;
-    //   }
-    // }
+    // Hide most buttons
+    HideMostButtons();
+  }
 
-    // Awesome_Btn.style.visibility = Visibility.Hidden;
+  private void HideMostButtons() {
+    foreach (Button button in allButtons) {
+      string[] whitelisted = {
+        "CheckIfReady_Btn",
+        "_Docs_",
+        "SettingsSelect_Btn",
+      };
+      if (whitelisted.Any(button.name.Contains)) {
+        button.style.visibility = Visibility.Visible;
+      } else {
+        button.style.visibility = Visibility.Hidden;
+      }
+    }
   }
 
   private void SetupStatuses() {
@@ -311,6 +338,14 @@ public class MultisynqWelcomeEW : EditorWindow {
       $"{t_jsb} needs your help getting set up.",
       $"{t_jsb} path configured!!! Well done!",
       "< JS Build status >"
+    );
+    Statuses.bridge = new StatusSet( HaveBridge_Message_Lbl, HaveBridge_Status_Img,
+      // ... info, warning, error, success)
+      "Bridge GameObject is ready to go!",
+      "Bridge GameObject is missing!",
+      "Bridge GameObject is missing in scene! Click <b>Create Bridge</b> to make one.",
+      "Bridge Gob <color=#888888>(GameObject)</color> found!! Well done!",
+      "< Bridge GameObject status >"
     );
     Statuses.settings = new StatusSet( Settings_Message_Lbl, Settings_Status_Img,
       // ... info, warning, error, success)
@@ -401,6 +436,8 @@ public class MultisynqWelcomeEW : EditorWindow {
     bool allRdy = true;
     allRdy &= Check_Settings();
     allRdy &= Check_Node();
+    allRdy &= Check_ApiKey();
+    allRdy &= Check_BridgeComponent();
     //-----
     if (allRdy) AllAreReady();
     else        AllAreReady(false);
@@ -441,7 +478,9 @@ https://multisynq.io/
     bool success = await CroquetBuilder.EnsureJSToolsAvailable();
     if (!success) {
       var msg = @"
-JS Tools are missing!!! Cannot build. Please install Node.js
+JS Tools are missing!!! 
+Cannot build. 
+Please install Node.js
 using the *Try Auto Setup* button
 in the Node section.
 ";
@@ -449,8 +488,41 @@ in the Node section.
       EditorUtility.DisplayDialog("Missing JS Tools", msg, "OK");
       return;
     }
-
     CroquetBuilder.StartBuild(false); // false => no watcher
+  }
+
+  private void Clk_ApiKey_Docs() {
+    Application.OpenURL("https://croquet.io/account/");
+    // Application.OpenURL("https://multisynq.io/docs/unity/");
+  }
+
+  private void Clk_SelectBridgeGob() {
+    // find ComponentType CroquetBridge in scene
+    var bridge = FindObjectOfType<CroquetBridge>();
+    if (bridge == null) {
+      string msg = "Could not find CroquetBridge in scene";
+      Debug.LogError(msg);
+      ShowNotification(new GUIContent(msg), 4);
+      return;
+    }
+  }
+  //Clk_CreateBridgeGob
+  private void Clk_CreateBridgeGob() {
+    // find ComponentType CroquetBridge in scene
+    var bridge = FindObjectOfType<CroquetBridge>();
+    if (bridge != null) {
+      string msg = "CroquetBridge already exists in scene";
+      Debug.LogError(msg);
+      ShowNotification(new GUIContent(msg), 4);
+      return;
+    }
+    // create new GameObject with CroquetBridge component
+    var go = new GameObject("CroquetBridge");
+    go.AddComponent<CroquetBridge>();
+    string msg2 = "Created CroquetBridge GameObject";
+    Debug.Log(msg2);
+    ShowNotification(new GUIContent(msg2), 4);
+    Selection.activeGameObject = go; // select in Hierachy
   }
 
   //=============================================================================
@@ -507,6 +579,13 @@ in the Node section.
         }
       }
     }
+    if (cqSettings == null) {
+      Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
+      Statuses.settings.error.Set();
+      Statuses.node.error.Set();
+      Statuses.key.error.Set();
+      Statuses.ready.error.Set();
+    }
     return cqSettings;
   }
 
@@ -526,6 +605,7 @@ in the Node section.
     if (really) {
       Statuses.ready.success.Set();
       Awesome_Btn.style.visibility = Visibility.Visible;
+      countdown_ToConvertSuccesses = 3f;
     } else {
       Statuses.ready.error.Set();
       Awesome_Btn.style.visibility = Visibility.Hidden;
@@ -541,11 +621,25 @@ in the Node section.
     allRdy &= Statuses.node.IsOk();
     // allRdy &= Statuses.key.IsOk();
     // allRdy &= Statuses.jsBuild.IsOk()
-    if (allRdy) AllAreReady();
+    if (allRdy) AllAreReady();      
     else        AllAreReady(false);
-    countdown_ToConvertSuccesses = 3f;
   }
 
+  private bool Check_Settings() {
+    var cqStgs = FindProjectCqSettings();
+    if (cqStgs == null) {
+      SettingsSelect_Btn.SetEnabled(false);
+      SettingsCreate_Btn.style.visibility = Visibility.Visible;
+      return false;
+    } else {
+      TryAuto_Btn.style.visibility = Visibility.Visible;
+      SettingsSelect_Btn.SetEnabled(true);
+      Statuses.settings.success.Set();
+      SettingsCreate_Btn.style.visibility = Visibility.Hidden;
+      CheckAllStatusForReady();
+      return true;
+    }
+  }
   private bool Check_Node() {
     var cqStgs = FindProjectCqSettings();
     if (cqStgs == null) {
@@ -562,42 +656,45 @@ in the Node section.
       return false;
     } else {
       Statuses.node.success.Set();
+      TryAuto_Btn.style.visibility = Visibility.Hidden;
       return true;
     }
   }
 
-  private bool Check_Settings() {
+  private bool Check_ApiKey() {
+    bool ok = false;
     var cqStgs = FindProjectCqSettings();
-    if (cqStgs == null) {
-      Statuses.settings.error.Set();
-      SettingsSelect_Btn.SetEnabled(false);
-      SettingsCreate_Btn.style.visibility = Visibility.Visible;
+
+    if (cqStgs != null) {
+      var apiKey = cqStgs.apiKey;
+      if (apiKey == null || apiKey == "<go get one at multisynq.io>" || apiKey.Length < 1) {
+        Statuses.key.error.Set();
+      } else {
+        Statuses.key.success.Set();
+        ok = true;
+      }
+    } 
+    // if success, hide buttons, else show them
+    var btnsVisible = (ok && cqStgs != null) ? Visibility.Hidden : Visibility.Visible;
+    EnterApiKey_Btn.style.visibility = btnsVisible;
+    SignUpApi_Btn.style.visibility = btnsVisible;
+    return ok;
+  }
+  private bool Check_BridgeComponent() {
+    var bridge = FindObjectOfType<CroquetBridge>();
+    if (bridge == null) {
+      Statuses.jsBuild.error.Set();
+      // show create button
+
       return false;
     } else {
-      TryAuto_Btn.style.visibility = Visibility.Visible;
-      SettingsSelect_Btn.SetEnabled(true);
-      Statuses.settings.success.Set();
-      SettingsCreate_Btn.style.visibility = Visibility.Hidden;
-      CheckAllStatusForReady();
+      Statuses.jsBuild.success.Set();
       return true;
     }
   }
 
-  //=============================================================================
-  private void StartShScript(string scriptPath) {
-    string path = EdWinPath(scriptPath);
-    StartScript(path);
-  }
+  //=============================================================================  
 
-  private string EdWinPath(string path) {
-    string ewPath = Path.GetFullPath(Path.Combine(ewFolder, path));
-    if (!File.Exists(ewPath)) {
-      Debug.LogError("Could not find file: " + ewPath);
-      return null;
-    }
-    return ewPath;
-  }
-  
   private string TryNodePath(string nodePath) {
     if (!File.Exists(nodePath)) {
       Debug.LogError("Could not find file: " + nodePath);
@@ -623,7 +720,6 @@ in the Node section.
   }
 
   private string RunShell(string executable = "", string arguments = "", int logLevel = 2) {
-
     System.Diagnostics.Process pcs = new();
     pcs.StartInfo.UseShellExecute = false;
     pcs.StartInfo.RedirectStandardOutput = true;
@@ -642,33 +738,5 @@ in the Node section.
     if (errors.Length > 0 && logLevel > 0) Debug.LogError(errors);
 
     return output;
-  }
-
-  private void StartScript(string scriptPath, string arguments = "", Action callback = null) {
-    Debug.Log("Running: " + scriptPath + " " + arguments);
-    System.Diagnostics.Process pcs = new();
-    pcs.StartInfo.UseShellExecute = false;
-    pcs.StartInfo.RedirectStandardOutput = true;
-    pcs.StartInfo.RedirectStandardError = true;
-    pcs.StartInfo.CreateNoWindow = false;
-    pcs.StartInfo.WorkingDirectory = Path.GetFullPath(ewFolder);
-    pcs.StartInfo.FileName = "/bin/bash";
-    pcs.StartInfo.Arguments = scriptPath;
-    pcs.Start();
-
-    // if (callback != null) {
-      pcs.Exited += (sender, e) => {
-        // callback(sender, e);
-        Debug.Log("Exited with code: " + pcs.ExitCode);
-      };
-    // }
-
-    string output = pcs.StandardOutput.ReadToEnd();
-    string errors = pcs.StandardError.ReadToEnd();
-    pcs.WaitForExit();
-    if (output.Length > 0) Debug.Log(output);
-    if (errors.Length > 0) Debug.LogError(errors);
-
-    pcs.Close();
   }
 }

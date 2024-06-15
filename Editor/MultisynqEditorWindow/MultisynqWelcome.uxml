@@ -58,7 +58,7 @@
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Sign Up On the Site" display-tooltip-when-elided="true" name="SignUpApi_Btn" enable-rich-text="false" />
                                 <ui:Button text="Enter My API Key" display-tooltip-when-elided="true" name="EnterApiKey_Btn" enable-rich-text="false" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="ApiKey_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
