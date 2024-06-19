@@ -70,6 +70,7 @@ public class CroquetBuilder
         string nodeExecutable = GetSceneBuildDetails().nodeExecutable;
         if (nodeExecutable == "" || !File.Exists(nodeExecutable))
         {
+            Debug.LogError($"Bad path \"{nodeExecutable}\" in CroquetSettings.asset.  Please set a valid path to Node in the Settings object");
             Debug.LogError("Cannot build JS on MacOS without a valid path to Node in the Settings object");
             return "unavailable";
         }
@@ -194,6 +195,8 @@ public class CroquetBuilder
         {
             bridgeComp = bridge;
             runnerComp = bridge.gameObject.GetComponent<CroquetRunner>();
+        } else {
+            Debug.LogError("No CroquetBridge component found in the scene");
         }
 
         sceneName = scene.name;
@@ -285,10 +288,16 @@ public class CroquetBuilder
             bool forceToUseNodeJS = sceneRunnerComponent.forceToUseNodeJS;
             bool useNodeJS = forceToUseNodeJS; // default
 #if !UNITY_EDITOR_WIN
+            if (sceneBridgeComponent.appProperties == null)
+            {
+                throw new Exception("CroquetBridge has a null appProperties object. Needs to be set to a CroquetSettings.asset.");
+            }
             string pathToNode = sceneBridgeComponent.appProperties.pathToNode;
+            Debug.Log($"For !UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
 #else
             // we're in a Windows editor
             string pathToNode = NodeExeInPackage;
+            Debug.Log($"For UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
             // build using Node unless user has set debugUsingExternalSession and has *not* set forceToUseNodeJS
             useNodeJS = !(sceneRunnerComponent.debugUsingExternalSession && !forceToUseNodeJS);
 #endif
@@ -745,6 +754,7 @@ public class CroquetBuilder
     public static async Task<bool> EnsureJSToolsAvailable()
     {
         // invoked from
+        // * MultisynqWelcome.Clk_Build_JsNow
         // * CroquetBridge.WaitForJSBuild
         // * Croquet menu "Build JS Now" option
         // * Croquet menu "Start JS Watcher" option
@@ -936,6 +946,12 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
 
         string output = p.StandardOutput.ReadToEnd();
         string errors = p.StandardError.ReadToEnd();
+
+        // Strip any "npm warn" lines that are not actually errors
+        if (errors.Length > 0) {
+            Debug.LogError($"npm install error: {errors}");
+            errors = string.Join("\n", errors.Split('\n').Where(line => !line.Contains("npm warn")));
+        }
 
         p.WaitForExit();
 
