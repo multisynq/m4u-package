@@ -134,16 +134,13 @@ public class MultisynqWelcomeEW : EditorWindow {
 
   private static Colz colz;
 
-  // public StatusSet statuses_ready;
-  // public StatusSet statuses_node;
-  // public StatusSet statuses_key;
-  // public StatusSet statuses_jsBuild;
   //=============================================================================
   double lastTime = 0;
   double deltaTime = 0;
   double countdown_ToConvertSuccesses = -1;
 
-  Button CheckIfReady_Btn;
+  //=============================================================================
+  Button CheckIfReady_Btn; // CHECK IF READY
 
   VisualElement Ready_Status_Img; // ALL READY
   Label Ready_Message_Lbl;
@@ -250,7 +247,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     // NODE
     SetupVisElem("Node_Status_Img", ref Node_Status_Img                    );
     SetupLabel("Node_Message_Lbl",  ref Node_Message_Lbl                   );
-    SetupButton("GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoSetting  );
+    SetupButton("GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath );
     SetupButton("TryAuto_Btn",      ref TryAuto_Btn,      Clk_AutoSetupNode);
     // API KEY
     SetupVisElem("Key_Status_Img",  ref Key_Status_Img                  );
@@ -283,7 +280,7 @@ public class MultisynqWelcomeEW : EditorWindow {
       string[] whitelisted = {
         "CheckIfReady_Btn",
         "_Docs_",
-        "GotoSettings_Btn",
+        // "GotoSettings_Btn",
       };
       if (whitelisted.Any(button.name.Contains)) {
         button.style.visibility = Visibility.Visible;
@@ -368,7 +365,20 @@ public class MultisynqWelcomeEW : EditorWindow {
     Application.OpenURL("https://giphy.com/search/everything-is-awesome");
   }
 
-    private void Clk_GotoSetting() {
+  private void Clk_GotoNodePath() {
+    Clk_GotoSetting();
+    // notify message
+    var msg = @"
+See Inspector.
+
+Croquet Settings
+with node path
+selected in Project.
+";
+    ShowNotification(new GUIContent(msg), 4);
+  }
+
+  private void Clk_GotoSetting() {
     // Select the file in Project pane of the Editor so it shows up in the Inspector
     var cqStgs = EnsureSettingsFile();
     if (cqStgs == null) {
@@ -396,7 +406,6 @@ public class MultisynqWelcomeEW : EditorWindow {
         var cqStgs = FindProjectCqSettings();
         cqStgs.pathToNode = "/usr/local/bin/node";
         Check_Node();
-        CheckAllStatusForReady();
         break;
       case RuntimePlatform.WindowsEditor:
         Debug.Log("Windows Editor Detected");
@@ -409,6 +418,7 @@ public class MultisynqWelcomeEW : EditorWindow {
         Debug.LogError("Unsupported platform: " + Application.platform);
         break;
     }
+    CheckAllStatusForReady();
   }
 
   private void Clk_SignUpApi() {
@@ -446,8 +456,13 @@ public class MultisynqWelcomeEW : EditorWindow {
     else        AllAreReady(false);
   }
 
+  private void Notify(string msg, float seconds = 4) {
+    ShowNotification(new GUIContent(msg), seconds);
+  }
+
   private void Clk_GotoSettings() {
     Clk_GotoSetting();
+    Notify("Selected in Project.\nSee Inspector.");
   }
 
   private void Clk_SettingsCreate() {
@@ -459,20 +474,18 @@ public class MultisynqWelcomeEW : EditorWindow {
     } else {
       Statuses.ready.success.Set();
     }
-    Check_Settings();
     Clk_GotoSetting();
+    // make buttons for goto Node path and API key visible
+    GotoNodePath_Btn.style.visibility = Visibility.Visible;
+    GotoApiKey_Btn.style.visibility   = Visibility.Visible;
+    TryAuto_Btn.style.visibility = Visibility.Visible;
+    Check_Settings();
+    CheckAllStatusForReady();
   }
 
   private void Clk_EnterApiKey() {
     Clk_GotoSetting();
-    var msg = @"
-Selected in Project.
-Enter your API Key
-in Inspector.
-Get a key:
-https://multisynq.io/
-";
-    ShowNotification(new GUIContent(msg), 4);
+    Notify("Selected in Project.\nSee Inspector.");
   }
 
   private async void Clk_Build_JsNow() {
@@ -480,11 +493,8 @@ https://multisynq.io/
     bool success = await CroquetBuilder.EnsureJSToolsAvailable();
     if (!success) {
       var msg = @"
-JS Tools are missing!!! 
+JS Build Tools are missing!!! 
 Cannot build. 
-Please install Node.js
-using the *Try Auto Setup* button
-in the Node section.
 ";
       Debug.LogError(msg);
       EditorUtility.DisplayDialog("Missing JS Tools", msg, "OK");
@@ -503,37 +513,40 @@ in the Node section.
     var bridge = FindObjectOfType<CroquetBridge>();
     if (bridge == null) {
       string msg = "Could not find\nCroquetBridge in scene!";
-      Debug.LogError(msg);
-      ShowNotification(new GUIContent(msg), 4);
-      return;
+      Notify(msg); Debug.LogError(msg);
     } else {
-      string msg = "Selected in\nHierarchy.";
-      Debug.Log(msg);
-      ShowNotification(new GUIContent(msg), 4);
       Selection.activeGameObject = bridge.gameObject; // select in Hierachy
+      string msg = "CroquetBridge\nselected in\nHierarchy.";
+      Notify(msg); Debug.Log(msg); 
     }
   }
-  //Clk_CreateBridgeGob
+  
   private void Clk_CreateBridgeGob() {
-    // find ComponentType CroquetBridge in scene
     var bridge = FindObjectOfType<CroquetBridge>();
     if (bridge != null) {
       string msg = "CroquetBridge already exists in scene";
-      Debug.LogError(msg);
-      ShowNotification(new GUIContent(msg), 4);
-      return;
+      Notify(msg); Debug.LogError(msg);
+    } else {
+      var cbGob = new GameObject("CroquetBridge");
+      cbGob.AddComponent<CroquetBridge>();
+      cbGob.AddComponent<CroquetRunner>();
+      cbGob.AddComponent<CroquetEntitySystem>();
+      cbGob.AddComponent<CroquetSpatialSystem>();
+
+      Selection.activeGameObject = cbGob;
+      string msg = "Created CroquetBridge\nGameObject in scene.\nSelected it.";
+      Notify(msg); Debug.Log(msg); 
+      Check_BridgeComponent();
+      CheckAllStatusForReady();
     }
-    // create new GameObject with CroquetBridge component
-    var go = new GameObject("CroquetBridge");
-    go.AddComponent<CroquetBridge>();
-    string msg2 = "Created CroquetBridge\nGameObject in scene.\nSelected it.";
-    Debug.Log(msg2);
-    ShowNotification(new GUIContent(msg2), 4);
-    Selection.activeGameObject = go; // select in Hierachy
+    Check_BridgeComponent();
+    CheckAllStatusForReady();
   }
 
   private async void Clk_CopyJSBuildTools() {
     await CroquetBuilder.InstallJSTools();
+    Check_JS_BuildTools();
+    CheckAllStatusForReady();
   }
 
   private void Clk_GotoJSBuildToolsFolder() {
@@ -545,7 +558,7 @@ in the Node section.
       ShowNotification(new GUIContent(msg), 4);
       return;
     }
-    string msg2 = "Selected JS Build Tools folder";
+    string msg2 = "The CroquetJS/.js-build folder opened in Finder/Explorer.";
     Debug.Log(msg2);
     ShowNotification(new GUIContent(msg2), 4);
     EditorUtility.RevealInFinder(jsBuildFolder);
@@ -658,16 +671,17 @@ in the Node section.
     if (cqStgs == null) {
       GotoSettings_Btn.SetEnabled(false);
       SettingsCreate_Btn.style.visibility = Visibility.Visible;
+      Statuses.settings.error.Set();
       return false;
     } else {
-      TryAuto_Btn.style.visibility = Visibility.Visible;
       GotoSettings_Btn.SetEnabled(true);
       Statuses.settings.success.Set();
       SettingsCreate_Btn.style.visibility = Visibility.Hidden;
-      CheckAllStatusForReady();
+      GotoSettings_Btn.style.visibility   = Visibility.Visible;
       return true;
     }
   }
+
   private bool Check_Node() {
     var cqStgs = FindProjectCqSettings();
     if (cqStgs == null) {
@@ -684,7 +698,8 @@ in the Node section.
       return false;
     } else {
       Statuses.node.success.Set();
-      TryAuto_Btn.style.visibility = Visibility.Hidden;
+      TryAuto_Btn.style.visibility      = Visibility.Hidden;
+      GotoNodePath_Btn.style.visibility = Visibility.Visible;
       return true;
     }
   }
@@ -694,6 +709,8 @@ in the Node section.
     var cqStgs = FindProjectCqSettings();
 
     if (cqStgs != null) {
+      GotoApiKey_Btn.style.visibility = Visibility.Visible;
+      SignUpApi_Btn.style.visibility  = Visibility.Visible;
       var apiKey = cqStgs.apiKey;
       if (apiKey == null || apiKey == "<go get one at multisynq.io>" || apiKey.Length < 1) {
         Statuses.key.error.Set();
@@ -701,15 +718,10 @@ in the Node section.
         Statuses.key.success.Set();
         ok = true;
       }
-    } 
-    // if success, hide buttons, else show them
-    // var btnsVisible = (ok && cqStgs != null) ? Visibility.Hidden : Visibility.Visible;
-    // GotoApiKey_Btn.style.visibility = btnsVisible;
-    // SignUpApi_Btn.style.visibility = btnsVisible;
-    GotoApiKey_Btn.style.visibility = Visibility.Visible;
-    SignUpApi_Btn.style.visibility   = Visibility.Visible;
+    }
     return ok;
   }
+
   private bool Check_JS_BuildTools() {
     string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
     string jsBuildFolder   = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
@@ -717,13 +729,16 @@ in the Node section.
     if (!havejsBuildFolder) {
       Statuses.jsBuildTools.error.Set();
       CopyJSBuildTools_Btn.style.visibility = Visibility.Visible;
+      Build_JsNow_Btn.style.visibility = Visibility.Hidden;
     } else {
       Statuses.jsBuildTools.success.Set();
       CopyJSBuildTools_Btn.style.visibility = Visibility.Hidden;
+      GotoJSBuildToolsFolder_Btn.style.visibility = Visibility.Visible;
+      Build_JsNow_Btn.style.visibility = Visibility.Visible;
     }
     return havejsBuildFolder;
-
   }
+
   private bool Check_JS_Build() {
     // if (havejsBuiltJsCode) {
       Statuses.jsBuild.success.Set();
@@ -734,19 +749,19 @@ in the Node section.
     // return havejsBuildFolder;
     return false;
   }
+
   private bool Check_BridgeComponent() {
     var bridge = FindObjectOfType<CroquetBridge>();
-    if (bridge == null) {
+    bool fountIt = (bridge != null);
+    if (!fountIt) {
       Statuses.bridge.error.Set();
-      // show Create button
       CreateBridgeGob_Btn.style.visibility = Visibility.Visible;
-
-      return false;
     } else {
-      GotoBridgeGob_Btn.style.visibility = Visibility.Visible;
       Statuses.bridge.success.Set();
-      return true;
+      GotoBridgeGob_Btn.style.visibility   = Visibility.Visible;
+      CreateBridgeGob_Btn.style.visibility = Visibility.Hidden;
     }
+    return fountIt;
   }
 
   //=============================================================================  
