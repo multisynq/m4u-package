@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -118,6 +117,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     static public StatusSet node;
     static public StatusSet key;
     static public StatusSet bridge;
+    static public StatusSet bridgeHasSettings;
     static public StatusSet jsBuildTools;
     static public StatusSet jsBuild;
 
@@ -127,6 +127,7 @@ public class MultisynqWelcomeEW : EditorWindow {
       node.SuccessToReady();
       key.SuccessToReady();
       bridge.SuccessToReady();
+      bridgeHasSettings.SuccessToReady();
       jsBuildTools.SuccessToReady();
       jsBuild.SuccessToReady();
     }
@@ -168,6 +169,11 @@ public class MultisynqWelcomeEW : EditorWindow {
   Button GotoBridgeGob_Btn;
   Button CreateBridgeGob_Btn;
 
+  VisualElement BridgeHasSettings_Img; // BRIDGE HAS SETTINGS
+  Label BridgeHasSettings_Message_Lbl;
+  Button BridgeHasSettings_AutoConnect_Btn;
+  Button BridgeHasSettings_Goto_Btn;
+
   VisualElement JSBuild_Status_Img; // JS BUILD
   Label JSBuild_Message_Lbl;
   Button Build_JsNow_Btn;
@@ -202,6 +208,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     Statuses.node.blank.Set();
     Statuses.key.blank.Set();
     Statuses.bridge.blank.Set();
+    Statuses.bridgeHasSettings.blank.Set();
     Statuses.jsBuildTools.blank.Set();
     Statuses.jsBuild.blank.Set();
   }
@@ -235,41 +242,46 @@ public class MultisynqWelcomeEW : EditorWindow {
     // CHECK READINESS
     SetupButton("CheckIfReady_Btn", ref CheckIfReady_Btn, Clk_CheckIfReady);
     // READY
-    SetupVisElem("Ready_Status_Img",  ref Ready_Status_Img                       );
-    SetupLabel("Ready_Message_Lbl",   ref Ready_Message_Lbl                      ); 
-    SetupButton("Awesome_Btn",        ref Awesome_Btn,        Clk_BeAwesome      );
-    SetupButton("Top_Ready_Docs_Btn", ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs );
+    SetupVisElem("Ready_Status_Img",  ref Ready_Status_Img);
+    SetupLabel("Ready_Message_Lbl",   ref Ready_Message_Lbl); 
+    SetupButton("Awesome_Btn",        ref Awesome_Btn,        Clk_BeAwesome);
+    SetupButton("Top_Ready_Docs_Btn", ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
     // SETTINGS
-    SetupVisElem("Settings_Status_Img", ref Settings_Status_Img                    );
-    SetupLabel("Settings_Message_Lbl",  ref Settings_Message_Lbl                   );
-    SetupButton("GotoSettings_Btn",     ref GotoSettings_Btn,    Clk_GotoSettings  );
-    SetupButton("SettingsCreate_Btn",   ref SettingsCreate_Btn,  Clk_SettingsCreate);
+    SetupVisElem("Settings_Status_Img", ref Settings_Status_Img);
+    SetupLabel("Settings_Message_Lbl",  ref Settings_Message_Lbl);
+    SetupButton("GotoSettings_Btn",     ref GotoSettings_Btn,   Clk_GotoSettings);
+    SetupButton("SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
     // NODE
-    SetupVisElem("Node_Status_Img", ref Node_Status_Img                    );
-    SetupLabel("Node_Message_Lbl",  ref Node_Message_Lbl                   );
-    SetupButton("GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath );
+    SetupVisElem("Node_Status_Img", ref Node_Status_Img);
+    SetupLabel("Node_Message_Lbl",  ref Node_Message_Lbl);
+    SetupButton("GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath);
     SetupButton("TryAuto_Btn",      ref TryAuto_Btn,      Clk_AutoSetupNode);
     // API KEY
-    SetupVisElem("Key_Status_Img",  ref Key_Status_Img                  );
-    SetupLabel("Key_Message_Lbl",   ref Key_Message_Lbl                 );
-    SetupButton("SignUpApi_Btn",    ref SignUpApi_Btn,   Clk_SignUpApi  );
+    SetupVisElem("Key_Status_Img",  ref Key_Status_Img);
+    SetupLabel("Key_Message_Lbl",   ref Key_Message_Lbl);
+    SetupButton("SignUpApi_Btn",    ref SignUpApi_Btn,   Clk_SignUpApi);
     SetupButton("GotoApiKey_Btn",   ref GotoApiKey_Btn,  Clk_EnterApiKey);
     SetupButton("ApiKey_Docs_Btn",  ref ApiKey_Docs_Btn, Clk_ApiKey_Docs);
     // BRIDGE
-    SetupVisElem("HaveBridge_Status_Img", ref HaveBridge_Status_Img                     );
-    SetupLabel("HaveBridge_Message_Lbl",  ref HaveBridge_Message_Lbl                    );
-    SetupButton("GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,     Clk_GotoBridgeGob  );
-    SetupButton("CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn,   Clk_CreateBridgeGob);
+    SetupVisElem("HaveBridge_Status_Img", ref HaveBridge_Status_Img);
+    SetupLabel("HaveBridge_Message_Lbl",  ref HaveBridge_Message_Lbl);
+    SetupButton("GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,   Clk_GotoBridgeGob);
+    SetupButton("CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
+    // BRIDGE HAS STEEINGS
+    SetupVisElem("BridgeHasSettings_Img",             ref BridgeHasSettings_Img);
+    SetupLabel( "BridgeHasSettings_Message_Lbl",      ref BridgeHasSettings_Message_Lbl);
+    SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
+    SetupButton( "BridgeHasSettings_Goto_Btn",        ref BridgeHasSettings_Goto_Btn,        Clk_BridgeHasSettings_Goto);
     // JS BUILD TOOLS
-    SetupVisElem("JSBuildTools_Img",          ref JSBuildTools_Img                                      );
-    SetupLabel("JSBuildTools_Message_Lbl",    ref JSBuildTools_Message_Lbl                              );
-    SetupButton("CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools      );
+    SetupVisElem("JSBuildTools_Img",          ref JSBuildTools_Img);
+    SetupLabel("JSBuildTools_Message_Lbl",    ref JSBuildTools_Message_Lbl);
+    SetupButton("CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
     SetupButton("GotoJSBuildToolsFolder_Btn", ref GotoJSBuildToolsFolder_Btn, Clk_GotoJSBuildToolsFolder);
     // JS BUILD
-    SetupVisElem("JSBuild_Status_Img", ref JSBuild_Status_Img                   );
-    SetupLabel("JSBuild_Message_Lbl",  ref JSBuild_Message_Lbl                  );
-    SetupButton("ToggleJSBuild_Btn",   ref ToggleJSBuild_Btn,  Clk_ToggleJSBuild); // Start JS Build Watcher
-    SetupButton("Build_JsNow_Btn",     ref Build_JsNow_Btn,    Clk_Build_JsNow  );
+    SetupVisElem("JSBuild_Status_Img", ref JSBuild_Status_Img);
+    SetupLabel("JSBuild_Message_Lbl",  ref JSBuild_Message_Lbl);
+    SetupButton("ToggleJSBuild_Btn",   ref ToggleJSBuild_Btn, Clk_ToggleJSBuild); // Start JS Build Watcher
+    SetupButton("Build_JsNow_Btn",     ref Build_JsNow_Btn,   Clk_Build_JsNow);
     //-----
     // Hide most buttons
     HideMostButtons();
@@ -338,6 +350,14 @@ public class MultisynqWelcomeEW : EditorWindow {
       "Bridge Gob <color=#888888>(GameObject)</color> found!! Well done!",
       "< Bridge GameObject status >"
     );
+    Statuses.bridgeHasSettings = new StatusSet( BridgeHasSettings_Message_Lbl, BridgeHasSettings_Img,
+      // ... info, warning, error, success)
+      "Bridge has settings!",
+      "Bridge is missing settings!",
+      "Bridge is missing settings! Click <b>Auto Connect</b> to connect it.",
+      "Bridge connected to settings!!! Well done!",
+      "< Bridge's Settings status >"
+    );
     Statuses.jsBuild = new StatusSet( JSBuild_Message_Lbl, JSBuild_Status_Img,
       // ... info, warning, error, success)
       $"{t_jsb} is ready to go!",
@@ -402,7 +422,24 @@ selected in Project.
     switch (Application.platform) {
       case RuntimePlatform.OSXEditor:
         Debug.Log("OSX Editor Detected");
-        nodeVer = GetNodeVersion("/usr/local/bin/node", "-v");
+
+        // string path = "/bin/bash";
+        // string args = "-c '\"/Users/imac/PathToThe/Application.app/Contents/MacOS/Application\" \"$0\" \"$1\" \"$2\"' \"argument_or_Path_1\" \"argument_or_Path_2\" \"argument_or_Path_3\"";
+        // string args = "-c '\"/Users/imac/PathToThe/Application.app/Contents/MacOS/Application\" \"$0\" \"$1\" \"$2\"' \"argument_or_Path_1\" \"argument_or_Path_2\" \"argument_or_Path_3\"";
+
+
+        // Debug.Log(RunShell(path, args));
+        
+        // Debug.Log("which node => " + RunShell(@"bash", @"-c ""which node"""));
+        // Debug.Log("echo $PATH => " + RunShell("bash", @"-c ""echo $PATH"""));
+
+        // Debug.Log("which node => " + RunShell("bash", @"-c ""which node"""));
+        // Debug.Log( "which node => " + RunShell("/bin/bash", "echo $PATH", 2, true) );
+        // Debug.Log("which node => " + RunShell("bash", @"-c ""which node"""));
+        // Debug.Log( "which node => " + RunShell("/bin/bash", "which node") );
+
+        
+        // nodeVer = GetNodeVersion("/usr/local/bin/node", "-v");
         var cqStgs = FindProjectCqSettings();
         cqStgs.pathToNode = "/usr/local/bin/node";
         Check_Node();
@@ -445,10 +482,11 @@ selected in Project.
 
   private void Clk_CheckIfReady() {
     bool allRdy = true;
-    allRdy &= Check_Settings();
+    allRdy &= Check_Settings(); 
     allRdy &= Check_Node();
     allRdy &= Check_ApiKey();
     allRdy &= Check_BridgeComponent();
+    allRdy &= Check_BridgeHasSettings();
     allRdy &= Check_JS_BuildTools();
     allRdy &= Check_JS_Build();
     //-----
@@ -456,6 +494,10 @@ selected in Project.
     else        AllAreReady(false);
   }
 
+  private void NotifyAndLog(string msg, float seconds = 4) {
+    ShowNotification(new GUIContent(msg), seconds);
+    Debug.Log(msg);
+  }
   private void Notify(string msg, float seconds = 4) {
     ShowNotification(new GUIContent(msg), seconds);
   }
@@ -540,9 +582,32 @@ Cannot build.
       CheckAllStatusForReady();
     }
     Check_BridgeComponent();
+    Check_BridgeHasSettings();
     CheckAllStatusForReady();
   }
 
+  void Clk_BridgeHasSettings_AutoConnect() {
+    var bridge = FindObjectOfType<CroquetBridge>();
+    if (bridge == null) {
+      NotifyAndLog("Could not find CroquetBridge in scene!");
+      return;
+    } else {
+      var cqSettings = FindProjectCqSettings();
+      if (cqSettings == null) {
+        NotifyAndLog("Could not find CroquetSettings in project!");
+        return;
+      } else {
+        bridge.appProperties = cqSettings;
+        NotifyAndLog("Connected CroquetBridge to CroquetSettings!");
+        Check_BridgeHasSettings();
+        CheckAllStatusForReady();
+      }
+    }
+  }
+
+  void Clk_BridgeHasSettings_Goto() {
+    Clk_GotoBridgeGob();
+  }
   private async void Clk_CopyJSBuildTools() {
     await CroquetBuilder.InstallJSTools();
     Check_JS_BuildTools();
@@ -713,6 +778,7 @@ Cannot build.
       SignUpApi_Btn.style.visibility  = Visibility.Visible;
       var apiKey = cqStgs.apiKey;
       if (apiKey == null || apiKey == "<go get one at multisynq.io>" || apiKey.Length < 1) {
+        // curl -s -X GET -H "X-Croquet-Auth: 1_s77e6tyzkx5m3yryb9305sqxhkdmz65y69oy5s8e" -H "X-Croquet-App: io.croquet.vdom.ploma" -H "X-Croquet-Id: persistentId" -H "X-Croquet-Version: 1.1.0" -H "X-Croquet-Path: https://croquet.io" 'https://api.croquet.io/sign/join?meta=login'
         Statuses.key.error.Set();
       } else {
         Statuses.key.success.Set();
@@ -764,10 +830,31 @@ Cannot build.
     return fountIt;
   }
 
+  private bool Check_BridgeHasSettings() {
+    var bridge = FindObjectOfType<CroquetBridge>();
+    bool foundIt = (bridge != null);
+    if (!foundIt) {
+      Statuses.bridgeHasSettings.error.Set();
+      BridgeHasSettings_AutoConnect_Btn.style.visibility = Visibility.Hidden;
+      BridgeHasSettings_Goto_Btn.style.visibility = Visibility.Hidden;
+    } else {
+      if (bridge.appProperties == null) {
+        Statuses.bridgeHasSettings.error.Set();
+        BridgeHasSettings_AutoConnect_Btn.style.visibility = Visibility.Visible;
+        foundIt = false;
+      } else {
+        Statuses.bridgeHasSettings.success.Set();
+        BridgeHasSettings_AutoConnect_Btn.style.visibility = Visibility.Hidden;
+        BridgeHasSettings_Goto_Btn.style.visibility = Visibility.Visible;
+      }
+    }
+    return foundIt;
+  }
+
   //=============================================================================  
   private string TryNodePath(string nodePath) {
     if (!File.Exists(nodePath)) {
-      Debug.LogError("Could not find file: " + nodePath);
+      Debug.LogError("Could not find node path file: " + nodePath);
       return null;
     } else {
       return GetNodeVersion(nodePath, "-v");
@@ -789,23 +876,24 @@ Cannot build.
     return null;
   }
 
-  private string RunShell(string executable = "", string arguments = "", int logLevel = 2) {
+  private string RunShell(string executable = "", string arguments = "", int logLevel = 2, bool shellExec = false) {
     System.Diagnostics.Process pcs = new();
-    pcs.StartInfo.UseShellExecute = false;
+    pcs.StartInfo.UseShellExecute = shellExec;
     pcs.StartInfo.RedirectStandardOutput = true;
     pcs.StartInfo.RedirectStandardError = true;
     pcs.StartInfo.CreateNoWindow = true;
     pcs.StartInfo.WorkingDirectory = Path.GetFullPath(ewFolder);
     pcs.StartInfo.FileName = executable;
     pcs.StartInfo.Arguments = arguments;
+    pcs.StartInfo.UserName = "root";
     pcs.Start();
 
     string output = pcs.StandardOutput.ReadToEnd();
     string errors = pcs.StandardError.ReadToEnd();
     pcs.WaitForExit();
 
-    if (output.Length > 0 && logLevel > 1) Debug.Log(output);
-    if (errors.Length > 0 && logLevel > 0) Debug.LogError(errors);
+    if (output.Length > 0 && logLevel > 1) Debug.Log("RunShell().output = '" + output + "'");
+    if (errors.Length > 0 && logLevel > 0) Debug.LogError("RunShell().errors = '" + errors + "'");
 
     return output;
   }
