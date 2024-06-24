@@ -158,6 +158,16 @@ public class CroquetBuilder
         CacheSceneComponents(scene);
 
         bool goodToGo = true;
+        if (sceneBridgeComponent == null)
+        {
+            Debug.LogWarning("Cannot build without a CroquetBridge component in the scene");
+            goodToGo = false;
+        }
+        if (sceneBridgeComponent.appProperties == null)
+        {
+            Debug.LogWarning("CroquetBridge has a null appProperties object. Needs to be set to a CroquetSettings.asset.");
+            goodToGo = false;
+        }
         if (sceneBridgeComponent.appProperties.apiKey == "" ||
             sceneBridgeComponent.appProperties.apiKey == "PUT_YOUR_API_KEY_HERE")
         {
@@ -187,7 +197,7 @@ public class CroquetBuilder
     {
         CroquetBridge bridgeComp = null;
         CroquetRunner runnerComp = null;
-        GameObject[] roots = scene.GetRootGameObjects();
+        // GameObject[] roots = scene.GetRootGameObjects();
 
         CroquetBridge bridge = Object.FindObjectOfType<CroquetBridge>();
 
@@ -196,7 +206,7 @@ public class CroquetBuilder
             bridgeComp = bridge;
             runnerComp = bridge.gameObject.GetComponent<CroquetRunner>();
         } else {
-            Debug.LogError("No CroquetBridge component found in the scene");
+            Debug.LogWarning("No CroquetBridge component found in the scene of name: '" + scene.name + "'");
         }
 
         sceneName = scene.name;
