@@ -107,6 +107,7 @@ public class CroquetRunner : MonoBehaviour
 
     public IEnumerator StartCroquetConnection(int port, string appName, bool useNodeJS, string pathToNode)
     {
+        // this is invoked from CroquetBridge.StartWS (i.e., never when running in WebGL)
         appSourcePath = Path.Combine(Application.streamingAssetsPath, appName);
 
         // options for running Croquet code (given lack of webview support on Windows):

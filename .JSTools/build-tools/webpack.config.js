@@ -1,5 +1,7 @@
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const RemovePlugin = require('remove-files-webpack-plugin');
+
 const path = require('path');
 const fs = require('fs');
 
@@ -12,14 +14,12 @@ class CustomHtmlPlugin {
                     // Get the actual filename from the generated assets
                     const generatedScripts = Object.keys(compilation.assets).filter(asset => asset.endsWith('.js'));
                     const indexScript = generatedScripts.find(asset => asset.startsWith('index-') && asset.endsWith('.js'));
-                    
+
                     if (indexScript) {
                         const scriptTag = `additionalScript.src = "${indexScript}";`;
                         data.html = data.html.replace('additionalScript.src = "index-[contenthash:8].js";', scriptTag);
-                        const outPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
+                        const outPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`);
                         fs.writeFileSync(path.join(outPath, 'index.html'), data.html);
-                        // copy from __dirname/indes-####.js to outPath/index-####.js
-                        fs.copyFileSync(path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/${indexScript}`), path.join(outPath, indexScript));
                     }
                     cb(null, data);
                 }
@@ -28,7 +28,15 @@ class CustomHtmlPlugin {
     }
 }
 
-module.exports = env => ({ 
+module.exports = env => {
+const webGLPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`);
+const nonWebGLPath = path.join(__dirname, `../../../StreamingAssets/${env.appName}/`);
+const destination = env.useWebGL === 'true' ? webGLPath : nonWebGLPath;
+
+return {
+    // infrastructureLogging: {
+    //     level: 'verbose',
+    // },
     entry: () => {
         // if this is a node build, look for index-node.js in the app directory
         if (env.buildTarget === 'node') {
@@ -44,13 +52,11 @@ module.exports = env => ({
         return index;
     },
     output: {
-        path: env.useWebGL === 'true'
-            ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
-            : path.join(__dirname, `../../../StreamingAssets/${env.appName}/`),
+        path: destination,
         pathinfo: false,
         filename: env.buildTarget === 'node' ? 'node-main.js' : 'index-[contenthash:8].js',
         chunkFilename: 'chunk-[contenthash:8].js',
-        clean: false // TODO: delete accuring index-#### files automatically
+        clean: !env.useWebGL // RemovePlugin below handles index-####.js files in WebGL
     },
     cache: {
         type: 'filesystem',
@@ -88,25 +94,41 @@ module.exports = env => ({
         ].filter(x=>x), // removes any undefined by the && predicate being false
     },
     plugins: [
+        env.useWebGL === 'true' && new RemovePlugin({
+            before: {
+                allowRootAndOutside: true,
+                test: [
+                    {
+                        // remove app-specific content from StreamingAssets
+                        folder: nonWebGLPath,
+                        method: _absolutePath => true,
+                        recursive: true
+                    },
+                    {
+                        // in build dir, remove old hashed index.js files and their maps
+                        folder: webGLPath,
+                        method: absolutePath => new RegExp(/index-.+\.js/, 'm').test(absolutePath)
+                    }
+                ],
+                log: false
+            }
+        }),
         new CopyPlugin({
             patterns: [
-                { 
-                    from: `../../${env.appName}/scene-definitions.txt`, 
-                    to: env.useWebGL==='true' 
-                        ? path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/scene-definitions.txt`)
-                        : path.join(__dirname, `../../../StreamingAssets/${env.appName}/scene-definitions.txt`), 
-                    noErrorOnMissing: true 
+                {
+                    from: `../../${env.appName}/scene-definitions.txt`,
+                    to: `${destination}/scene-definitions.txt`,
+                    noErrorOnMissing: true
                 }
             ]
-        })
-    ].concat(env.buildTarget === 'node' ? [] : [
-        new HtmlWebpackPlugin({
+        }),
+        env.buildTarget !== 'node' && new HtmlWebpackPlugin({
             template: './sources/index.html',
             filename: 'index.html',
-            inject: true
+            inject: env.useWebGL !== 'true'
         }),
-        env.useWebGL==='true' && new CustomHtmlPlugin(), // alters the one line marked with index-#####.js
-    ].filter(x=>x)), // removes any undefined by the && antecedent being false
+        env.useWebGL === 'true' && new CustomHtmlPlugin(), // fills in the line that loads index-[hash].js
+    ].filter(x=>x), // removes any undefined by the && predicate being false
     externals: env.buildTarget !== 'node' ? [] : [
         {
             'utf-8-validate': 'commonjs utf-8-validate',
@@ -118,4 +140,5 @@ module.exports = env => ({
         outputModule: env.useWebGL==='true',
         asyncWebAssembly: true,
     }
-});
+};
+};

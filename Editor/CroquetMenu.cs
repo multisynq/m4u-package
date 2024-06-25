@@ -63,7 +63,6 @@ public class CroquetMenu
 
     private const string OpenDiscordItem = "Croquet/Join Croquet Discord...";
     private const string OpenPackageItem = "Croquet/Open package on Github...";
-    private const string ReCopyBuildItemsItem = "Croquet/Re-copy Build Items";
 
     [MenuItem(BuildNowItem, false, 100)]
     public static async void BuildNow()
@@ -78,7 +77,7 @@ public class CroquetMenu
     [MenuItem(BuildNowItem, true)]
     private static bool ValidateBuildNow()
     {
-        Debug.Log("Validate Build Now");
+        // Debug.Log("Validate Build Now");
         // this item is not available if
         //   we don't know how to build for the current scene, or
         //   a watcher for any scene is running (MacOS only), or
@@ -92,28 +91,6 @@ public class CroquetMenu
         return true;
     }
 
-    [MenuItem(ReCopyBuildItemsItem, false, 110)]
-    private static async void ReCopyBuildItems()
-    {
-        bool success = await CroquetBuilder.ReCopyBuildItems();
-        if (success)
-        {
-            Debug.Log("Build items re-copied successfully.");
-        }
-        else
-        {
-            Debug.LogError("Failed to re-copy build items.");
-        }
-    }
-
-    [MenuItem(ReCopyBuildItemsItem, true)]
-    private static bool ValidateReCopyBuildItems()
-    {
-#if !UNITY_EDITOR_WIN
-        if (CroquetBuilder.RunningWatcherApp() != "") return false;
-#endif
-        return true;
-    }
     [MenuItem(BuildOnPlayItem, false, 100)]
     private static void BuildOnPlayToggle()
     {
@@ -272,7 +249,9 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
         BuildTarget target = report.summary.platform;
         bool isWindowsBuild = target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64;
         string jsTarget = isWindowsBuild ? "node" : "web";
-
+#if UNITY_WEBGL
+        jsTarget = "webgl";
+#endif
         Scene activeScene = EditorSceneManager.GetActiveScene();
         if (!CroquetBuilder.PrepareSceneForBuildTarget(activeScene, isWindowsBuild))
         {
