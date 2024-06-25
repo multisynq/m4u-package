@@ -13,14 +13,23 @@ class CustomHtmlPlugin {
                 (data, cb) => {
                     // Get the actual filename from the generated assets
                     const generatedScripts = Object.keys(compilation.assets).filter(asset => asset.endsWith('.js'));
-                    const indexScript = generatedScripts.find(asset => asset.startsWith('index-') && asset.endsWith('.js'));
-
-                    if (indexScript) {
-                        const scriptTag = `additionalScript.src = "${indexScript}";`;
+                    const jsScriptWithHash_FName = generatedScripts.find(asset => asset.startsWith('index-') && asset.endsWith('.js'));
+                    
+                    if (jsScriptWithHash_FName) {
+                        const scriptTag = `additionalScript.src = "${jsScriptWithHash_FName}";`;
                         data.html = data.html.replace('additionalScript.src = "index-[contenthash:8].js";', scriptTag);
                         const outPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`);
                         fs.writeFileSync(path.join(outPath, 'index.html'), data.html);
                     }
+                    // // Write the altered index.html and the jsScriptWithHash_FName to WebGLTemplates
+                    // const outPath_WbGlTpmts = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
+                    // fs.writeFileSync(path.join(outPath_WbGlTpmts, 'index.html'          ), data.html);
+                    // fs.writeFileSync(path.join(outPath_WbGlTpmts, jsScriptWithHash_FName), data.assets.js);
+                    // console.log(`webpack.config.js: data.assets.js= ${data.assets.js?.slice(0, 100)}...`);
+                    // // Copy those to Streaming Assets as well
+                    // const outPath_StrAssts = path.join(__dirname, `../../../StreamingAssets/`)
+                    // fs.writeFileSync(path.join(outPath_StrAssts, 'index.html'          ), data.html);
+                    // fs.writeFileSync(path.join(outPath_StrAssts, jsScriptWithHash_FName), data.assets.js);
                     cb(null, data);
                 }
             );
