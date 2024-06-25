@@ -21,10 +21,16 @@ import {
   v3_equals,
   q_equals,
 } from "@croquet/worldcore-kernel";
+
 console.log("unity-bridge.js loaded");
 
-globalThis.CROQUET_NODE = ((typeof window) === "undefined"); // false if running in a browser, true if running in Node.js
 // globalThis will equal window in a browser environment, and global in Node.js
+const PLATFORM_NODE = typeof window === "undefined";
+const PLATFORM_WEBGL = !PLATFORM_NODE && typeof window.unityInstance !== "undefined"; // having confirmed that window exists, we can ask about window.unityInstance (but could also use globalThis)
+const PLATFORM_WEBVIEW = !PLATFORM_NODE && !PLATFORM_WEBGL;
+const NATIVE_TIMING = !PLATFORM_WEBVIEW; // on a webview, we cannot trust JS timers
+
+// globalThis.CROQUET_NODE = PLATFORM_NODE // if needed elsewhere
 
 // Backup original console methods
 const originalConsole = {
@@ -34,40 +40,18 @@ const originalConsole = {
   info: console.info,
 };
 
-// console.log("unity-bridge.js loaded");
 // Define the function to handle messages from Unity
-
+// (invoked from CroquetBridge.jslib)
 globalThis.handleUnityMessage = function (message) {
-  // if (message.includes("tick") || !isNaN(Number(message))) {
-  // } else {
-  //   // originalConsole.log("Message received in JavaScript: " + message);
-  // }
   if (typeof globalThis.theGameEngineBridge !== "undefined") {
     globalThis.theGameEngineBridge.receiveMessageFromUnity(message);
   } else {
     originalConsole.error(
-      "BridgeToUnity instance not found or incorrect type."
+      "BridgeToUnity instance not found"
     );
   }
-
-  // Send a response back to Unity
-  // if (typeof globalThis.unityInstance !== "undefined") {
-  //   globalThis.unityInstance.SendMessage(
-  //     "Croquet",
-  //     "OnMessageFromJS",
-  //     "Response from JS: " + message
-  //   );
-  // } else {
-  //   originalConsole.error("Unity instance not found.");
-  // }
 };
 
-// originalConsole.log("unity-bridge.js loaded");
-// Define a test function that can be called from Unity
-// globalThis.unityBridgeTest = function () {
-//   originalConsole.log("unityBridgeTest function called");
-//   return "Unity Bridge Test Successful";
-// };
 globalThis.registerUnityReceiver = function () {
   console.log("Unity receiver registered");
   // Additional setup if needed
@@ -87,8 +71,6 @@ globalThis.timedLog = (msg) => {
     (globalThis.CroquetViewDate || Date).now() % 100000
   }: ${msg}`;
   performance.mark(toLog);
-  if (msg.includes("tick") || !isNaN(Number(msg))) return;
-  //   console.log(msg);
 };
 
 // globalThis.WC_Left = true; // NB: this can affect behaviour of both models and views
@@ -104,37 +86,13 @@ class BridgeToUnity {
 
   constructor() {
     this.bridgeIsConnected = false;
-    this.initConnection();
+    this.initConnection(); // WebSocket or interop
     this.measureIndex = 0;
-    // originalConsole.log("Starting BridgeToUnity interop layer");
-
-    // globalThis.addEventListener("MessageFromUnity", (event) => {
-    //   const message = event.data;
-    //   // originalConsole.log("Received message from Unity:", message);
-
-    //   // Process the message and send a response back to Unity
-    //   const responseMessage = `Received message: ${message}`;
-    //   this.SendMessageToUnity(
-    //     "Croquet",
-    //     "OnMessageReceivedFromJS",
-    //     responseMessage, false
-    //   );
-    // });
   }
+
   // New method to receive messages from Unity
   receiveMessageFromUnity(message) {
-    if (message.includes("tick") || !isNaN(Number(message))) {
-    } else {
-      // originalConsole.log("Received message from Unity:", message);
-    }
     this.handleUnityMessageOrBundle(message);
-  }
-  SendMessageToUnity(objectName, methodName, message) {
-    if (globalThis.unityInstance) {
-      globalThis.unityInstance.SendMessage(objectName, methodName, message);
-    } else {
-      originalConsole.log("Unity instance not found!");
-    }
   }
 
   setCommandHandler(handler) {
@@ -154,19 +112,17 @@ class BridgeToUnity {
   }
 
   initConnection() {
-    if (true) {//if (globalThis.CROQUET_NODE) {
-      this.startWS();
-      console.log("Starting WebSocket connection");
-    } else {
+    if (PLATFORM_WEBGL) {
       this.startInterops();
-      console.log("Starting interop connection");
+    } else {
+      this.startWS();
     }
   }
 
   startWS() {
     globalThis.timedLog("starting socket client");
     const portStr = (this.socketPortStr =
-      (!globalThis.CROQUET_NODE ? globalThis.location.port : process.argv[2]) ||
+      (PLATFORM_NODE ? process.argv[2] : globalThis.location.port) ||
       "5555");
     console.log(`PORT ${portStr}`);
     const sock = (this.socket = new WebSocket(
@@ -188,7 +144,7 @@ class BridgeToUnity {
       globalThis.timedLog("bridge websocket closed");
       this.bridgeIsConnected = false;
       if (session) session.leave();
-      if (globalThis.CROQUET_NODE) process.exit();
+      if (PLATFORM_NODE) process.exit();
     };
     sock.onerror = (evt) => console.error("bridge WebSocket error", evt);
   }
@@ -221,58 +177,31 @@ class BridgeToUnity {
   }
 
   sendToUnityViaInterop(buffer, isBinary) {
-    if (isBinary) {
-        // Convert the buffer to a base64 string
-        const base64String = this.arrayBufferToBase64(buffer);
-        // Send the base64 string to Unity
-        const messageData = JSON.stringify({ "message": base64String, "isBinary": isBinary });
-        globalThis.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
-    } else {
-        const messageData = JSON.stringify({ "message": buffer, "isBinary": isBinary });
-        globalThis.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', messageData);
-    }
-}
-
-// Helper function to convert ArrayBuffer to base64 string
-arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-}
-
-sendToUnity(msg) {
-    if (true) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
-        if (!this.socket) return;
-        this.socket.send(msg);
-    } else if (typeof msg === "string") {
-        this.sendToUnityViaInterop(msg, false);
-    } else if (msg instanceof ArrayBuffer) {
-        this.sendBinaryToUnity(msg);
-    }
-}
-
-sendBinaryToUnity(buffer) {
-  const command = "updateSpatial";
-  const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
-  const message = new Uint8Array(cmdPrefix.length + buffer.byteLength);
-  
-  for (let i = 0; i < cmdPrefix.length; i++) {
-      message[i] = cmdPrefix.charCodeAt(i);
+    const message = isBinary ? this.arrayBufferToBase64(buffer) : buffer;
+    const wrappedMessage = { message, isBinary };
+    globalThis.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', JSON.stringify(wrappedMessage));
   }
-  
-  message.set(new Uint8Array(buffer), cmdPrefix.length);
-  
-  // console.dir(buffer, { depth: null });
-  // console.dir(message.buffer, { depth: null });
-  
-  this.sendToUnityViaInterop(message.buffer, true);
-}
 
+  // Helper function to convert ArrayBuffer to base64 string
+  arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+  }
 
+  sendToUnity(msg) { console.log("sendtounity", PLATFORM_WEBGL);
+    if (PLATFORM_WEBGL) {
+      this.sendToUnityViaInterop(msg, typeof msg !== "string");
+    } else {
+      if (!this.socket) return;
+
+      this.socket.send(msg);
+    }
+  }
 
   encodeValueAsString(arg) {
     return Array.isArray(arg)
@@ -311,7 +240,7 @@ sendBinaryToUnity(buffer) {
         const debugUsingExternalSession = args[1] === "True";
         console.log("categories of JS log forwarded to Unity:", toForward);
         this.setJSLogForwarding(toForward);
-        if (!debugUsingExternalSession || globalThis.CROQUET_NODE)
+        if (!debugUsingExternalSession || PLATFORM_NODE)
           this.disablePerformanceMeasures();
         break;
       }
@@ -534,10 +463,9 @@ sendBinaryToUnity(buffer) {
   }
 }
 
-// originalConsole.log("unity-bridge.js loaded 1");
 export const theGameEngineBridge = new BridgeToUnity();
 globalThis.theGameEngineBridge = theGameEngineBridge;
-// originalConsole.log("unity-bridge.js loaded 2");
+
 // GameViewManager is a new kind of service, created specifically for
 // the bridge to Unity, handling the creation and management of Unity-side
 // gameObjects that track the Croquet pawns.
@@ -971,8 +899,16 @@ export const GameViewManager = class extends ViewService {
       intArray[idPos] = encodedId;
     });
 
+    // send as a single binary-bodied message, after truncating to the length
+    // that has been filled.
     const buffer = array.buffer;
-    theGameEngineBridge.sendToUnity(buffer);
+    const filledBytes = pos * 4;
+    const command = 'updateSpatial';
+    const cmdPrefix = `${String(Date.now())}\x02${command}\x05`;
+    const message = new Uint8Array(cmdPrefix.length + filledBytes);
+    for (let i = 0; i < cmdPrefix.length; i++) message[i] = cmdPrefix.charCodeAt(i);
+    message.set(new Uint8Array(buffer).subarray(0, filledBytes), cmdPrefix.length);
+    theGameEngineBridge.sendToUnity(message.buffer);
   }
 };
 
@@ -2004,7 +1940,8 @@ class TimerClient {
 }
 
 let timerClient, ticker, sessionStepper;
-if (false) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
+if (NATIVE_TIMING) {
+  // use native timers except on webview
   timerClient = globalThis;
 } else {
   // install our home-grown timer, and an interim ticker (will be replaced once
@@ -2197,7 +2134,7 @@ async function unityDrivenStartSession() {
 
   const sceneFileName = "scene-definitions.txt";
   let sceneText = "";
-  const sceneFile = false // globalThis.CROQUET_NODE // TODO: NO NO NO NO NOOoOOOOoo 
+  const sceneFile = PLATFORM_NODE
     ? `http://127.0.0.1:${socketPortStr}/${appName}/${sceneFileName}`
     : `./${sceneFileName}`;
   // our server will respond to HEAD with status 200 if file is found, 204 otherwise
@@ -2260,7 +2197,7 @@ async function unityDrivenStartSession() {
     Promise.resolve().then(() => session.step(now));
   };
 
-  if (false) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
+  if (NATIVE_TIMING) {
     sessionStepper = setInterval(stepHandler, STEP_DELAY); // as simple as that
   } else {
     ticker = () => {
@@ -2279,7 +2216,7 @@ async function unityDrivenStartSession() {
 function shutDownSession() {
   session.leave();
   session = null;
-  if (false) { // if (globalThis.CROQUET_NODE) {// TODO: NO NO NO NO NOOoOOOOoo
+  if (NATIVE_TIMING) {
     clearInterval(sessionStepper);
     sessionStepper = null;
   } else {

@@ -77,7 +77,7 @@ public class CroquetBridge : MonoBehaviour
     private Dictionary<string, List<string>> sceneDefinitionsByApp =
         new Dictionary<string, List<string>>(); // appName to list of scene definitions
 
-    private static string bridgeState = "stopped"; // needJSBuild, waitingForJSBuild, foundJSBuild, waitingForSocket, waitingForSessionName, waitingForSession, started
+    private static string bridgeState = "stopped"; // needJSBuild, waitingForJSBuild, foundJSBuild, waitingForConnection, waitingForSessionName, waitingForSession, started
     private bool waitingForCroquetSceneReset = false; // an editor sets this true until the Croquet session arrives in the scene we want to start with
     private string requestedSceneLoad = "";
     private bool skipNextFrameUpdate = false; // sometimes (e.g., on scene reload) you just need to chill for a frame
@@ -98,15 +98,20 @@ public class CroquetBridge : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void SendMessageToJS(string message);
 
+    // sending to JS through interop or through socket, as appropriate
     public void SendMessageToJavaScript(string message)
     {
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        if (INTEROP_BRIDGE)
         {
             SendMessageToJS(message);
         }
         else
         {
-            Debug.Log("Not running in WebGL");
+            if (clientSock == null || clientSock.ReadyState != WebSocketState.Open) {
+                Debug.LogWarning($"socket not ready to send: {message}");
+            } else {
+                clientSock.Send(message);
+            }
         }
     }
 
@@ -114,36 +119,10 @@ public class CroquetBridge : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void RegisterUnityReceiver();
 
+    // entry point for a message received from JS through interop
     public void OnMessageReceivedFromJS(string messageData)
     {
-        // Initialize the shouldFilterLog variable
-        bool shouldFilterLog = false;
-
-        // Check if the message should be filtered from logging
-        if (messageData.Contains("tick") || messageData.Contains("1717"))
-        {
-            shouldFilterLog = true;
-        }
-        else
-        {
-            // Check if the part after "Response from JS: " is numeric
-            string responsePrefix = "Response from JS: ";
-            if (messageData.StartsWith(responsePrefix))
-            {
-                string potentialTimestamp = messageData.Substring(responsePrefix.Length);
-                if (long.TryParse(potentialTimestamp, out _))
-                {
-                    shouldFilterLog = true;
-                }
-            }
-        }
-
-        // Log the message only if it should not be filtered
-        if (!shouldFilterLog)
-        {
-            // Debug.Log("Message received from JavaScript: " + messageData);
-        }
-
+        // $$$$ why the doubt about format?
         // Try to deserialize the message data as JSON
         MessageObject messageObject;
         try
@@ -153,7 +132,7 @@ public class CroquetBridge : MonoBehaviour
         catch (ArgumentException)
         {
             // If JSON deserialization fails, it might be a base64 encoded string
-            // Debug.Log("Message data is not a valid JSON, attempting base64 decoding...");
+            Debug.Log("Message data is not a valid JSON, attempting base64 decoding...");
             try
             {
                 byte[] decodedBytes = Convert.FromBase64String(messageData);
@@ -170,17 +149,7 @@ public class CroquetBridge : MonoBehaviour
 
         if (messageObject != null)
         {
-            if (messageObject.isBinary)
-            {
-                // Debug.Log("Received binary message from JS: " + messageObject.message);
-                byte[] binaryMessage = Convert.FromBase64String(messageObject.message);
-                HandleBinaryMessage(binaryMessage);
-            }
-            else
-            {
-                // Process the message
-                HandleMessage(messageObject.message);
-            }
+            EnqueueMessageFromInterop(messageObject);
         }
         else
         {
@@ -194,48 +163,33 @@ public class CroquetBridge : MonoBehaviour
         public bool isBinary;
     }
 
-    static void HandleMessage(string message)
-    {
-        // Debug.Log("Handle Message: " + message);
+    static void EnqueueMessageFromInterop(MessageObject messageObject) {
         QueuedMessage qm = new QueuedMessage();
         qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        qm.isBinary = false;
-        qm.data = message;
-        messageQueue.Enqueue(qm);
-    }
-
-    static void HandleBinaryMessage(byte[] message)
-    {
-        // Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
-        QueuedMessage qm = new QueuedMessage();
-        qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        qm.isBinary = true;
-        qm.rawData = message;
-        messageQueue.Enqueue(qm);
-    }
-
-    // This method will be called by JavaScript
-    public void OnMessageFromJS(string message)
-    {
-        if (!message.Contains("tick") && !long.TryParse(message, out _) && !message.Contains("1717"))
+        qm.isBinary = messageObject.isBinary;
+        if (messageObject.isBinary)
         {
-            // Debug.Log("Message received from JavaScript: " + message);
+            byte[] binaryMessage = Convert.FromBase64String(messageObject.message);
+            qm.rawData = binaryMessage;
         }
+        else
+        {
+            qm.data = messageObject.message;
+        }
+        messageQueue.Enqueue(qm);
     }
 
     static ConcurrentQueue<QueuedMessage> messageQueue = new ConcurrentQueue<QueuedMessage>();
     static long estimatedDateNowAtReflectorZero = -1; // an impossible value
 
     List<(string, string)> deferredMessages = new List<(string, string)>(); // messages with (optionally) a throttleId for removing duplicates
-                                                                            // static float messageThrottle = 0.035f; // should result in deferred messages being sent on every other FixedUpdate tick (20ms)
-                                                                            // static float tickThrottle = 0.015f; // if not a bunch of messages, at least send a tick every 20ms
-                                                                            // private float lastMessageSend = 0; // realtimeSinceStartup
-                                                                            // private bool sentOnLastUpdate = false;
 
     LoadingProgressDisplay loadingProgressDisplay;
 
     public static CroquetBridge Instance { get; private set; }
     private CroquetRunner croquetRunner;
+
+    private bool INTEROP_BRIDGE;
 
     private static Dictionary<string, List<(GameObject, Action<string>)>> croquetSubscriptions = new Dictionary<string, List<(GameObject, Action<string>)>>();
     private static Dictionary<GameObject, HashSet<string>> croquetSubscriptionsByGameObject =
@@ -284,6 +238,9 @@ public class CroquetBridge : MonoBehaviour
         {
             Instance = this;
 
+            INTEROP_BRIDGE = Application.platform == RuntimePlatform.WebGLPlayer;
+            if (!INTEROP_BRIDGE) Debug.Log("Not running in WebGL");
+
             Application.runInBackground = true;
 
             SetCSharpLogOptions("info,session");
@@ -327,13 +284,9 @@ public class CroquetBridge : MonoBehaviour
 
     private void Start()
     {
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        if (INTEROP_BRIDGE)
         {
             RegisterUnityReceiver();
-        }
-        else
-        {
-            Debug.Log("Not running in WebGL");
         }
         // Frame cap
         Application.targetFrameRate = 60;
@@ -462,7 +415,7 @@ public class CroquetBridge : MonoBehaviour
         protected override void OnMessage(MessageEventArgs e)
         {
             // bridge.Log("verbose", "received message in Unity: " + (e.IsBinary ? "binary" : e.Data));
-            HandleMessage(e);
+            EnqueueMessageFromWS(e);
         }
 
         protected override void OnClose(CloseEventArgs e)
@@ -637,7 +590,7 @@ public class CroquetBridge : MonoBehaviour
     // WebSocket messages come in on a separate thread.  Put each message on a queue to be
     // read by the main thread.
     // static because called from a class that doesn't know about this instance.
-    static void HandleMessage(MessageEventArgs e)
+    static void EnqueueMessageFromWS(MessageEventArgs e)
     {
         // Add a time so we can tell how long it sits in the queue
         QueuedMessage qm = new QueuedMessage();
@@ -653,27 +606,6 @@ public class CroquetBridge : MonoBehaviour
         }
         messageQueue.Enqueue(qm);
     }
-
-    // static void HandleMessage(string message)
-    // {
-    //     Debug.Log("Handle Message: " + message);
-    //     QueuedMessage qm = new QueuedMessage();
-    //     qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    //     qm.isBinary = false;
-    //     qm.data = message;
-    //     messageQueue.Enqueue(qm);
-    // }
-
-    // static void HandleBinaryMessage(byte[] message)
-    // {
-    //     Debug.Log("Handle Binary Message: " + BitConverter.ToString(message));
-    //     QueuedMessage qm = new QueuedMessage();
-    //     qm.queueTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    //     qm.isBinary = true;
-    //     qm.rawData = message;
-    //     messageQueue.Enqueue(qm);
-    // }
-
 
     void StartCroquetSession()
     {
@@ -730,15 +662,7 @@ public class CroquetBridge : MonoBehaviour
 
         // send the message directly (bypassing the deferred-message queue)
         string msg = String.Join('\x01', command);
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            SendMessageToJavaScript(msg);
-        }
-        else
-        {
-            // Debug.Log("Not running in WebGL"
-            clientSock.Send(msg);
-        }
+        SendMessageToJavaScript(msg);
 
         croquetSessionState = "requested";
     }
@@ -770,7 +694,6 @@ public class CroquetBridge : MonoBehaviour
     {
         // Aug 2023: now that we check for deferred messages every 20ms, this is currently identical to SendToCroquet()
         SendToCroquet(strings);
-        // sentOnLastUpdate = false; // force to send on next tick [removed; see note in SendDeferredMessages]
     }
 
     public void SendThrottledToCroquet(string throttleId, params string[] strings)
@@ -801,39 +724,15 @@ public class CroquetBridge : MonoBehaviour
 
     void SendDeferredMessages()
     {
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            //SendMessageToJavaScript(msg);
-        }
-        else
-        {
-            if (clientSock == null || clientSock.ReadyState != WebSocketState.Open) return;
-        }
+        // we expect this to be called 50 times per second.
 
-        // we expect this to be called 50 times per second.  usually on every other call we send
-        // deferred messages if there are any, otherwise send a tick.  expediting message sends
-        // is therefore a matter of clearing the sentOnLastUpdate flag.
-        // UPDATE (4 Aug 2023): limiting ticks/messages to 25 times per second rather than 50 seems
-        // needlessly cautious, given websocket and JS engine capabilities.  see what happens if
-        // we send something every time.
-        // if (sentOnLastUpdate)
-        // {
-        //     sentOnLastUpdate = false;
-        //     return;
-        // }
-        // sentOnLastUpdate = true;
+        if (!INTEROP_BRIDGE &&
+            (clientSock == null || clientSock.ReadyState != WebSocketState.Open)) return;
 
         if (deferredMessages.Count == 0)
         {
-            if (Application.platform == RuntimePlatform.WebGLPlayer)
-            {
-                SendMessageToJavaScript("tick");
-            }
-            else
-            {
-                clientSock.Send("tick"); //    NOT   System.Text.Encoding.UTF8.GetBytes("tick"));
-                return;
-            }
+            SendMessageToJavaScript("tick");
+            return;
         }
 
         outBundleCount++;
@@ -848,16 +747,7 @@ public class CroquetBridge : MonoBehaviour
         }
 
         string joinedMsgs = String.Join('\x02', messageContents.ToArray());
-
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            SendMessageToJavaScript(joinedMsgs);
-        }
-        else
-        {
-            string[] msgs = messageContents.ToArray<string>();
-            clientSock.Send(String.Join('\x02', msgs));
-        }
+        SendMessageToJavaScript(joinedMsgs);
 
         deferredMessages.Clear();
     }
@@ -927,45 +817,34 @@ public class CroquetBridge : MonoBehaviour
 
         return false;
     }
-    bool lol = true; // Interop check for existence
+
     void AdvanceBridgeStateWhenReady()
     {
 #if UNITY_EDITOR
-    if (bridgeState == "needJSBuild")
-    {
-        SetBridgeState("waitingForJSBuild");
-        WaitForJSBuild();
-        return;
-    }
+        if (bridgeState == "needJSBuild")
+        {
+            SetBridgeState("waitingForJSBuild");
+            WaitForJSBuild();
+            return;
+        }
 #endif
 
         if (bridgeState == "foundJSBuild")
         {
-            SetBridgeState("waitingForSocket");
-            if (Application.platform != RuntimePlatform.WebGLPlayer)
+            SetBridgeState("waitingForConnection");
+            if (INTEROP_BRIDGE)
             {
-                StartWS();
+                // nothing special to do; connection is already available
+            }
+            else
+            {
+                StartWS(); // will move on when socket has been set up
             }
         }
-        else if ((Application.platform == RuntimePlatform.WebGLPlayer) && lol)
+        else if (bridgeState == "waitingForConnection")
         {
-            lol = false;
-            if (bridgeState != "waitingForSessionName" && bridgeState != "waitingForSession")
-            {
-                // configure which logs are forwarded
-                SetJSLogForwarding(JSLogForwarding.ToString());
+            if (!INTEROP_BRIDGE && clientSock == null) return; // not ready yet
 
-                SetBridgeState("waitingForSessionName");
-
-                // if we're not waiting for a menu to launch the session, set the session name immediately
-                if (launchViaMenuIntoScene == "")
-                {
-                    SetSessionName(""); // use the default name
-                }
-            }
-        }
-        else if (bridgeState == "waitingForSocket" && clientSock != null)
-        {
             // configure which logs are forwarded
             SetJSLogForwarding(JSLogForwarding.ToString());
 
@@ -1131,14 +1010,7 @@ public class CroquetBridge : MonoBehaviour
 
         // send the message directly (bypassing the deferred-message queue)
         string msg = String.Join('\x01', commandStrings.ToArray());
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            SendMessageToJavaScript(msg);
-        }
-        else
-        {
-            clientSock.Send(msg);
-        }
+        SendMessageToJavaScript(msg);
     }
 
     List<string> GetSceneObjectStrings()
@@ -1211,14 +1083,7 @@ public class CroquetBridge : MonoBehaviour
 
         // send the message directly (bypassing the deferred-message queue)
         string msg = String.Join('\x01', command);
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            SendMessageToJavaScript(msg);
-        }
-        else
-        {
-            clientSock.Send(msg);
-        }
+        SendMessageToJavaScript(msg);
     }
 
     void FixedUpdate()
@@ -1275,7 +1140,6 @@ public class CroquetBridge : MonoBehaviour
                     Array.Copy(rawData, timeAndCmdBytes, sepPos);
                     string[] strings = System.Text.Encoding.UTF8.GetString(timeAndCmdBytes).Split('\x02');
                     string command = strings[1];
-
                     ProcessCroquetMessage(command, rawData, sepPos + 1);
 
                     long sendTime = long.Parse(strings[0]);
@@ -1916,14 +1780,7 @@ public class CroquetBridge : MonoBehaviour
         // send the message directly (bypassing the deferred-message queue), because this can
         // be sent regardless of whether a session is running
         string msg = String.Join('\x01', cmdAndArgs);
-        if (Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            SendMessageToJavaScript(msg);
-        }
-        else
-        {
-            clientSock.Send(msg);
-        }
+        SendMessageToJavaScript(msg);
     }
 
     void SetLoadingStage(float ratio, string msg)

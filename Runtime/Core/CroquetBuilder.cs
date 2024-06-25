@@ -105,7 +105,6 @@ public class CroquetBuilder
         installRecordContents = File.ReadAllText(installRecordPath);
 #else
         // find the file in a build.  Android needs extra care.
-        Debug.Log("This was the issue");
         string src = JSToolsRecordInBuild;
 #if UNITY_ANDROID
         var unityWebRequest = UnityWebRequest.Get(src);
@@ -381,7 +380,7 @@ public class CroquetBuilder
             return;
         }
 
-        JSBuildDetails details = GetSceneBuildDetails(); // includes forcing useNodeJS, if necessary (on Windows)
+        JSBuildDetails details = GetSceneBuildDetails();
         string appName = details.appName;
         string builderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", ".js-build", "build-tools"));
         string nodeExecPath;
@@ -389,6 +388,10 @@ public class CroquetBuilder
         string arguments = "";
         string target = details.useNodeJS ? "node" : "web";
         string logFile = "";
+#if UNITY_WEBGL
+        // building for webgl, whatever the hosting platform
+        target = "webgl"; // our webpack config knows how to handle this
+#endif
         switch (Application.platform)
         {
             case RuntimePlatform.OSXEditor:
@@ -848,6 +851,10 @@ public class CroquetBuilder
             Debug.Log($"writing directory {dir}");
             FileUtil.ReplaceDirectory(dsrc, ddest);
 
+            // Copy the WebGL templates folder from the package (whether user is
+            // currently building for webgl or not)
+            CopyWebGLTemplatesFolder();
+
             int errorCount = 0; // look for errors in logging from npm i
             if (needsNPMInstall)
             {
@@ -1041,55 +1048,6 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
         }
 
         return errorCount;
-    }
-     public static async Task<bool> ReCopyBuildItems()
-    {
-        string toolsRoot = CroquetBuildToolsInPackage;
-        string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
-        string jsBuildFolder = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
-
-        try 
-        {
-            if (!Directory.Exists(jsBuildFolder)) Directory.CreateDirectory(jsBuildFolder);
-
-            // Copy various files to CroquetJS
-            Dictionary<string, string> copyDetails = new Dictionary<string, string>();
-            copyDetails["package.json"] = ".js-build/package.json";
-            copyDetails["package-lock.json"] = ".js-build/package-lock.json";
-            copyDetails[".eslintrc.json"] = ".eslintrc.json";
-            copyDetails["tools-gitignore"] = ".gitignore";
-            copyDetails[".babelrc"] = ".js-build/.babelrc";
-
-            foreach (KeyValuePair<string, string> keyValuePair in copyDetails)
-            {
-                string from = keyValuePair.Key;
-                string to = keyValuePair.Value;
-                string fsrc = Path.Combine(toolsRoot, from);
-                string fdest = Path.Combine(croquetJSFolder, to);
-                Debug.Log($"Re-copying {from} to {to}");
-                FileUtil.ReplaceFile(fsrc, fdest);
-            }
-
-            string dir = ".js-build/build-tools";
-            string dsrc = Path.Combine(toolsRoot, Path.GetFileName(dir));
-            string ddest = Path.Combine(croquetJSFolder, dir);
-            Debug.Log($"Re-copying directory {dir}");
-            FileUtil.ReplaceDirectory(dsrc, ddest);
-
-            // Copy the WebGL templates folder
-            if (Application.platform == RuntimePlatform.WebGLPlayer)
-            {
-                CopyWebGLTemplatesFolder();
-            }
-
-            Debug.Log("Re-copy of build items completed successfully.");
-            return true;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Error during re-copy of build items: {e.Message}");
-            return false;
-        }
     }
 
     public static void CopyWebGLTemplatesFolder()

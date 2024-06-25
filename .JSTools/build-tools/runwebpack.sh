@@ -3,14 +3,16 @@
 # the CroquetBuilder.StartBuild script supplies us with 3 or 4 arguments:
 # 1. full path to the platform-relevant node engine
 # 2. app name - used in webpack.config to find the app source
-# 3. build target ('node' or 'web' or 'webgl') - also used in webpack.config
+# 3. build target ('node' or 'web' or 'webgl') - forwarded to webpack.config as buildTarget ('node'/'web') and useWebGL (true/false - only relevant for 'web')
 # 4. full path to a temporary file to be used for watcher output (if not provided,
 #    that means we should perform a one-time build)
+
+# in preparation for packing, we set up either the webgl or non-webgl index.html
 
 DIR=`dirname "$0"`
 cd "$DIR"
 
-NODE=$1 
+NODE=$1
 APPNAME=$2
 TARGET=$3
 if [ "$TARGET" == "webgl" ]; then
