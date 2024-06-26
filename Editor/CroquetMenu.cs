@@ -84,7 +84,7 @@ public class CroquetMenu
         //   a build has been requested and hasn't finished yet
         if (!CroquetBuilder.KnowHowToBuildJS()) return false;
 
-#if !UNITY_EDITOR_WIN
+#if UNITY_EDITOR_OSX
         if (CroquetBuilder.RunningWatcherApp() == CroquetBuilder.GetSceneBuildDetails().appName) return false;
 #endif
         if (CroquetBuilder.oneTimeBuildProcess != null) return false;
@@ -101,7 +101,7 @@ public class CroquetMenu
     private static bool ValidateBuildOnPlayToggle()
     {
         if (!CroquetBuilder.KnowHowToBuildJS()) return false;
-#if !UNITY_EDITOR_WIN
+#if UNITY_EDITOR_OSX
         if (CroquetBuilder.RunningWatcherApp() == CroquetBuilder.GetSceneBuildDetails().appName) return false;
 #endif
 
@@ -109,7 +109,7 @@ public class CroquetMenu
         return true;
     }
 
-#if !UNITY_EDITOR_WIN
+#if UNITY_EDITOR_OSX
     [MenuItem(StarterItem, false, 100)]
     public static async void StartWatcher()
     {
@@ -221,7 +221,7 @@ public class CroquetMenu
     [MenuItem(InstallJSToolsItem, true)]
     private static bool ValidateInstallJSTools()
     {
-#if !UNITY_EDITOR_WIN
+#if UNITY_EDITOR_OSX
         if (CroquetBuilder.RunningWatcherApp() != "") return false;
 #endif
         return true;
@@ -248,10 +248,8 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
     {
         BuildTarget target = report.summary.platform;
         bool isWindowsBuild = target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64;
-        string jsTarget = isWindowsBuild ? "node" : "web";
-#if UNITY_WEBGL
-        jsTarget = "webgl";
-#endif
+        string jsTarget = isWindowsBuild ? "node" : (target == BuildTarget.WebGL ? "webgl" : "web");
+
         Scene activeScene = EditorSceneManager.GetActiveScene();
         if (!CroquetBuilder.PrepareSceneForBuildTarget(activeScene, isWindowsBuild))
         {

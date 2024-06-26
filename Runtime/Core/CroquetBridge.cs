@@ -626,34 +626,18 @@ public class CroquetBridge : MonoBehaviour
             // the option appears in the UI separately from the logging flags, add it in here.
             debugFlags = debugFlags == "" ? "offline" : $"{debugFlags},offline";
         }
-        ReadyForSessionProps props = null;
-        if (!(Application.platform == RuntimePlatform.WebGLPlayer))
+
+        ReadyForSessionProps props = new ReadyForSessionProps()
         {
-            props = new ReadyForSessionProps()
-            {
-                apiKey = appProperties.apiKey,
-                appId = appProperties.appPrefix + "." + appName,
-                appName = appName,
-                packageVersion =
-                   CroquetBuilder.FindJSToolsRecord().packageVersion, // uses different lookups in editor and in a build
-                sessionName = sessionName,
-                debugFlags = debugFlags,
-                isEditor = Application.isEditor
-            };
-        }
-        else
-        {
-            props = new ReadyForSessionProps()
-            {
-                apiKey = appProperties.apiKey,
-                appId = appProperties.appPrefix + "." + appName,
-                appName = appName,
-                packageVersion = "1",
-                sessionName = sessionName,
-                debugFlags = debugFlags,
-                isEditor = Application.isEditor
-            };
-        }
+            apiKey = appProperties.apiKey,
+            appId = appProperties.appPrefix + "." + appName,
+            appName = appName,
+            packageVersion = CroquetBuilder.FindJSToolsRecord().packageVersion, // uses different lookups in editor and in a build (and a potentially length async fetch on WebGL)
+            sessionName = sessionName,
+            debugFlags = debugFlags,
+            isEditor = Application.isEditor
+        };
+
         string propsJson = JsonUtility.ToJson(props);
         string[] command = new string[] {
             "readyForSession",
@@ -857,8 +841,10 @@ public class CroquetBridge : MonoBehaviour
             }
         }
 
-        // allow to drop through (although we would catch a non-empty sessionName on the next update anyway)
-        if (bridgeState == "waitingForSessionName" && sessionName != "")
+        // allow to drop through (although we would catch a non-empty sessionName on the next update anyway).
+        // only proceed if the JSToolsRecord is available - which in WebGL can take a
+        // second or two.
+        if (bridgeState == "waitingForSessionName" && sessionName != "" && CroquetBuilder.JSToolsRecordReady())
         {
             SetBridgeState("waitingForSession");
             StartCroquetSession();

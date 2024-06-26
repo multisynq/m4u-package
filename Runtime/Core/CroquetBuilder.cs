@@ -9,7 +9,6 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
-using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
@@ -47,9 +46,12 @@ public class CroquetBuilder
     public static string JSToolsRecordInEditor =
         Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", ".js-build", $".{INSTALLED_TOOLS_RECORD}"));
     // NB: a file name beginning with . won't make it into a build (at least, not on Android)
-    // NB: using GetFullPath would add a leading slash that confuses at least an Android UnityWebRequest
+    // NB: using GetFullPath would add a leading slash that makes no sense on the URLs delivered for Android and for WebGL
     public static string JSToolsRecordInBuild =
         Path.Combine(Application.streamingAssetsPath, "croquet-bridge", INSTALLED_TOOLS_RECORD);
+
+    private static string FetchedJSToolsRecord = "";
+
     public static string NodeExeInBuild =
         Path.Combine(Application.streamingAssetsPath, "croquet-bridge", "node", "node.exe");
 
@@ -57,6 +59,17 @@ public class CroquetBuilder
     private static CroquetBridge sceneBridgeComponent;
     private static CroquetRunner sceneRunnerComponent;
     private static string sceneAppName;
+
+    public static void FileReaderIsReady(CroquetFileReader reader) {
+        // as soon as the file reader starts up, ask it to fetch any files we need.
+#if UNITY_WEBGL && !UNITY_EDITOR
+        reader.FetchFile(JSToolsRecordInBuild, JSToolsRecordResult);
+#endif
+    }
+
+    public static void JSToolsRecordResult(string result) {
+        FetchedJSToolsRecord = result;
+    }
 
     public static string StateOfJSBuildTools()
     {
@@ -94,10 +107,26 @@ public class CroquetBuilder
         return "ok";
     }
 
+    public static bool JSToolsRecordReady() {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return FetchedJSToolsRecord != "";
+#else
+        return true;
+#endif
+    }
+
     public static InstalledToolsRecord FindJSToolsRecord()
     {
+        // this is invoked almost exclusively as part of a JS build process triggered
+        // manually or otherwise in the editor, but also from CroquetBridge.StartCroquetSession
+        // as part of setting up the session properties to send to JavaScript to start
+        // the Croquet session.
+        // in all cases other than a built WebGL app, we can provide the tools record
+        // synchronously.  on WebGL, we rely on a CroquetFileReader component of the
+        // Croquet object to perform an asynchronous UnityWebRequest to fetch it.  in
+        // that specific case, HasJSToolsRecord won't return true until the fetch has
+        // completed.
         string installRecordContents = "";
-
 #if UNITY_EDITOR
         string installRecordPath = JSToolsRecordInEditor;
         if (!File.Exists(installRecordPath)) return null;
@@ -120,6 +149,10 @@ public class CroquetBuilder
             installRecordContents = Encoding.UTF8.GetString(contents);
         }
         unityWebRequest.Dispose();
+#elif UNITY_WEBGL
+        if (FetchedJSToolsRecord == "") return null;
+
+        installRecordContents = FetchedJSToolsRecord;
 #else
         installRecordContents = File.ReadAllText(src);
 #endif
@@ -388,6 +421,7 @@ public class CroquetBuilder
         string arguments = "";
         string target = details.useNodeJS ? "node" : "web";
         string logFile = "";
+// %%% need to figure out how to let the developer create a JS build of the right type for the deployment, in the case where the editor session needs a different one
 #if UNITY_WEBGL
         // building for webgl, whatever the hosting platform
         target = "webgl"; // our webpack config knows how to handle this
