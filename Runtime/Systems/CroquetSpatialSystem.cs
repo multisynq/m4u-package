@@ -351,7 +351,7 @@ public class CroquetSpatialSystem : CroquetSystem
                 {
                     bufferPos += 12;
                 }
-                // Debug.Log($"attempt to update absent object {croquetHandle} : {e}");
+                Debug.Log($"attempt to update absent object {croquetHandle} : {e}");
                 continue;
             }
 
