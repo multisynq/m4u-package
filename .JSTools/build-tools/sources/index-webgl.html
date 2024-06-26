@@ -60,136 +60,136 @@
     </div>
     <div id="script-placeholder"></div>
     <script>
-              var isMobile = false;
-              var container = document.querySelector("#unity-container");
-              var canvas = document.querySelector("#unity-canvas");
-              var loadingBar = document.querySelector("#unity-loading-bar");
-              var progressBarFull = document.querySelector("#unity-progress-bar-full");
-              var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-              var warningBanner = document.querySelector("#unity-warning");
-              var mobileFullscreenButton = document.querySelector("#fullscreen-button");
+        var isMobile = false;
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+        var warningBanner = document.querySelector("#unity-warning");
+        var mobileFullscreenButton = document.querySelector("#fullscreen-button");
 
-              function unityShowBanner(msg, type) {
-                  function updateBannerVisibility() {
-                      warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-                  }
-                  var div = document.createElement('div');
-                  div.innerHTML = msg;
-                  warningBanner.appendChild(div);
-                  if (type == 'error') div.style = 'background: red; padding: 10px;';
-                  else {
-                      if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-                      setTimeout(function() {
-                          warningBanner.removeChild(div);
-                          updateBannerVisibility();
-                      }, 5000);
-                  }
-                  updateBannerVisibility();
-              }
+        function unityShowBanner(msg, type) {
+            function updateBannerVisibility() {
+                warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+            }
+            var div = document.createElement('div');
+            div.innerHTML = msg;
+            warningBanner.appendChild(div);
+            if (type == 'error') div.style = 'background: red; padding: 10px;';
+            else {
+                if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+                setTimeout(function() {
+                    warningBanner.removeChild(div);
+                    updateBannerVisibility();
+                }, 5000);
+            }
+            updateBannerVisibility();
+        }
 
-              function getUrlParameter(name) {
-                  name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-                  var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-                  var results = regex.exec(location.search);
-                  return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-              }
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
 
-              function toggleFullscreen() {
-                  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                      if (container.requestFullscreen) {
-                          container.requestFullscreen();
-                      } else if (container.webkitRequestFullscreen) { // Safari and iOS support
-                          container.webkitRequestFullscreen();
-                      } else if (container.msRequestFullscreen) { // IE/Edge support
-                          container.msRequestFullscreen();
-                      }
-                  } else {
-                      if (document.exitFullscreen) {
-                          document.exitFullscreen();
-                      } else if (document.webkitExitFullscreen) { // Safari and iOS support
-                          document.webkitExitFullscreen();
-                      } else if (document.msExitFullscreen) { // IE/Edge support
-                          document.msExitFullscreen();
-                      }
-                  }
-              }
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) { // Safari and iOS support
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) { // IE/Edge support
+                    container.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { // Safari and iOS support
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { // IE/Edge support
+                    document.msExitFullscreen();
+                }
+            }
+        }
 
-              var buildUrl = "Build";
-              var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
-              var config = {
-                  dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
-                  frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
-      #if USE_WASM
-                  codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
-      #endif
-      #if MEMORY_FILENAME
-                  memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
-      #endif
-      #if SYMBOLS_FILENAME
-                  symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
-      #endif
-                  streamingAssetsUrl: "StreamingAssets",
-                  companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
-                  productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
-                  productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
-                  showBanner: unityShowBanner,
-              };
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+        var config = {
+            dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+            frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+            codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#endif
+#if MEMORY_FILENAME
+            memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+            symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+            productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+            productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+            showBanner: unityShowBanner,
+        };
 
-              var room = getUrlParameter('room');
+        var room = getUrlParameter('room');
 
-              if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                  var meta = document.createElement('meta');
-                  meta.name = 'viewport';
-                  meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-                  document.getElementsByTagName('head')[0].appendChild(meta);
-                  container.className = "unity-mobile";
-                  canvas.className = "unity-mobile";
-                  isMobile = true;
-                  mobileFullscreenButton.style.display = 'block';
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.getElementsByTagName('head')[0].appendChild(meta);
+            container.className = "unity-mobile";
+            canvas.className = "unity-mobile";
+            isMobile = true;
+            mobileFullscreenButton.style.display = 'block';
 
-                  // Comment out or remove the following line to disable the WebGL not supported message
-                  // unityShowBanner('WebGL builds are not supported on mobile devices.');
-              } else {
-                  canvas.style.width = "100%";
-                  canvas.style.height = "100%";
-                  mobileFullscreenButton.style.display = 'block';
-              }
+            // Comment out or remove the following line to disable the WebGL not supported message
+            // unityShowBanner('WebGL builds are not supported on mobile devices.');
+        } else {
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            mobileFullscreenButton.style.display = 'block';
+        }
 
-      #if BACKGROUND_FILENAME
-              canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
-      #endif
-              loadingBar.style.display = "block";
+#if BACKGROUND_FILENAME
+        canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
+#endif
+        loadingBar.style.display = "block";
 
-              var script = document.createElement("script");
-              script.src = loaderUrl;
-              script.onload = () => {
-                  createUnityInstance(canvas, config, (progress) => {
-                      progressBarFull.style.width = 100 * progress + "%";
-                  }).then((unityInstance) => {
-                      window.unityInstance = unityInstance; // Set unityInstance globally
-                      loadingBar.style.display = "none";
-                      fullscreenButton.onclick = () => {
-                          unityInstance.SetFullscreen(1);
-                      };
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                progressBarFull.style.width = 100 * progress + "%";
+            }).then((unityInstance) => {
+                window.unityInstance = unityInstance; // Set unityInstance globally
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => {
+                    unityInstance.SetFullscreen(1);
+                };
 
-                      // Manually inject the script after Unity instance has loaded
-                      var scriptPlaceholder = document.getElementById("script-placeholder");
-                      var additionalScript = document.createElement("script");
-                      additionalScript.src = "index-[contenthash:8].js";
-                      scriptPlaceholder.appendChild(additionalScript);
+                // Manually inject the script after Unity instance has loaded
+                var scriptPlaceholder = document.getElementById("script-placeholder");
+                var additionalScript = document.createElement("script");
+                additionalScript.src = "index-[contenthash:8].js";
+                scriptPlaceholder.appendChild(additionalScript);
 
-                      // Send the room parameter to Unity
-                      if (room) { // TODO: look into session mechanism with q= in addition to this
-                          unityInstance.SendMessage('Croquet', 'SetSessionName', room);
-                      }
-                      console.log("Sending isMobile: " + isMobile);
-                      window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());
+                // Send the room parameter to Unity
+                if (room) { // TODO: look into session mechanism with q= in addition to this
+                    unityInstance.SendMessage('Croquet', 'SetSessionName', room);
+                }
+                console.log("Sending isMobile: " + isMobile);
+                window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());
 
-                  }).catch((message) => {
-                      alert(message);
-                  });
-              };
-              document.body.appendChild(script);
+            }).catch((message) => {
+                alert(message);
+            });
+        };
+        document.body.appendChild(script);
     </script>
   </body>
 </html>
