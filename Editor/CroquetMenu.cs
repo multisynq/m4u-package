@@ -37,7 +37,9 @@ public static class SceneAndPlayWatcher
 
     private static void HandleSceneChange(Scene current, Scene next)
     {
-        CroquetBuilder.CacheSceneComponents(next);
+        // for some reason, this can on occasion be triggered with a "next" scene that has no name, no path, and zero rootCount.
+        // we feel justified in ignoring such changes.
+        if (next.name != "") CroquetBuilder.CacheSceneComponents(next);
     }
 
     private static void EditorQuitting()
