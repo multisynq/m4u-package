@@ -656,7 +656,7 @@ public class CroquetBuilder
         // in fact, perhaps it has already been made.
         string target = details.useNodeJS ? "node" : "web";
 
-#if !UNITY_EDITOR_WIN
+#if UNITY_EDITOR_OSX
         if (RunningWatcherApp() == appName)
         {
             // there is a watcher
