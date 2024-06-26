@@ -56,14 +56,6 @@ globalThis.registerUnityReceiver = function () {
   console.log("Unity receiver registered");
   // Additional setup if needed
 };
-// Restore console methods if they are being overridden elsewhere in the code
-console.log = originalConsole.log;
-console.error = originalConsole.error;
-console.warn = originalConsole.warn;
-console.info = originalConsole.info;
-
-// Existing code...
-// Ensure that this existing code does not override or interfere with the global functions defined above
 
 globalThis.timedLog = (msg) => {
   // timing on the message itself is now added when forwarding
@@ -152,7 +144,6 @@ class BridgeToUnity {
   startInterops() {
     globalThis.timedLog("starting interop client");
     this.resetMessageStats();
-    this.setJSLogForwarding(["log", "warn", "error"]);
     this.bridgeIsConnected = true;
   }
 
@@ -236,12 +227,13 @@ class BridgeToUnity {
   handleUnityCommand(command, args) {
     switch (command) {
       case "setJSLogForwarding": {
-        const toForward = args[0].split(",");
         const debugUsingExternalSession = args[1] === "True";
-        console.log("categories of JS log forwarded to Unity:", toForward);
-        this.setJSLogForwarding(toForward);
-        if (!debugUsingExternalSession || PLATFORM_NODE)
-          this.disablePerformanceMeasures();
+        if (!PLATFORM_WEBGL) { // on WebGL it's meaningless to forward
+          const toForward = args[0].split(",");
+          console.log("categories of JS log forwarded to Unity:", toForward);
+          this.setJSLogForwarding(toForward);
+        }
+        if (!debugUsingExternalSession || PLATFORM_NODE) this.disablePerformanceMeasures();
         break;
       }
       case "readyForSession": {
@@ -377,19 +369,23 @@ class BridgeToUnity {
   }
 
   setJSLogForwarding(toForward) {
-    // const stringify = obj => {
-    //     try { return JSON.stringify(obj) } catch (e) { return "[non-JSONable object]" }
-    // };
-    // const timeStamper = logVals => `${(globalThis.CroquetViewDate || Date).now() % 100000}: ` + logVals.map(a => typeof a === 'object' ? stringify(a) : String(a)).join(' ');
-    // const forwarder = (logType, logVals) => this.sendCommand('logFromJS', logType, timeStamper(logVals));
-    // ['log', 'warn', 'error'].forEach(logType => {
-    //     const wantsForwarding = toForward.includes(logType);
-    //     if (wantsForwarding) console[logType] = (...logVals) => {
-    //         console[`q_${logType}`](...logVals);
-    //         forwarder(logType, logVals);
-    //     };
-    //     else console[logType] = console[`q_${logType}`];
-    // });
+    if (PLATFORM_WEBGL) return; // no forwarding needed or justified
+
+    const stringify = obj => {
+        try { return JSON.stringify(obj) } catch (e) { return "[non-JSONable object]" }
+    };
+    const timeStamper = logVals => `${(globalThis.CroquetViewDate || Date).now() % 100000}: ` + logVals.map(a => typeof a === 'object' ? stringify(a) : String(a)).join(' ');
+    const forwarder = (logType, logVals) => this.sendCommand('logFromJS', logType, timeStamper(logVals));
+    ['log', 'warn', 'error'].forEach(logType => {
+        const wantsForwarding = toForward.includes(logType);
+        if (wantsForwarding) {
+          console[logType] = (...logVals) => {
+            originalConsole[logType](...logVals);
+            forwarder(logType, logVals);
+          };
+        }
+        else console[logType] = originalConsole[logType];
+    });
   }
 
   disablePerformanceMeasures() {
