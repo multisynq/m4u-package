@@ -193,7 +193,7 @@ class BridgeToUnity {
       return btoa(binary);
   }
 
-  sendToUnity(msg) { console.log("sendtounity", PLATFORM_WEBGL);
+  sendToUnity(msg) {
     if (PLATFORM_WEBGL) {
       this.sendToUnityViaInterop(msg, typeof msg !== "string");
     } else {
