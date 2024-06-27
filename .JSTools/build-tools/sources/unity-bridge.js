@@ -93,8 +93,8 @@ class BridgeToUnity {
 
   resetMessageStats() {
     this.msgStats = {
-      outMessageCount: 0, outBundleCount: 0, inBundleCount: 0, 
-      inMessageCount: 0, inBundleDelayMS: 0, inProcessingTimeMS: 0, 
+      outMessageCount: 0, outBundleCount: 0, inBundleCount: 0,
+      inMessageCount: 0, inBundleDelayMS: 0, inProcessingTimeMS: 0,
       lastMessageDiagnostics: Date.now(),
     };
   }
@@ -119,11 +119,6 @@ class BridgeToUnity {
     sock.onopen = (_evt) => {
       // until Unity tells us otherwise (with 'setJSLogForwarding'), forward
       // all JS logs across the bridge
-      // if (!console.q_log) {
-      //   console.q_log = console.log;
-      //   console.q_warn = console.warn;
-      //   console.q_error = console.error;
-      // }
       this.resetMessageStats();
       this.setJSLogForwarding(["log", "warn", "error"]);
       globalThis.timedLog("opened socket");
@@ -156,7 +151,7 @@ class BridgeToUnity {
       return;
     }
     const msg = [...args].join("\x01");
-    this.sendToUnity(msg);    
+    this.sendToUnity(msg);
     this.msgStats.outMessageCount++; // @@ stats don't really expect non-bundled messages
   }
 
@@ -254,8 +249,8 @@ class BridgeToUnity {
       }
       case "readyForSession": {
         const {
-          apiKey, appId, appName, 
-          packageVersion, sessionName, 
+          apiKey, appId, appName,
+          packageVersion, sessionName,
           debugFlags, isEditor,
         } = JSON.parse(args[0]);
         globalThis.timedLog(`starting session of ${appId} with key ${apiKey}`);
