@@ -183,6 +183,13 @@ public class CroquetBridge : MonoBehaviour
     static long estimatedDateNowAtReflectorZero = -1; // an impossible value
 
     List<(string, string)> deferredMessages = new List<(string, string)>(); // messages with (optionally) a throttleId for removing duplicates
+    // static float messageThrottle = 0.035f; // should result in deferred messages being sent on every other FixedUpdate tick (20ms)
+    // static float tickThrottle = 0.015f; // if not a bunch of messages, at least send a tick every 20ms
+    // private float lastMessageSend = 0; // realtimeSinceStartup
+    // private bool sentOnLastUpdate = false;
+
+
+
 
     LoadingProgressDisplay loadingProgressDisplay;
 
@@ -678,6 +685,7 @@ public class CroquetBridge : MonoBehaviour
     {
         // Aug 2023: now that we check for deferred messages every 20ms, this is currently identical to SendToCroquet()
         SendToCroquet(strings);
+        // sentOnLastUpdate = false; // force to send on next tick [removed; see note in SendDeferredMessages]
     }
 
     public void SendThrottledToCroquet(string throttleId, params string[] strings)
@@ -712,6 +720,19 @@ public class CroquetBridge : MonoBehaviour
 
         if (!INTEROP_BRIDGE &&
             (clientSock == null || clientSock.ReadyState != WebSocketState.Open)) return;
+
+        // we expect this to be called 50 times per second.  usually on every other call we send
+        // deferred messages if there are any, otherwise send a tick.  expediting message sends
+        // is therefore a matter of clearing the sentOnLastUpdate flag.
+        // UPDATE (4 Aug 2023): limiting ticks/messages to 25 times per second rather than 50 seems
+        // needlessly cautious, given websocket and JS engine capabilities.  see what happens if
+        // we send something every time.
+        // if (sentOnLastUpdate)
+        // {
+        //     sentOnLastUpdate = false;
+        //     return;
+        // }
+        // sentOnLastUpdate = true;
 
         if (deferredMessages.Count == 0)
         {
@@ -804,6 +825,7 @@ public class CroquetBridge : MonoBehaviour
 
     void AdvanceBridgeStateWhenReady()
     {
+        // go through the asynchronous steps involved in starting the bridge
 #if UNITY_EDITOR
         if (bridgeState == "needJSBuild")
         {
@@ -835,10 +857,7 @@ public class CroquetBridge : MonoBehaviour
             SetBridgeState("waitingForSessionName");
 
             // if we're not waiting for a menu to launch the session, set the session name immediately
-            if (launchViaMenuIntoScene == "")
-            {
-                SetSessionName(""); // use the default name
-            }
+            if (launchViaMenuIntoScene == "") SetSessionName(""); // use the default name
         }
 
         // allow to drop through (although we would catch a non-empty sessionName on the next update anyway).
