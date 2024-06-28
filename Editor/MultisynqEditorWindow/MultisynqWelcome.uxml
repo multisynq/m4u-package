@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:ScrollView>
+    <ui:ScrollView style="background-color: rgb(56, 56, 56);">
         <ui:VisualElement name="Root" style="flex-direction: column; width: 100%; height: 100%;">
             <ui:Foldout text="Welcome" name="Welcome_Foldout" style="width: 100%; height: 265px;">
                 <ui:VisualElement name="Hero_Ve" style="width: 100%; height: 200px;">
@@ -47,14 +47,14 @@
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Try Auto Setup" display-tooltip-when-elided="true" name="TryAuto_Btn" enable-rich-text="false" />
                                 <ui:Button text="Goto Node Path Setting" display-tooltip-when-elided="true" name="GotoNodePath_Btn" enable-rich-text="false" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Node_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="ApiKeyStatus_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="Key_Status_Img" style="background-image: url(&apos;project://database/Assets/Fingers/Prefab/Textures/DPad/DPadRightSelected-Grey.png?fileID=21300000&amp;guid=7bd1f8ff1515c1c4696c64bd214f9f74&amp;type=3#DPadRightSelected-Grey&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="ApiKey_Status_Img" style="background-image: url(&apos;project://database/Assets/Fingers/Prefab/Textures/DPad/DPadRightSelected-Grey.png?fileID=21300000&amp;guid=7bd1f8ff1515c1c4696c64bd214f9f74&amp;type=3#DPadRightSelected-Grey&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
-                            <ui:Label text="Let&apos;s get you a free &lt;b&gt;API Key&lt;/b&gt;. It&apos;s easy." display-tooltip-when-elided="true" name="Key_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
+                            <ui:Label text="Let&apos;s get you a free &lt;b&gt;API Key&lt;/b&gt;. It&apos;s easy." display-tooltip-when-elided="true" name="ApiKey_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Sign Up On the Site" display-tooltip-when-elided="true" name="SignUpApi_Btn" enable-rich-text="false" />
                                 <ui:Button text="Goto API Key" display-tooltip-when-elided="true" name="GotoApiKey_Btn" enable-rich-text="false" />
@@ -69,7 +69,7 @@
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Goto Bridge Object" display-tooltip-when-elided="true" name="GotoBridgeGob_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Create Bridge Object" display-tooltip-when-elided="true" name="CreateBridgeGob_Btn" style="margin-left: 0;" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="HaveBridge_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
@@ -80,7 +80,7 @@
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Auto Connect Settings" display-tooltip-when-elided="true" name="BridgeHasSettings_AutoConnect_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Goto Bridge Object" display-tooltip-when-elided="true" name="BridgeHasSettings_Goto_Btn" style="margin-left: 0;" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="BridgeHasSettings_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
@@ -91,7 +91,18 @@
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Copy Tools to Build Folder" display-tooltip-when-elided="true" name="CopyJSBuildTools_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Goto BuildTools Folder" display-tooltip-when-elided="true" name="GotoJSBuildToolsFolder_Btn" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="JSBuildTools_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="JbtVersionMatch_Lay" style="width: 100%; height: 100%; flex-direction: row;">
+                        <ui:VisualElement name="JbtVersionMatch_Img" style="background-image: url(&apos;project://database/Assets/Fingers/Prefab/Textures/DPad/DPadRightSelected-Grey.png?fileID=21300000&amp;guid=7bd1f8ff1515c1c4696c64bd214f9f74&amp;type=3#DPadRightSelected-Grey&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
+                            <ui:Label text="Version Match - Built Output &amp; JS Build Tools" display-tooltip-when-elided="true" name="JbtVersionMatch_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
+                            <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
+                                <ui:Button text="Rebuild To Match Packge Version" display-tooltip-when-elided="true" name="RebuildToMatchPkg_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Goto BuildTools Folder" display-tooltip-when-elided="true" name="XXXX_Btn" style="display: none;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="JbtVersionMatch_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
@@ -102,7 +113,7 @@
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Build JS Now" display-tooltip-when-elided="true" name="Build_JsNow_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Start JS Build Watcher" display-tooltip-when-elided="true" name="ToggleJSBuild_Btn" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="JSBuild_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
