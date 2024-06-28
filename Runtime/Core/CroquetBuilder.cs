@@ -335,11 +335,11 @@ public class CroquetBuilder
                 throw new Exception("CroquetBridge has a null appProperties object. Needs to be set to a CroquetSettings.asset.");
             }
             string pathToNode = sceneBridgeComponent.appProperties.pathToNode;
-            Debug.Log($"For !UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
+            // Debug.Log($"For !UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
 #else
             // we're in a Windows editor
             string pathToNode = NodeExeInPackage;
-            Debug.Log($"For UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
+            // Debug.Log($"For UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
             // build using Node unless user has set debugUsingExternalSession and has *not* set forceToUseNodeJS
             useNodeJS = !(sceneRunnerComponent.debugUsingExternalSession && !forceToUseNodeJS);
 #endif
