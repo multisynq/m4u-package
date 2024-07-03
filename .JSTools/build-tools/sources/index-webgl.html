@@ -135,7 +135,7 @@
             showBanner: unityShowBanner,
         };
 
-        var room = getUrlParameter('room');
+        var room = getUrlParameter('room') || getUrlParameter('session') || getUrlParameter('q');
 
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
             var meta = document.createElement('meta');
