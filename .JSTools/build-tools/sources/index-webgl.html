@@ -37,8 +37,40 @@
         display: none; /* Hidden by default, shown on mobile */
       }
     </style>
+        <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+
   </head>
-  <body>
+  <body>    <button id="connect-wallet-button">Connect Wallet</button>
+    <p id="wallet-address"></p>
+
+    <script>
+        // Reference to the connect wallet button and wallet address paragraph
+        const connectWalletButton = document.getElementById('connect-wallet-button');
+        const walletAddressParagraph = document.getElementById('wallet-address');
+
+        // Function to connect to the Solana wallet
+        async function connectWallet() {
+            // Check if Phantom Wallet is installed
+            const isPhantomInstalled = window.solana && window.solana.isPhantom;
+
+            if (isPhantomInstalled) {
+                try {
+                    // Connect to the Phantom Wallet
+                    const resp = await window.solana.connect();
+                    const walletAddress = resp.publicKey.toString();
+                    walletAddressParagraph.innerText = `Wallet Address: ${walletAddress}`;
+                    console.log(`Connected to wallet ${walletAddress}`);
+                } catch (err) {
+                    console.error('Failed to connect to wallet', err);
+                }
+            } else {
+                alert('Solana wallet not found. Please install a wallet extension like Phantom.');
+            }
+        }
+
+        // Add event listener to the connect wallet button
+        connectWalletButton.addEventListener('click', connectWallet);
+    </script>
     <!--  .JSTools/build-tools/sources/index.html -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas"></canvas>
