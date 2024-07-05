@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Unity WebGL Player | {{{ PRODUCT_NAME }}}</title>
@@ -21,7 +21,7 @@
         width: 100%;
         height: 100%;
       }
-      #fullscreen-button {
+      #fullscreen-button, #connect-wallet-button {
         position: absolute;
         top: 10px;
         right: 10px;
@@ -31,18 +31,9 @@
         color: white;
         border: none;
         cursor: pointer;
-        display: none; /* Hidden by default, shown on mobile */
       }
       #connect-wallet-button {
-        position: absolute;
         top: 50px;
-        right: 10px;
-        z-index: 1000;
-        padding: 10px;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: none;
-        cursor: pointer;
       }
       #wallet-address {
         position: absolute;
@@ -53,44 +44,43 @@
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  </head>
-  <body>
+    <script src="https://cdn.jsdelivr.net/npm/@magicblock-labs/soar-sdk"></script>
+</head>
+<body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+        <canvas id="unity-canvas"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
         </div>
-      </div>
-      <div id="unity-warning"></div>
-      <div id="unity-footer">
-        <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
-      </div>
-      <button id="fullscreen-button" onclick="toggleFullscreen()">Fullscreen</button>
+        <div id="unity-warning"></div>
+        <div id="unity-footer">
+            <div id="unity-webgl-logo"></div>
+            <div id="unity-fullscreen-button"></div>
+            <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
+        </div>
+        <button id="fullscreen-button" onclick="toggleFullscreen()">Fullscreen</button>
     </div>
     <button id="connect-wallet-button">Connect Wallet</button>
     <!-- <p id="wallet-address"></p> -->
 
     <script>
-        // Reference to the connect wallet button and wallet address paragraph
         const connectWalletButton = document.getElementById('connect-wallet-button');
-        const walletAddressParagraph = document.getElementById('wallet-address');
+        // const walletAddressParagraph = document.getElementById('wallet-address');
 
-        // Function to connect to the Solana wallet
+        let walletAddress = null;
+
         async function connectWallet() {
-            // Check if Phantom Wallet is installed
             const isPhantomInstalled = window.solana && window.solana.isPhantom;
 
             if (isPhantomInstalled) {
                 try {
-                    // Connect to the Phantom Wallet
                     const resp = await window.solana.connect();
-                    const walletAddress = resp.publicKey.toString();
+                    walletAddress = resp.publicKey.toString();
                     const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
-                    walletAddressParagraph.innerText = `Wallet: ${truncatedAddress}`;
+                    // walletAddressParagraph.innerText = `Wallet: ${truncatedAddress}`;
                     connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
                     console.log(`Connected to wallet ${walletAddress}`);
                 } catch (err) {
@@ -101,10 +91,8 @@
             }
         }
 
-        // Add event listener to the connect wallet button
         connectWalletButton.addEventListener('click', connectWallet);
     </script>
-
     <div id="script-placeholder"></div>
     <script>
         var isMobile = false;
@@ -193,9 +181,6 @@
             canvas.className = "unity-mobile";
             isMobile = true;
             mobileFullscreenButton.style.display = 'block';
-
-            // Comment out or remove the following line to disable the WebGL not supported message
-            // unityShowBanner('WebGL builds are not supported on mobile devices.');
         } else {
             canvas.style.width = "100%";
             canvas.style.height = "100%";
@@ -219,14 +204,12 @@
                     unityInstance.SetFullscreen(1);
                 };
 
-                // Manually inject the script after Unity instance has loaded
                 var scriptPlaceholder = document.getElementById("script-placeholder");
                 var additionalScript = document.createElement("script");
                 additionalScript.src = "index-[contenthash:8].js";
                 scriptPlaceholder.appendChild(additionalScript);
 
-                // Send the room parameter to Unity
-                if (room) { // TODO: look into session mechanism with q= in addition to this
+                if (room) {
                     unityInstance.SendMessage('Croquet', 'SetSessionName', room);
                 }
                 console.log("Sending isMobile: " + isMobile);
@@ -238,5 +221,5 @@
         };
         document.body.appendChild(script);
     </script>
-  </body>
+</body>
 </html>
