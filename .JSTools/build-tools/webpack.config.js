@@ -1,6 +1,8 @@
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const RemovePlugin = require('remove-files-webpack-plugin');
+const webpack = require('webpack');
+
 
 const path = require('path');
 const fs = require('fs');
@@ -80,7 +82,14 @@ return {
             '@croquet/game-models$': path.resolve(__dirname, 'sources/game-support-models.js'),
             '@croquet/unity-bridge$': path.resolve(__dirname, 'sources/unity-bridge.js'),
         },
-        fallback: { "crypto": false }
+        fallback: { 
+            "crypto": false,
+            ...(env.useWebGL === 'true' ? {
+                "buffer": require.resolve("buffer/"),
+                "stream": require.resolve("stream-browserify"),
+                "assert": require.resolve("assert/"),
+            } : {})
+        }
     },
     module: {
         rules: [
@@ -137,6 +146,12 @@ return {
             inject: env.useWebGL !== 'true'
         }),
         env.useWebGL === 'true' && new CustomHtmlPlugin(), // fills in the line that loads index-[hash].js
+        env.useWebGL === 'true' && new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
+        env.useWebGL === 'true' && new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
     ].filter(x=>x), // removes any undefined by the && predicate being false
     externals: env.buildTarget !== 'node' ? [] : [
         {

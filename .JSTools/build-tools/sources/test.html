@@ -110,11 +110,17 @@
     </div>
 
     <script>
-      const connectWalletButton = document.getElementById("connect-wallet-button");
-      const registerButton = document.getElementById("initialize-player-button");
+      const connectWalletButton = document.getElementById(
+        "connect-wallet-button"
+      );
+      const registerButton = document.getElementById(
+        "initialize-player-button"
+      );
       const submitScoreButton = document.getElementById("submit-score-button");
       const registrationModal = document.getElementById("registration-modal");
-      const modalRegisterButton = document.getElementById("modal-register-button");
+      const modalRegisterButton = document.getElementById(
+        "modal-register-button"
+      );
       const modalCloseButton = document.getElementById("modal-close-button");
       let walletAddress = null;
 
@@ -125,7 +131,10 @@
           try {
             const resp = await window.solana.connect();
             walletAddress = resp.publicKey.toString();
-            const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
+            const truncatedAddress = `${walletAddress.slice(
+              0,
+              3
+            )}...${walletAddress.slice(-3)}`;
             connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
             console.log(`Connected to wallet ${walletAddress}`);
 
@@ -141,13 +150,19 @@
             }
             submitScoreButton.style.display = "inline";
             if (window.unityInstance) {
-              window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
+              window.unityInstance.SendMessage(
+                "Croquet",
+                "Initialize",
+                walletAddress
+              );
             }
           } catch (err) {
             console.error("Failed to connect to wallet", err);
           }
         } else {
-          alert("Solana wallet not found. Please install a wallet extension like Phantom.");
+          alert(
+            "Solana wallet not found. Please install a wallet extension like Phantom."
+          );
         }
       }
 
@@ -159,19 +174,49 @@
           const initializeResponse = await fetch("/initializePlayerAccount", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ walletAddress }),
+            body: JSON.stringify({ playerPublicKey: walletAddress }),
           });
           const initializeData = await initializeResponse.json();
-          console.log("Initialize data:", initializeData);
+          const initializeTransaction = solanaWeb3.Transaction.from(
+            Buffer.from(initializeData.transaction, "base64")
+          );
+          const signedInitializeTransaction =
+            await window.solana.signTransaction(initializeTransaction);
 
           // Register player entry
           const registerResponse = await fetch("/registerPlayerEntry", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ walletAddress }),
+            body: JSON.stringify({ playerPublicKey: walletAddress }),
           });
           const registerData = await registerResponse.json();
-          console.log("Register data:", registerData);
+          const registerTransaction = solanaWeb3.Transaction.from(
+            Buffer.from(registerData.transaction, "base64")
+          );
+          const signedRegisterTransaction = await window.solana.signTransaction(
+            registerTransaction
+          );
+
+          // Send the signed transactions back to the server for confirmation
+          await fetch("/confirmTransaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signedTransaction: signedInitializeTransaction
+                .serialize()
+                .toString("base64"),
+            }),
+          });
+
+          await fetch("/confirmTransaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signedTransaction: signedRegisterTransaction
+                .serialize()
+                .toString("base64"),
+            }),
+          });
 
           console.log("Player registered successfully");
           registrationModal.style.display = "none";
@@ -195,17 +240,33 @@
           const score = prompt("Enter your score:");
           if (!score) return;
 
-          const response = await fetch("/submit-score", {
+          const response = await fetch("/submitScore", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              walletAddress,
+              playerPublicKey: walletAddress,
               score: parseInt(score),
             }),
           });
-
           const data = await response.json();
-          console.log("Score submitted successfully:", data);
+          const submitScoreTransaction = solanaWeb3.Transaction.from(
+            Buffer.from(data.transaction, "base64")
+          );
+          const signedSubmitScoreTransaction =
+            await window.solana.signTransaction(submitScoreTransaction);
+
+          // Send the signed transaction back to the server for confirmation
+          await fetch("/confirmTransaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signedTransaction: signedSubmitScoreTransaction
+                .serialize()
+                .toString("base64"),
+            }),
+          });
+
+          console.log("Score submitted successfully");
         } catch (error) {
           console.error("Error submitting score:", error);
         }
@@ -222,7 +283,11 @@
           .then((response) => response.json())
           .then((data) => {
             if (typeof unityInstance !== "undefined") {
-              unityInstance.SendMessage("ScoreSender", "ReceiveServerTime", data.serverTime);
+              unityInstance.SendMessage(
+                "ScoreSender",
+                "ReceiveServerTime",
+                data.serverTime
+              );
             }
           })
           .catch((error) => {
@@ -289,16 +354,20 @@
           if (container.requestFullscreen) {
             container.requestFullscreen();
           } else if (container.webkitRequestFullscreen) {
+            // Safari and iOS support
             container.webkitRequestFullscreen();
           } else if (container.msRequestFullscreen) {
+            // IE/Edge support
             container.msRequestFullscreen();
           }
         } else {
           if (document.exitFullscreen) {
             document.exitFullscreen();
           } else if (document.webkitExitFullscreen) {
+            // Safari and iOS support
             document.webkitExitFullscreen();
           } else if (document.msExitFullscreen) {
+            // IE/Edge support
             document.msExitFullscreen();
           }
         }
