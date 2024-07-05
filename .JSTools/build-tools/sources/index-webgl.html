@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Unity WebGL Player | {{{ PRODUCT_NAME }}}</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico" />
     <link rel="stylesheet" href="TemplateData/style.css" />
     <style>
-    html, body, #unity-container, #unity-canvas {
+      html,
+      body,
+      #unity-container,
+      #unity-canvas {
         margin: 0;
         padding: 0;
         width: 100%;
@@ -21,9 +24,11 @@
         width: 100%;
         height: 100%;
       }
-      #fullscreen-button, #connect-wallet-button {
+      #fullscreen-button,
+      #connect-wallet-button,
+      #initialize-player-button,
+      #submit-score-button {
         position: absolute;
-        top: 10px;
         right: 10px;
         z-index: 1000;
         padding: 10px;
@@ -32,304 +37,386 @@
         border: none;
         cursor: pointer;
       }
+      #fullscreen-button {
+        top: 10px;
+      }
       #connect-wallet-button {
         top: 50px;
       }
+      #initialize-player-button {
+        top: 90px;
+        display: none;
+      }
+      #submit-score-button {
+        top: 130px;
+        display: none;
+      }
       #wallet-address {
         position: absolute;
-        top: 90px;
+        top: 170px;
         right: 10px;
         z-index: 1000;
         color: white;
       }
+      #registration-modal {
+        background: rgba(0, 0, 0, 0.8);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #registration-modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@magicblock-labs/soar-sdk"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="unity-container" class="unity-desktop">
-        <canvas id="unity-canvas"></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
+      <canvas id="unity-canvas"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
-        <div id="unity-warning"></div>
-        <div id="unity-footer">
-            <div id="unity-webgl-logo"></div>
-            <div id="unity-fullscreen-button"></div>
-            <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
-        </div>
-        <button id="fullscreen-button" onclick="toggleFullscreen()">Fullscreen</button>
+      </div>
+      <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">{{{ PRODUCT_NAME }}}</div>
+      </div>
+      <button id="fullscreen-button" onclick="toggleFullscreen()">Fullscreen</button>
+      <button id="connect-wallet-button">Connect Wallet</button>
+      <button id="initialize-player-button">Register Player</button>
+      <button id="submit-score-button">Submit Score</button>
     </div>
-    <button id="connect-wallet-button">Connect Wallet</button>
-    <button id="initialize-player-button" style="display:none;">Initialize Player Account</button>
-    <button id="register-player-button" style="display:none;">Register Player Entry</button>
-    <button id="submit-score-button" style="display:none;">Submit Score</button>
+    <!-- Registration Modal -->
+    <div id="registration-modal" style="display: none;">
+      <div id="registration-modal-content">
+        <h2>Register Player</h2>
+        <button id="modal-register-button">Register</button>
+        <button id="modal-close-button">Close</button>
+      </div>
+    </div>
 
     <script>
-        const connectWalletButton = document.getElementById('connect-wallet-button');
-        const initializePlayerButton = document.getElementById('initialize-player-button');
-        const registerPlayerButton = document.getElementById('register-player-button');
-        const submitScoreButton = document.getElementById('submit-score-button');
-        let walletAddress = null;
+      const connectWalletButton = document.getElementById("connect-wallet-button");
+      const registerButton = document.getElementById("initialize-player-button");
+      const submitScoreButton = document.getElementById("submit-score-button");
+      const registrationModal = document.getElementById("registration-modal");
+      const modalRegisterButton = document.getElementById("modal-register-button");
+      const modalCloseButton = document.getElementById("modal-close-button");
+      let walletAddress = null;
 
-        async function connectWallet() {
-            const isPhantomInstalled = window.solana && window.solana.isPhantom;
+      async function connectWallet() {
+        const isPhantomInstalled = window.solana && window.solana.isPhantom;
 
-            if (isPhantomInstalled) {
-                try {
-                    const resp = await window.solana.connect();
-                    walletAddress = resp.publicKey.toString();
-                    const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
-                    connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
-                    console.log(`Connected to wallet ${walletAddress}`);
-                    initializePlayerButton.style.display = 'inline';
-                    registerPlayerButton.style.display = 'inline';
-                    submitScoreButton.style.display = 'inline';
-                    if (window.unityInstance) {
-                        window.unityInstance.SendMessage('Croquet', 'Initialize', walletAddress);
-                    }
-                } catch (err) {
-                    console.error('Failed to connect to wallet', err);
-                }
-            } else {
-                alert('Solana wallet not found. Please install a wallet extension like Phantom.');
-            }
-        }
+        if (isPhantomInstalled) {
+          try {
+            const resp = await window.solana.connect();
+            walletAddress = resp.publicKey.toString();
+            const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
+            connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
+            console.log(`Connected to wallet ${walletAddress}`);
 
-        connectWalletButton.addEventListener('click', connectWallet);
-
-        async function initializePlayerAccount() {
-            try {
-                const response = await fetch('/initializePlayerAccount', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ playerPublicKey: walletAddress })
-                });
-                const data = await response.json();
-                const transaction = SolanaWeb3.Transaction.from(Buffer.from(data.transaction, 'base64'));
-                const signedTransaction = await window.solana.signTransaction(transaction);
-                await window.solana.sendAndConfirmTransaction(signedTransaction);
-                console.log('Player account initialized successfully');
-            } catch (error) {
-                console.error('Error initializing player account:', error);
-            }
-        }
-
-        async function registerPlayerEntry() {
-            try {
-                const response = await fetch('/registerPlayerEntry', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ playerPublicKey: walletAddress })
-                });
-                const data = await response.json();
-                const transaction = SolanaWeb3.Transaction.from(Buffer.from(data.transaction, 'base64'));
-                const signedTransaction = await window.solana.signTransaction(transaction);
-                await window.solana.sendAndConfirmTransaction(signedTransaction);
-                console.log('Player entry registered successfully');
-            } catch (error) {
-                console.error('Error registering player entry:', error);
-            }
-        }
-
-        async function submitScore() {
-            try {
-                const score = prompt('Enter your score:');
-                if (!score) return;
-
-                const response = await fetch('/submitScore', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ playerPrivateKey: window.solana.privateKey, score: parseInt(score) })
-                });
-                const data = await response.json();
-                console.log('Score submitted successfully:', data);
-            } catch (error) {
-                console.error('Error submitting score:', error);
-            }
-        }
-
-        initializePlayerButton.addEventListener('click', initializePlayerAccount);
-        registerPlayerButton.addEventListener('click', registerPlayerEntry);
-        submitScoreButton.addEventListener('click', submitScore);
-
-        function requestServerTimeFromWebpage(walletAddress) {
-            fetch('/get-server-time', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ walletAddress })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (typeof unityInstance !== 'undefined') {
-                    unityInstance.SendMessage('ScoreSender', 'ReceiveServerTime', data.serverTime);
-                }
-            })
-            .catch((error) => {
-                console.error('Error fetching server time:', error);
+            // Check player status
+            const statusResponse = await fetch("/checkPlayerStatus", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ playerPublicKey: walletAddress }),
             });
+            const statusData = await statusResponse.json();
+            if (!statusData.isInitialized || !statusData.isRegistered) {
+              registerButton.style.display = "inline";
+            }
+            submitScoreButton.style.display = "inline";
+            if (window.unityInstance) {
+              window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
+            }
+          } catch (err) {
+            console.error("Failed to connect to wallet", err);
+          }
+        } else {
+          alert("Solana wallet not found. Please install a wallet extension like Phantom.");
         }
+      }
 
-        function submitHighScoreFromWebpage(message) {
-            fetch('/submit-highscore', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: message })
+      connectWalletButton.addEventListener("click", connectWallet);
+
+      async function registerPlayer() {
+        try {
+          // Initialize player account
+          const initializeResponse = await fetch("/initializePlayerAccount", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ playerPublicKey: walletAddress }),
+          });
+          const initializeData = await initializeResponse.json();
+          const initializeTransaction = SolanaWeb3.Transaction.from(
+            Buffer.from(initializeData.transaction, "base64")
+          );
+          const signedInitializeTransaction = await window.solana.signTransaction(initializeTransaction);
+
+          // Register player entry
+          const registerResponse = await fetch("/registerPlayerEntry", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ playerPublicKey: walletAddress }),
+          });
+          const registerData = await registerResponse.json();
+          const registerTransaction = SolanaWeb3.Transaction.from(
+            Buffer.from(registerData.transaction, "base64")
+          );
+          const signedRegisterTransaction = await window.solana.signTransaction(registerTransaction);
+
+          // Send the signed transactions back to the server for confirmation
+          await fetch("/confirmTransaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signedTransaction: signedInitializeTransaction.serialize().toString('base64')
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('High score submitted successfully:', data);
+          });
+
+          await fetch("/confirmTransaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signedTransaction: signedRegisterTransaction.serialize().toString('base64')
             })
-            .catch((error) => {
-                console.error('Error submitting high score:', error);
-            });
+          });
+
+          console.log("Player registered successfully");
+          registrationModal.style.display = "none";
+          registerButton.style.display = "none";
+        } catch (error) {
+          console.error("Error during registration process:", error);
         }
+      }
 
-        window.requestServerTimeFromWebpage = requestServerTimeFromWebpage;
-        window.submitHighScoreFromWebpage = submitHighScoreFromWebpage;
+      registerButton.addEventListener("click", () => {
+        registrationModal.style.display = "flex";
+      });
+
+      modalRegisterButton.addEventListener("click", registerPlayer);
+      modalCloseButton.addEventListener("click", () => {
+        registrationModal.style.display = "none";
+      });
+
+      async function submitScore() {
+        try {
+          const score = prompt("Enter your score:");
+          if (!score) return;
+
+          const response = await fetch("/submitScore", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              playerPublicKey: walletAddress,
+              score: parseInt(score),
+            }),
+          });
+          const data = await response.json();
+          const submitScoreTransaction = SolanaWeb3.Transaction.from(
+            Buffer.from(data.transaction, "base64")
+          );
+          const signedSubmitScoreTransaction = await window.solana.signTransaction(submitScoreTransaction);
+
+          // Send the signed transaction back to the server for confirmation
+          await fetch("/confirmTransaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              signedTransaction: signedSubmitScoreTransaction.serialize().toString('base64')
+            })
+          });
+
+          console.log("Score submitted successfully");
+        } catch (error) {
+          console.error("Error submitting score:", error);
+        }
+      }
+
+      submitScoreButton.addEventListener("click", submitScore);
+
+      function requestServerTimeFromWebpage(walletAddress) {
+        fetch("/get-server-time", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (typeof unityInstance !== "undefined") {
+              unityInstance.SendMessage("ScoreSender", "ReceiveServerTime", data.serverTime);
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching server time:", error);
+          });
+      }
+
+      function submitHighScoreFromWebpage(message) {
+        fetch("/submit-highscore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: message }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("High score submitted successfully:", data);
+          })
+          .catch((error) => {
+            console.error("Error submitting high score:", error);
+          });
+      }
+
+      window.requestServerTimeFromWebpage = requestServerTimeFromWebpage;
+      window.submitHighScoreFromWebpage = submitHighScoreFromWebpage;
     </script>
     <div id="script-placeholder"></div>
     <script>
-        var isMobile = false;
-        var container = document.querySelector("#unity-container");
-        var canvas = document.querySelector("#unity-canvas");
-        var loadingBar = document.querySelector("#unity-loading-bar");
-        var progressBarFull = document.querySelector("#unity-progress-bar-full");
-        var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-        var warningBanner = document.querySelector("#unity-warning");
-        var mobileFullscreenButton = document.querySelector("#fullscreen-button");
+      var isMobile = false;
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
+      var mobileFullscreenButton = document.querySelector("#fullscreen-button");
 
-        function unityShowBanner(msg, type) {
-            function updateBannerVisibility() {
-                warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-            }
-            var div = document.createElement('div');
-            div.innerHTML = msg;
-            warningBanner.appendChild(div);
-            if (type == 'error') div.style = 'background: red; padding: 10px;';
-            else {
-                if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-                setTimeout(function() {
-                    warningBanner.removeChild(div);
-                    updateBannerVisibility();
-                }, 5000);
-            }
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? "block" : "none";
+        }
+        var div = document.createElement("div");
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == "error") div.style = "background: red; padding: 10px;";
+        else {
+          if (type == "warning") div.style = "background: yellow; padding: 10px;";
+          setTimeout(function () {
+            warningBanner.removeChild(div);
             updateBannerVisibility();
+          }, 5000);
         }
+        updateBannerVisibility();
+      }
 
-        function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            var results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-        }
+      function getUrlParameter(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+        var results = regex.exec(location.search);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) { // Safari and iOS support
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) { // IE/Edge support
-                    container.msRequestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) { // Safari and iOS support
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { // IE/Edge support
-                    document.msExitFullscreen();
-                }
-            }
-        }
-
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
-        var config = {
-            dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
-            frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
-#if USE_WASM
-            codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
-#endif
-#if MEMORY_FILENAME
-            memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
-#endif
-#if SYMBOLS_FILENAME
-            symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
-#endif
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
-            productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
-            productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
-            showBanner: unityShowBanner,
-        };
-
-        var room = getUrlParameter('room') || getUrlParameter('session') || getUrlParameter('q');
-
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            var meta = document.createElement('meta');
-            meta.name = 'viewport';
-            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-            document.getElementsByTagName('head')[0].appendChild(meta);
-            container.className = "unity-mobile";
-            canvas.className = "unity-mobile";
-            isMobile = true;
-            mobileFullscreenButton.style.display = 'block';
+      function toggleFullscreen() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (container.requestFullscreen) {
+            container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            // Safari and iOS support
+            container.webkitRequestFullscreen();
+          } else if (container.msRequestFullscreen) {
+            // IE/Edge support
+            container.msRequestFullscreen();
+          }
         } else {
-            canvas.style.width = "100%";
-            canvas.style.height = "100%";
-            mobileFullscreenButton.style.display = 'block';
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            // Safari and iOS support
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            // IE/Edge support
+            document.msExitFullscreen();
+          }
         }
+      }
 
-#if BACKGROUND_FILENAME
-        canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
-#endif
-        loadingBar.style.display = "block";
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      var config = {
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+        // #if USE_WASM
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+        // #endif
+        // #if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+        // #endif
+        // #if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+        // #endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        showBanner: unityShowBanner,
+      };
 
-        var script = document.createElement("script");
-        script.src = loaderUrl;
-        script.onload = () => {
-            createUnityInstance(canvas, config, (progress) => {
-                progressBarFull.style.width = 100 * progress + "%";
-            }).then((unityInstance) => {
-                window.unityInstance = unityInstance; // Set unityInstance globally
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
-                    unityInstance.SetFullscreen(1);
-                };
+      var room = getUrlParameter("room") || getUrlParameter("session") || getUrlParameter("q");
 
-                var scriptPlaceholder = document.getElementById("script-placeholder");
-                var additionalScript = document.createElement("script");
-                additionalScript.src = "index-[contenthash:8].js";
-                scriptPlaceholder.appendChild(additionalScript);
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement("meta");
+        meta.name = "viewport";
+        meta.content = "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
+        document.getElementsByTagName("head")[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+        isMobile = true;
+        mobileFullscreenButton.style.display = "block";
+      } else {
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        mobileFullscreenButton.style.display = "block";
+      }
 
-                if (room) {
-                    unityInstance.SendMessage('Croquet', 'SetSessionName', room);
-                }
-                console.log("Sending isMobile: " + isMobile);
-                window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());
-                if (walletAddress) {
-                    window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
-                }
-            }).catch((message) => {
-                alert(message);
-            });
-        };
-        document.body.appendChild(script);
+      // #if BACKGROUND_FILENAME
+      canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
+      // #endif
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        })
+          .then((unityInstance) => {
+            window.unityInstance = unityInstance; // Set unityInstance globally
+            loadingBar.style.display = "none";
+            fullscreenButton.onclick = () => {
+              unityInstance.SetFullscreen(1);
+            };
+
+            var scriptPlaceholder = document.getElementById("script-placeholder");
+            var additionalScript = document.createElement("script");
+            additionalScript.src = "index-[contenthash:8].js";
+            scriptPlaceholder.appendChild(additionalScript);
+
+            if (room) {
+              unityInstance.SendMessage("Croquet", "SetSessionName", room);
+            }
+            console.log("Sending isMobile: " + isMobile);
+            window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());
+            if (walletAddress) {
+              window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
+            }
+          })
+          .catch((message) => {
+            alert(message);
+          });
+      };
+      document.body.appendChild(script);
     </script>
-</body>
+  </body>
 </html>
