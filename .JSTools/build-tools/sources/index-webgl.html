@@ -7,14 +7,47 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico" />
     <link rel="stylesheet" href="TemplateData/style.css" />
     <style>
-        /* Your existing styles */
+    html, body, #unity-container, #unity-canvas {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      #unity-container {
+        position: relative;
+      }
+      #unity-canvas {
+        width: 100%;
+        height: 100%;
+      }
+      #fullscreen-button, #connect-wallet-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        padding: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      #connect-wallet-button {
+        top: 50px;
+      }
+      #wallet-address {
+        position: absolute;
+        top: 90px;
+        right: 10px;
+        z-index: 1000;
+        color: white;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@magicblock-labs/soar-sdk"></script>
 </head>
 <body>
     <div id="unity-container" class="unity-desktop">
-        <!-- Your existing HTML content -->
         <canvas id="unity-canvas"></canvas>
         <div id="unity-loading-bar">
             <div id="unity-logo"></div>
@@ -31,9 +64,15 @@
         <button id="fullscreen-button" onclick="toggleFullscreen()">Fullscreen</button>
     </div>
     <button id="connect-wallet-button">Connect Wallet</button>
+    <button id="initialize-player-button" style="display:none;">Initialize Player Account</button>
+    <button id="register-player-button" style="display:none;">Register Player Entry</button>
+    <button id="submit-score-button" style="display:none;">Submit Score</button>
 
     <script>
         const connectWalletButton = document.getElementById('connect-wallet-button');
+        const initializePlayerButton = document.getElementById('initialize-player-button');
+        const registerPlayerButton = document.getElementById('register-player-button');
+        const submitScoreButton = document.getElementById('submit-score-button');
         let walletAddress = null;
 
         async function connectWallet() {
@@ -46,6 +85,9 @@
                     const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
                     connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
                     console.log(`Connected to wallet ${walletAddress}`);
+                    initializePlayerButton.style.display = 'inline';
+                    registerPlayerButton.style.display = 'inline';
+                    submitScoreButton.style.display = 'inline';
                     if (window.unityInstance) {
                         window.unityInstance.SendMessage('Croquet', 'Initialize', walletAddress);
                     }
@@ -58,6 +100,67 @@
         }
 
         connectWalletButton.addEventListener('click', connectWallet);
+
+        async function initializePlayerAccount() {
+            try {
+                const response = await fetch('/initializePlayerAccount', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ playerPublicKey: walletAddress })
+                });
+                const data = await response.json();
+                const transaction = SolanaWeb3.Transaction.from(Buffer.from(data.transaction, 'base64'));
+                const signedTransaction = await window.solana.signTransaction(transaction);
+                await window.solana.sendAndConfirmTransaction(signedTransaction);
+                console.log('Player account initialized successfully');
+            } catch (error) {
+                console.error('Error initializing player account:', error);
+            }
+        }
+
+        async function registerPlayerEntry() {
+            try {
+                const response = await fetch('/registerPlayerEntry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ playerPublicKey: walletAddress })
+                });
+                const data = await response.json();
+                const transaction = SolanaWeb3.Transaction.from(Buffer.from(data.transaction, 'base64'));
+                const signedTransaction = await window.solana.signTransaction(transaction);
+                await window.solana.sendAndConfirmTransaction(signedTransaction);
+                console.log('Player entry registered successfully');
+            } catch (error) {
+                console.error('Error registering player entry:', error);
+            }
+        }
+
+        async function submitScore() {
+            try {
+                const score = prompt('Enter your score:');
+                if (!score) return;
+
+                const response = await fetch('/submitScore', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ playerPrivateKey: window.solana.privateKey, score: parseInt(score) })
+                });
+                const data = await response.json();
+                console.log('Score submitted successfully:', data);
+            } catch (error) {
+                console.error('Error submitting score:', error);
+            }
+        }
+
+        initializePlayerButton.addEventListener('click', initializePlayerAccount);
+        registerPlayerButton.addEventListener('click', registerPlayerEntry);
+        submitScoreButton.addEventListener('click', submitScore);
 
         function requestServerTimeFromWebpage(walletAddress) {
             fetch('/get-server-time', {
@@ -98,7 +201,7 @@
         window.requestServerTimeFromWebpage = requestServerTimeFromWebpage;
         window.submitHighScoreFromWebpage = submitHighScoreFromWebpage;
     </script>
-    <!-- Include the Unity Loader -->
+    <div id="script-placeholder"></div>
     <script>
         var isMobile = false;
         var container = document.querySelector("#unity-container");
