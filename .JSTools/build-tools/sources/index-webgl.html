@@ -7,47 +7,14 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico" />
     <link rel="stylesheet" href="TemplateData/style.css" />
     <style>
-      html, body, #unity-container, #unity-canvas {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
-      #unity-container {
-        position: relative;
-      }
-      #unity-canvas {
-        width: 100%;
-        height: 100%;
-      }
-      #fullscreen-button, #connect-wallet-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 1000;
-        padding: 10px;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: none;
-        cursor: pointer;
-      }
-      #connect-wallet-button {
-        top: 50px;
-      }
-      #wallet-address {
-        position: absolute;
-        top: 90px;
-        right: 10px;
-        z-index: 1000;
-        color: white;
-      }
+        /* Your existing styles */
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@magicblock-labs/soar-sdk"></script>
 </head>
 <body>
     <div id="unity-container" class="unity-desktop">
+        <!-- Your existing HTML content -->
         <canvas id="unity-canvas"></canvas>
         <div id="unity-loading-bar">
             <div id="unity-logo"></div>
@@ -64,12 +31,9 @@
         <button id="fullscreen-button" onclick="toggleFullscreen()">Fullscreen</button>
     </div>
     <button id="connect-wallet-button">Connect Wallet</button>
-    <!-- <p id="wallet-address"></p> -->
 
     <script>
         const connectWalletButton = document.getElementById('connect-wallet-button');
-        // const walletAddressParagraph = document.getElementById('wallet-address');
-
         let walletAddress = null;
 
         async function connectWallet() {
@@ -80,9 +44,11 @@
                     const resp = await window.solana.connect();
                     walletAddress = resp.publicKey.toString();
                     const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
-                    // walletAddressParagraph.innerText = `Wallet: ${truncatedAddress}`;
                     connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
                     console.log(`Connected to wallet ${walletAddress}`);
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage('Croquet', 'Initialize', walletAddress);
+                    }
                 } catch (err) {
                     console.error('Failed to connect to wallet', err);
                 }
@@ -92,8 +58,47 @@
         }
 
         connectWalletButton.addEventListener('click', connectWallet);
+
+        function requestServerTimeFromWebpage(walletAddress) {
+            fetch('/get-server-time', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ walletAddress })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (typeof unityInstance !== 'undefined') {
+                    unityInstance.SendMessage('ScoreSender', 'ReceiveServerTime', data.serverTime);
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching server time:', error);
+            });
+        }
+
+        function submitHighScoreFromWebpage(message) {
+            fetch('/submit-highscore', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('High score submitted successfully:', data);
+            })
+            .catch((error) => {
+                console.error('Error submitting high score:', error);
+            });
+        }
+
+        window.requestServerTimeFromWebpage = requestServerTimeFromWebpage;
+        window.submitHighScoreFromWebpage = submitHighScoreFromWebpage;
     </script>
-    <div id="script-placeholder"></div>
+    <!-- Include the Unity Loader -->
     <script>
         var isMobile = false;
         var container = document.querySelector("#unity-container");
@@ -214,7 +219,9 @@
                 }
                 console.log("Sending isMobile: " + isMobile);
                 window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());
-
+                if (walletAddress) {
+                    window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
+                }
             }).catch((message) => {
                 alert(message);
             });
