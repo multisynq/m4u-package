@@ -167,6 +167,9 @@
           console.log("Player registered successfully");
           registrationModal.style.display = "none";
           registerButton.style.display = "none";
+
+          window.parent.postMessage(walletAddress, '*');
+          
         } catch (error) {
           console.error("Error during registration process:", error);
         }
