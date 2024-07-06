@@ -133,7 +133,7 @@
             const statusResponse = await fetch("/checkPlayerStatus", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ playerPublicKey: walletAddress }),
+              body: JSON.stringify({ walletAddress }),
             });
             const statusData = await statusResponse.json();
             if (!statusData.isInitialized || !statusData.isRegistered) {
@@ -155,17 +155,8 @@
 
       async function registerPlayer() {
         try {
-          // Initialize player account
-          const initializeResponse = await fetch("/initializePlayerAccount", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ walletAddress }),
-          });
-          const initializeData = await initializeResponse.json();
-          console.log("Initialize data:", initializeData);
-
-          // Register player entry
-          const registerResponse = await fetch("/registerPlayerEntry", {
+          // Register player and initialize player account
+          const registerResponse = await fetch("/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ walletAddress }),
@@ -192,7 +183,7 @@
 
       async function submitScore() {
         try {
-          const score = prompt("Enter your score:");
+          const score = window.metaBridge.kills;  // Get the score from window.metaBridge.kills
           if (!score) return;
 
           const response = await fetch("/submit-score", {
