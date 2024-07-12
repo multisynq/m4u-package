@@ -58,7 +58,10 @@
         z-index: 1000;
         color: white;
       }
-      #registration-modal {
+      #registration-modal,
+      #game-end-modal,
+      #submit-score-modal {
+        display: none;
         background: rgba(0, 0, 0, 0.8);
         position: fixed;
         top: 0;
@@ -69,14 +72,14 @@
         justify-content: center;
         align-items: center;
       }
-      #registration-modal-content {
+      #registration-modal-content,
+      #game-end-modal-content,
+      .modal-content {
         background: white;
         padding: 20px;
         border-radius: 10px;
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@magicblock-labs/soar-sdk"></script>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -96,151 +99,10 @@
       <button id="fullscreen-button" onclick="toggleFullscreen()">
         Fullscreen
       </button>
-      <button id="connect-wallet-button">Connect Wallet</button>
-      <button id="initialize-player-button">Register Player</button>
-      <button id="submit-score-button">Submit Score</button>
-    </div>
-    <!-- Registration Modal -->
-    <div id="registration-modal" style="display: none">
-      <div id="registration-modal-content">
-        <h2>Register Player</h2>
-        <button id="modal-register-button">Register</button>
-        <button id="modal-close-button">Close</button>
-      </div>
     </div>
 
     <script>
-      const connectWalletButton = document.getElementById("connect-wallet-button");
-      const registerButton = document.getElementById("initialize-player-button");
-      const submitScoreButton = document.getElementById("submit-score-button");
-      const registrationModal = document.getElementById("registration-modal");
-      const modalRegisterButton = document.getElementById("modal-register-button");
-      const modalCloseButton = document.getElementById("modal-close-button");
-      let walletAddress = null;
-
-      async function connectWallet() {
-        const isPhantomInstalled = window.solana && window.solana.isPhantom;
-
-        if (isPhantomInstalled) {
-          try {
-            const resp = await window.solana.connect();
-            walletAddress = resp.publicKey.toString();
-            const truncatedAddress = `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`;
-            connectWalletButton.innerText = `Wallet: ${truncatedAddress}`;
-            console.log(`Connected to wallet ${walletAddress}`);
-
-            // Check player status
-            const statusResponse = await fetch("/checkPlayerStatus", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ walletAddress }),
-            });
-            const statusData = await statusResponse.json();
-            if (!statusData.isInitialized || !statusData.isRegistered) {
-              registerButton.style.display = "inline";
-            }
-            submitScoreButton.style.display = "inline";
-            if (window.unityInstance) {
-              window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
-            }
-          } catch (err) {
-            console.error("Failed to connect to wallet", err);
-          }
-        } else {
-          alert("Solana wallet not found. Please install a wallet extension like Phantom.");
-        }
-      }
-
-      connectWalletButton.addEventListener("click", connectWallet);
-
-      async function registerPlayer() {
-        try {
-          // Register player and initialize player account
-          const registerResponse = await fetch("/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ walletAddress }),
-          });
-          const registerData = await registerResponse.json();
-          console.log("Register data:", registerData);
-
-          console.log("Player registered successfully");
-          registrationModal.style.display = "none";
-          registerButton.style.display = "none";
-
-          window.parent.postMessage(walletAddress, '*');
-          
-        } catch (error) {
-          console.error("Error during registration process:", error);
-        }
-      }
-
-      registerButton.addEventListener("click", () => {
-        registrationModal.style.display = "flex";
-      });
-
-      modalRegisterButton.addEventListener("click", registerPlayer);
-      modalCloseButton.addEventListener("click", () => {
-        registrationModal.style.display = "none";
-      });
-
-      async function submitScore() {
-        try {
-          const score = window.metaBridge.kills;  // Get the score from window.metaBridge.kills
-          if (!score) return;
-
-          const response = await fetch("/submit-score", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              walletAddress,
-              score: parseInt(score),
-            }),
-          });
-
-          const data = await response.json();
-          console.log("Score submitted successfully:", data);
-        } catch (error) {
-          console.error("Error submitting score:", error);
-        }
-      }
-
-      submitScoreButton.addEventListener("click", submitScore);
-
-      function requestServerTimeFromWebpage(walletAddress) {
-        fetch("/get-server-time", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ walletAddress }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (typeof unityInstance !== "undefined") {
-              unityInstance.SendMessage("ScoreSender", "ReceiveServerTime", data.serverTime);
-            }
-          })
-          .catch((error) => {
-            console.error("Error fetching server time:", error);
-          });
-      }
-
-      function submitHighScoreFromWebpage(message) {
-        fetch("/submit-highscore", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: message }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            console.log("High score submitted successfully:", data);
-          })
-          .catch((error) => {
-            console.error("Error submitting high score:", error);
-          });
-      }
-
-      window.requestServerTimeFromWebpage = requestServerTimeFromWebpage;
-      window.submitHighScoreFromWebpage = submitHighScoreFromWebpage;
+      let walletAddress = "null";
     </script>
     <div id="script-placeholder"></div>
     <script>
@@ -303,15 +165,7 @@
       var config = {
         dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
         frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
-        // #if USE_WASM
         codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
-        // #endif
-        // #if MEMORY_FILENAME
-        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
-        // #endif
-        // #if SYMBOLS_FILENAME
-        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
-        // #endif
         streamingAssetsUrl: "StreamingAssets",
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
@@ -336,9 +190,7 @@
         mobileFullscreenButton.style.display = "block";
       }
 
-      // #if BACKGROUND_FILENAME
       canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
-      // #endif
       loadingBar.style.display = "block";
 
       var script = document.createElement("script");
@@ -372,7 +224,33 @@
             alert(message);
           });
       };
+
       document.body.appendChild(script);
+
+      function sendMessageToParent(type, data) {
+        parent.postMessage({ type, ...data }, "*");
+      }
+
+      // Example usage in Unity script
+      function showSubmitScoreModal(kills) {
+        sendMessageToParent("showSubmitScoreModal", { kills });
+      }
+
+      function showEndGameModal() {
+        sendMessageToParent("showEndGameModal", {});
+      }
+
+      function onGameEnd() {
+        // Notify parent window that the game has ended
+        Croquet.publish(this.sessionId, "gameEnded", {});
+      }
+
+      // Function to handle messages from the parent window
+      window.addEventListener("message", function (event) {
+        if (event.data === "endGame") {
+          onGameEnd();
+        }
+      });
     </script>
   </body>
 </html>
