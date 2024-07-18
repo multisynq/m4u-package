@@ -159,6 +159,7 @@ public class MultisynqWelcomeEW : EditorWindow {
   Label Node_Message_Lbl;
   Button TryAuto_Btn;
   Button GotoNodePath_Btn;
+  DropdownField Node_Dropdown;
 
   VisualElement ApiKey_Status_Img; // API KEY
   Label ApiKey_Message_Lbl;
@@ -200,13 +201,20 @@ public class MultisynqWelcomeEW : EditorWindow {
   private const string cqSettingsAssetOutputPath = "Assets/Settings/CroquetSettings_XXXXXXXX.asset";
 
   //=============================================================================
+  static private MultisynqWelcomeEW _Instance;
+  static public MultisynqWelcomeEW Instance { 
+    get {
+      if (_Instance == null)_Instance = GetWindow<MultisynqWelcomeEW>();
+      return _Instance;
+    }
+    private set{}
+  }
 
   [MenuItem("Croquet/==Multisynq Welcome (from Package!)",priority=10)]
   public static void ShowMultisynqWelcome() {
-    var ceWindow = GetWindow<MultisynqWelcomeEW>();
     // Assets/Scripts/Editor/MultisynqEditorWindow/Images/MultiSynq_Icon.png
     var icon = AssetDatabase.LoadAssetAtPath<Texture>(ewFolder + "Images/MultiSynq_Icon.png");
-    ceWindow.titleContent = new GUIContent("Multisynq Welcome", icon);
+    Instance.titleContent = new GUIContent("Multisynq Welcome", icon);
   }
 
   void AllStatusToBlank() {
@@ -250,45 +258,60 @@ public class MultisynqWelcomeEW : EditorWindow {
     // CHECK READINESS
     SetupButton("CheckIfReady_Btn", ref CheckIfReady_Btn, Clk_CheckIfReady);
     // READY
-    SetupVisElem("Ready_Status_Img",  ref Ready_Status_Img);
-    SetupLabel(  "Ready_Message_Lbl",   ref Ready_Message_Lbl); 
+    SetupVisElem("Ready_Status_Img",   ref Ready_Status_Img);
+    SetupLabel(  "Ready_Message_Lbl",  ref Ready_Message_Lbl); 
     SetupButton( "Awesome_Btn",        ref Awesome_Btn,        Clk_BeAwesome);
     SetupButton( "Top_Ready_Docs_Btn", ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
     // SETTINGS
-    SetupVisElem("Settings_Status_Img", ref Settings_Status_Img);
-    SetupLabel(  "Settings_Message_Lbl",  ref Settings_Message_Lbl);
+    SetupVisElem("Settings_Status_Img",  ref Settings_Status_Img);
+    SetupLabel(  "Settings_Message_Lbl", ref Settings_Message_Lbl);
     SetupButton( "GotoSettings_Btn",     ref GotoSettings_Btn,   Clk_GotoSettings);
     SetupButton( "SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
     // NODE
-    SetupVisElem("Node_Status_Img", ref Node_Status_Img);
-    SetupLabel(  "Node_Message_Lbl",  ref Node_Message_Lbl);
+    SetupVisElem("Node_Status_Img",  ref Node_Status_Img);
+    SetupLabel(  "Node_Message_Lbl", ref Node_Message_Lbl);
     SetupButton( "GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath);
     SetupButton( "TryAuto_Btn",      ref TryAuto_Btn,      Clk_AutoSetupNode);
+    Node_Dropdown = rootVisualElement.Query<DropdownField>("Node_Dropdown").First();
+    Node_Dropdown.RegisterValueChangedCallback( (evt) => {
+      string nodePath = evt.newValue.Replace(" ∕ ", "/");
+      string nodeVer = TryNodePath(nodePath);
+      if (nodeVer == null) {
+        Statuses.node.error.Set();
+      } else {
+        Statuses.node.success.Set();
+        // set the CroquetSetting.nodePath
+        var cqStgs = FindProjectCqSettings();
+        cqStgs.pathToNode = nodePath;
+      }
+      CheckAllStatusForReady();
+    });
+
     // API KEY
     SetupVisElem("ApiKey_Status_Img",  ref ApiKey_Status_Img);
-    SetupLabel(  "ApiKey_Message_Lbl",   ref ApiKey_Message_Lbl);
-    SetupButton( "SignUpApi_Btn",    ref SignUpApi_Btn,   Clk_SignUpApi);
-    SetupButton( "GotoApiKey_Btn",   ref GotoApiKey_Btn,  Clk_EnterApiKey);
-    SetupButton( "ApiKey_Docs_Btn",  ref ApiKey_Docs_Btn, Clk_ApiKey_Docs);
+    SetupLabel(  "ApiKey_Message_Lbl", ref ApiKey_Message_Lbl);
+    SetupButton( "SignUpApi_Btn",      ref SignUpApi_Btn,   Clk_SignUpApi);
+    SetupButton( "GotoApiKey_Btn",     ref GotoApiKey_Btn,  Clk_EnterApiKey);
+    SetupButton( "ApiKey_Docs_Btn",    ref ApiKey_Docs_Btn, Clk_ApiKey_Docs);
     // BRIDGE
-    SetupVisElem("HaveBridge_Status_Img", ref HaveBridge_Status_Img);
-    SetupLabel(  "HaveBridge_Message_Lbl",  ref HaveBridge_Message_Lbl);
+    SetupVisElem("HaveBridge_Status_Img",  ref HaveBridge_Status_Img);
+    SetupLabel(  "HaveBridge_Message_Lbl", ref HaveBridge_Message_Lbl);
     SetupButton( "GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,   Clk_GotoBridgeGob);
     SetupButton( "CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
     // BRIDGE HAS STEEINGS
     SetupVisElem("BridgeHasSettings_Img",             ref BridgeHasSettings_Img);
-    SetupLabel(  "BridgeHasSettings_Message_Lbl",      ref BridgeHasSettings_Message_Lbl);
+    SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref BridgeHasSettings_Message_Lbl);
     SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
     SetupButton( "BridgeHasSettings_Goto_Btn",        ref BridgeHasSettings_Goto_Btn,        Clk_BridgeHasSettings_Goto);
     // JS BUILD TOOLS
-    SetupVisElem("JSBuildTools_Img",          ref JSBuildTools_Img);
-    SetupLabel(  "JSBuildTools_Message_Lbl",    ref JSBuildTools_Message_Lbl);
+    SetupVisElem("JSBuildTools_Img",           ref JSBuildTools_Img);
+    SetupLabel(  "JSBuildTools_Message_Lbl",   ref JSBuildTools_Message_Lbl);
     SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
     SetupButton( "GotoJSBuildToolsFolder_Btn", ref GotoJSBuildToolsFolder_Btn, Clk_GotoJSBuildToolsFolder);
     // VERSION MATCH - JS BUILD TOOLS
-    SetupVisElem("JbtVersionMatch_Img",        ref JbtVersionMatch_Img);
-    SetupLabel(  "JbtVersionMatch_Message_Lbl",  ref JbtVersionMatch_Message_Lbl);
-    SetupButton( "RebuildToMatchPkg_Btn",       ref RebuildToMatchPkg_Btn,       Clk_RebuildToMatchPkg);
+    SetupVisElem("JbtVersionMatch_Img",         ref JbtVersionMatch_Img);
+    SetupLabel(  "JbtVersionMatch_Message_Lbl", ref JbtVersionMatch_Message_Lbl);
+    SetupButton( "RebuildToMatchPkg_Btn",       ref RebuildToMatchPkg_Btn,     Clk_RebuildToMatchPkg);
     // SetupButton("XXXXX_Btn", ref XXXX_Btn, Clk_XXX);
     // JS BUILD
     SetupVisElem("JSBuild_Status_Img", ref JSBuild_Status_Img);
@@ -413,6 +436,9 @@ public class MultisynqWelcomeEW : EditorWindow {
     //-----
     if (allRdy) AllAreReady();
     else        AllAreReady(false);
+    var nps = FindAllNodeIntances().Select( f => (f+"/node").Replace("/"," ∕ ") ).ToList();
+    Debug.Log("Clk_CheckIfReady() Node Paths: [\n" + nps.Aggregate("", (acc, f) => $"{acc}  {f},\n") + "]");
+    Node_Dropdown.choices = nps;
   }
 
   //-- Clicks - READY --------------------------------
@@ -448,7 +474,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     // make buttons for goto Node path and API key visible
     GotoNodePath_Btn.style.visibility = Visibility.Visible;
     GotoApiKey_Btn.style.visibility   = Visibility.Visible;
-    TryAuto_Btn.style.visibility = Visibility.Visible;
+    // TryAuto_Btn.style.visibility = Visibility.Visible;
     Check_Settings();
     CheckAllStatusForReady();
   }
@@ -474,13 +500,66 @@ public class MultisynqWelcomeEW : EditorWindow {
     ShowNotification(new GUIContent(msg), 4);
   }
 
+  List<string> FindAllNodeIntances() {
+
+    List<string> nodePaths = new List<string>();
+    // loop through possible node folders (by platform) and collect found ones in a List
+    var nodeFolders = new List<string>();
+    // fetch the home folder and expand any ~
+    
+    if (Application.platform == RuntimePlatform.OSXEditor) {
+      string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+      nodeFolders = new List<string>{ 
+        "/usr/local/bin", 
+        "/opt/homebrew/bin", 
+        "/usr/bin", 
+        $"{home}/.nvm/versions/node/*/bin" 
+      };
+    } else if (Application.platform == RuntimePlatform.WindowsEditor) {
+      nodeFolders = new List<string>{ 
+        "C:/Program Files/nodejs/node.exe" 
+      };
+    }
+    // loop through the subfolders and expanding any * wildcards
+    // make sure to split any folders with * into parent and wildcard
+
+    var existingFolders = nodeFolders
+      .SelectMany(folder => {
+        if (folder.Contains("*")) {
+          var parts = folder.Split('*');
+          // remove any trailing slashes
+          var parent = parts[0].TrimEnd('/');
+          var child = parts[1].TrimStart('/');
+          var expanded   = Directory.GetDirectories(parent, "*");
+          var candidates = expanded.Select( d => d + "/" + child );
+          // Debug.Log(  "Parent: " + parent + " Child: " + child +  " Found: " + y.Aggregate("", (acc, f) => acc + f + "\n") );
+          return candidates; // i.e ["/usr/local/bin", "/opt/homebrew/bin"]
+        } else {
+          Debug.Log("Folder: " + folder);
+          return new string[]{ folder };
+        }
+      }).Where( folder => File.Exists(folder + "/node") && File.Exists(folder + "/npm") ).ToList();
+
+    Debug.Log("Count:"+ existingFolders.Count + " Found " + existingFolders.Aggregate("", (acc, f) => acc + f + "\n"));
+
+    return existingFolders;
+  }
+  
   private void Clk_AutoSetupNode() { // NODE  ------------- Click
     Debug.Log("Auto Setup Node!");
     switch (Application.platform) {
       case RuntimePlatform.OSXEditor:
         Debug.Log("OSX Editor Detected");
         var cqStgs = FindProjectCqSettings();
-        cqStgs.pathToNode = "/usr/local/bin/node";
+        cqStgs.pathToNode = FindAllNodeIntances().Aggregate("", (acc, f) => acc + f + "\n");
+        // TODO:
+        // TODO:
+        // TODO:
+        // TODO: Check for npm as well!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // TODO:
+        // TODO:
+        // TODO:
+        // TODO:
         Check_Node();
         break;
       case RuntimePlatform.WindowsEditor:
@@ -664,13 +743,13 @@ public class MultisynqWelcomeEW : EditorWindow {
 
   //=============================================================================
 
-  private void NotifyAndLog(string msg, float seconds = 4) {
-    ShowNotification(new GUIContent(msg), seconds);
+  static public void NotifyAndLog(string msg, float seconds = 4) {
+    Instance.ShowNotification(new GUIContent(msg), seconds);
     Debug.Log(msg);
   }
 
-  private void Notify(string msg, float seconds = 4) {
-    ShowNotification(new GUIContent(msg), seconds);
+  static public void Notify(string msg, float seconds = 4) {
+    Instance.ShowNotification(new GUIContent(msg), seconds);
   }
 
   //=============================================================================
@@ -863,7 +942,7 @@ public class MultisynqWelcomeEW : EditorWindow {
     // load .last-install-version file to get version
     // var lastInstallVersion = File.ReadAllText(".last-install-version");
     // var lastInstallVersionJson = JsonUtility.FromJson<LastInstallVersion>(lastInstallVersion);
-
+    
     Statuses.versionMatch.error.Set();
     // TODO: Implement
     // TODO: Implement
@@ -885,7 +964,7 @@ public class MultisynqWelcomeEW : EditorWindow {
 
   private string TryNodePath(string nodePath) {
     if (!File.Exists(nodePath)) {
-      Debug.LogError("Could not find node path file: " + nodePath);
+      Notify("Could not find node path file:\n" + nodePath);
       return null;
     } else {
       return GetNodeVersion(nodePath, "-v");

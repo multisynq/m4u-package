@@ -40,15 +40,16 @@
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement name="NodeStatus_Lay" style="width: 100%; height: 100%; flex-direction: row;">
+                    <ui:VisualElement name="NodeStatus_Lay" style="width: 100%; height: 183%; flex-direction: row; flex-wrap: wrap; overflow: hidden;">
                         <ui:VisualElement name="Node_Status_Img" style="background-image: url(&apos;project://database/Assets/Fingers/Prefab/Textures/DPad/DPadRightSelected-Grey.png?fileID=21300000&amp;guid=7bd1f8ff1515c1c4696c64bd214f9f74&amp;type=3#DPadRightSelected-Grey&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
-                        <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
+                        <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px; width: 90%; height: auto;">
                             <ui:Label text=" &lt;b&gt;Node&lt;/b&gt; needs your help getting set up." display-tooltip-when-elided="true" name="Node_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Try Auto Setup" display-tooltip-when-elided="true" name="TryAuto_Btn" enable-rich-text="false" />
                                 <ui:Button text="Goto Node Path Setting" display-tooltip-when-elided="true" name="GotoNodePath_Btn" enable-rich-text="false" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="Node_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
+                            <ui:DropdownField label="Found node paths (pick to set)" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="Node_Dropdown" style="flex-wrap: nowrap; flex-direction: column; align-items: stretch; justify-content: center; height: 36px; width: 95%;" />
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="ApiKeyStatus_Lay" style="width: 100%; height: 100%; flex-direction: row;">
