@@ -62,7 +62,7 @@ public class CroquetBuilder
 
     public static void FileReaderIsReady(CroquetFileReader reader) {
         // as soon as the file reader starts up, ask it to fetch any files we need.
-#if UNITY_WEBGL && !UNITY_EDITOR
+#if UNITY_WEBGL && !UNITY_EDITOR // only needed in built WebGL, not in Editor or in other builds
         reader.FetchFile(JSToolsRecordInBuild, JSToolsRecordResult);
 #endif
     }
@@ -244,6 +244,14 @@ public class CroquetBuilder
         sceneName = scene.name;
         sceneBridgeComponent = bridgeComp;
         sceneRunnerComponent = runnerComp;
+
+        #if UNITY_WEBGL
+            if (Object.FindObjectOfType<CroquetFileReader>() == null)
+            {
+                var cqBridge = Object.FindObjectOfType<CroquetBridge>();
+                Debug.LogError("Missing required CroquetFileReader in scene: '" + scene.name + "' Add one to your Croquet object!", cqBridge.?gameObject);
+            }
+        #endif
     }
 
     // =========================================================================================
