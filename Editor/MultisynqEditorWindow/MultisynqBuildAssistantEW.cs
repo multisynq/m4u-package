@@ -64,6 +64,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   Label JbtVersionMatch_Message_Lbl;
   Button ReinstallTools_Btn;
   // Button GotoJSBuildToolsFolder_Btn;
+  Button OpenBuildPanel_Btn;
 
   VisualElement JSBuild_Status_Img; // JS BUILD
   Label JSBuild_Message_Lbl;
@@ -118,8 +119,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupUI();
     SetupStatuses();
   }
-  
-  //=============================================================================
+
   //=============================================================================
   
   private void SetupUI() {
@@ -179,16 +179,17 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupLabel(  "JSBuildTools_Message_Lbl",   ref JSBuildTools_Message_Lbl);
     SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
     SetupButton( "GotoJSBuildToolsFolder_Btn", ref GotoJSBuildToolsFolder_Btn, Clk_GotoJSBuildToolsFolder);
-    // VERSION MATCH - JS BUILD TOOLS
-    SetupVisElem("JbtVersionMatch_Img",         ref JbtVersionMatch_Img);
-    SetupLabel(  "JbtVersionMatch_Message_Lbl", ref JbtVersionMatch_Message_Lbl);
-    SetupButton( "ReinstallTools_Btn",          ref ReinstallTools_Btn,     Clk_ReinstallTools);
     // SetupButton("XXXXX_Btn", ref XXXX_Btn, Clk_XXX);
     // JS BUILD
     SetupVisElem("JSBuild_Status_Img", ref JSBuild_Status_Img);
     SetupLabel(  "JSBuild_Message_Lbl",  ref JSBuild_Message_Lbl);
     SetupButton( "ToggleJSBuild_Btn",   ref ToggleJSBuild_Btn, Clk_ToggleJSBuild); // Start JS Build Watcher
     SetupButton( "Build_JsNow_Btn",     ref Build_JsNow_Btn,   Clk_Build_JsNow);
+    // VERSION MATCH - JS BUILD TOOLS
+    SetupVisElem("JbtVersionMatch_Img",         ref JbtVersionMatch_Img);
+    SetupLabel(  "JbtVersionMatch_Message_Lbl", ref JbtVersionMatch_Message_Lbl);
+    SetupButton( "ReinstallTools_Btn",          ref ReinstallTools_Btn,     Clk_ReinstallTools);
+    SetupButton( "OpenBuildPanel_Btn",          ref OpenBuildPanel_Btn,     Clk_OpenEditorBuildPanel);
     //-----
     // Hide most buttons
     HideMostButtons();
@@ -284,21 +285,21 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       "JS Build Tools installed!!! Well done!",
       "JS Build Tools status"
     );
-    MqWelcome_StatusSets.versionMatch = new StatusSet( JbtVersionMatch_Message_Lbl, JbtVersionMatch_Img,
-      // (info, warning, error, success)
-      $"Versions of {t_jsb} Tools and Built output match!",
-      $"Versions of {t_jsb} Tools and Built output do not match",
-      $"Versions of {t_jsb} Tools and Built output do not match! Click <b>Rebuild to Match</b> to fix.",
-      $"Versions of {t_jsb} Tools and Built output match!!! Well done!",
-      "Version Match status"
-    );
     MqWelcome_StatusSets.jsBuild = new StatusSet( JSBuild_Message_Lbl, JSBuild_Status_Img,
-      // (info, warning, error, success)
-      $"{t_jsb} is ready to go!",
+      // (info, warning, error, success, blank)
+      $"{t_jsb} output folder is present!",
       $"{t_jsb} is not ready",
       $"{t_jsb} needs your help getting set up.",
-      $"{t_jsb} path configured!!! Well done!",
+      $"{t_jsb} Build output folder found! Well done!",
       "JS Build status"
+    );
+    MqWelcome_StatusSets.versionMatch = new StatusSet( JbtVersionMatch_Message_Lbl, JbtVersionMatch_Img,
+      // (info, warning, error, success, blank)
+      $"Versions of {t_jsb} Tools and Built output match!",
+      $"Versions of {t_jsb} Tools and Built output do not match",
+      $"Versions of {t_jsb} Tools and Built output do not match!\n<b>Make a new or first build!</b>",
+      $"Versions of {t_jsb} Tools and Built output match!!! Well done!",
+      "Version Match status"
     );
     MqWelcome_StatusSets.AllStatusSetsToBlank();
   }
@@ -579,6 +580,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       return;
     }
     CroquetBuilder.StartBuild(false); // false => no watcher
+    Check_JS_Build();
   }
 
   //-- JS BUILD TOOLS --------------------------------
@@ -602,6 +604,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //-- VERSION MATCH - JS BUILD TOOLS --------------------------------
 
+  void Clk_OpenEditorBuildPanel() { // Open Build - JS BUILD TOOLS  ------------- Click
+    EditorWindow.GetWindow<BuildPlayerWindow>().Show();
+    EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes.Where( s => s.enabled ).ToArray();
+    if (scenes.Length == 0) {
+      NotifyAndLog("No scenes in Build Settings.\nAdd some scenes to build.");
+      return;
+    }
+  }
   void Clk_ReinstallTools() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
     CroquetMenu.InstallJSTools();
     Check_ToolsVersionMatch();
@@ -848,23 +858,22 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       ReinstallTools_Btn.style.visibility = Visibility.Visible;
     }
     ReinstallTools_Btn.style.visibility = Visibility.Visible;
-    return false;
+    OpenBuildPanel_Btn.style.visibility = Visibility.Visible;
+
+    return allMatch;
   }
   private bool Check_JS_Build() {
-    // TODO: 
-    // TODO: 
-    // TODO: 
-    // TODO: 
-    // TODO: 
-    // TODO: 
-    // if (havejsBuiltJsCode) {
+    var cqBridge = FindObjectOfType<CroquetBridge>();
+    string appName = cqBridge.appName;
+    string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, appName));
+    bool havejsBuildFolder = Directory.Exists(croquetJSFolder);
+    if (havejsBuildFolder) {
       MqWelcome_StatusSets.jsBuild.success.Set();
-    // } else {
+    } else {
       MqWelcome_StatusSets.jsBuild.error.Set();
       Build_JsNow_Btn.style.visibility = Visibility.Visible;
-    // }
-    // return havejsBuildFolder;
-    return false;
+    }
+    return havejsBuildFolder;
   }
 
   //=============================================================================  
