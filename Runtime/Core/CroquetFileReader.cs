@@ -5,9 +5,10 @@ using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
 
 // this is currently only needed in a WebGL deployment, where we have no way to carry out
-// a synchronous fetch of an arbitrary file from the deployment site.  its only use so far
+// a synchronous fetch of an arbitrary file from the deployment site.  Its only use so far
 // is in fetching the JS tools record (from which we learn the package version string).
 
+[AddComponentMenu("Croquet/CroquetFileReader")]
 public class CroquetFileReader : MonoBehaviour {
     public void Awake() {
         CroquetBuilder.FileReaderIsReady(this);

@@ -249,7 +249,7 @@ public class CroquetBuilder
             if (Object.FindObjectOfType<CroquetFileReader>() == null)
             {
                 var cqBridge = Object.FindObjectOfType<CroquetBridge>();
-                Debug.LogError("Missing required CroquetFileReader in scene: '" + scene.name + "' Add one to your Croquet object!", cqBridge.?gameObject);
+                Debug.LogError("Missing required CroquetFileReader in scene: '" + scene.name + "' Add one to your Croquet object!", cqBridge);
             }
         #endif
     }
