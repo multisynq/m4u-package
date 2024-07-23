@@ -1164,6 +1164,8 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
 
         foreach (var file in Directory.GetFiles(sourceDir))
         {
+            // filter out any ".meta" files
+            if (file.EndsWith(".meta")) continue;
             string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
             File.Copy(file, destFile, true);
         }
