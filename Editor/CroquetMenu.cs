@@ -207,7 +207,7 @@ public class CroquetMenu
     }
 
     [MenuItem(InstallJSToolsItem, false, 200)]
-    private static async void InstallJSTools()
+    public static async void InstallJSTools()
     {
         bool success = await CroquetBuilder.InstallJSTools();
         if (success)

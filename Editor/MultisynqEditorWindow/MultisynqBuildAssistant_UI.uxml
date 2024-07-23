@@ -1,7 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:ScrollView style="background-color: rgb(56, 56, 56);">
-        <ui:VisualElement name="Root" style="flex-direction: column; width: 100%; height: 100%;">
-            <ui:Foldout text="Welcome" name="Welcome_Foldout" style="width: 100%; height: 265px;">
+        <ui:VisualElement name="Root" style="flex-direction: column; width: 100%; height: 100%; color: rgb(236, 236, 236);">
+            <ui:VisualElement name="HideThese_Grp" style="flex-direction: row;">
+                <ui:VisualElement name="Checkmark_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Checkmark.png?fileID=2800000&amp;guid=959d182fd1e104592b3c20b96d8d61c4&amp;type=3#Checkmark&apos;); width: 24px; height: 24px; -unity-background-image-tint-color: rgb(117, 255, 118);" />
+                <ui:VisualElement name="Multiply_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Multiply.png?fileID=2800000&amp;guid=99f20c2b590504740b6d9918e398580e&amp;type=3#Multiply&apos;); width: 24px; height: 24px; -unity-background-image-tint-color: rgb(255, 95, 117);" />
+                <ui:VisualElement name="Blank_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 24px; height: 24px; -unity-background-image-tint-color: rgb(144, 144, 144);" />
+            </ui:VisualElement>
+            <ui:Foldout text="Welcome" name="Welcome_Foldout" style="width: 100%; height: auto; padding-bottom: 35px;">
                 <ui:VisualElement name="Hero_Ve" style="width: 100%; height: 200px;">
                     <ui:VisualElement name="Logo_Img" style="width: 100%; background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Logo.png?fileID=2800000&amp;guid=2701bc24092814a3f8dd208af8eb1600&amp;type=3#Multisynq_Logo&apos;); height: 126px; -unity-background-scale-mode: scale-to-fit;" />
                     <ui:VisualElement name="BlurbLbl_Ve">
@@ -11,8 +16,8 @@
                 </ui:VisualElement>
             </ui:Foldout>
             <ui:Foldout text="&lt;b&gt;3...&lt;color=green&gt;2...&lt;/color&gt;&lt;color=#00AAFF&gt;1...&lt;/color&gt;&lt;/b&gt;" name="Ready_Foldout" style="width: 100%;">
-                <ui:VisualElement name="SetupRoot" style="width: 100%; height: 100%; margin-bottom: 10px;">
-                    <ui:VisualElement style="align-items: center; margin-bottom: 15px;">
+                <ui:VisualElement name="SetupRoot_Foldout" style="width: 100%; height: 100%; margin-bottom: 10px;">
+                    <ui:VisualElement name="CheckReadyBtn_Grp" style="align-items: center; margin-bottom: 15px;">
                         <ui:Button text="Check If Ready" display-tooltip-when-elided="true" name="CheckIfReady_Btn" style="width: 50%; align-items: flex-start; justify-content: center; height: 26px;" />
                     </ui:VisualElement>
                     <ui:VisualElement name="ReadyStatus_Lay" style="width: 100%; height: 100%; flex-direction: row; margin-bottom: 10px;">
@@ -101,7 +106,7 @@
                         <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
                             <ui:Label text="Version Match - Built Output &amp; JS Build Tools" display-tooltip-when-elided="true" name="JbtVersionMatch_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
-                                <ui:Button text="Rebuild To Match Packge Version" display-tooltip-when-elided="true" name="RebuildToMatchPkg_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Reinstall Tools" display-tooltip-when-elided="true" name="ReinstallTools_Btn" />
                                 <ui:Button text="Goto BuildTools Folder" display-tooltip-when-elided="true" name="XXXX_Btn" style="display: none;" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="JbtVersionMatch_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
