@@ -447,15 +447,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       case RuntimePlatform.OSXEditor:
         Debug.Log("OSX Editor Detected");
         var cqStgs = FindProjectCqSettings();
-        cqStgs.pathToNode = FindAllNodeIntances().Aggregate("", (acc, f) => acc + f + "\n");
-        // TODO:
-        // TODO:
-        // TODO:
-        // TODO: Check for npm as well!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // TODO:
-        // TODO:
-        // TODO:
-        // TODO:
+        var nodePaths = FindAllNodeIntances();
+        if (nodePaths==null || nodePaths.Count == 0) {
+          NotifyAndLog("Node not found on your system. To get it: https://nodejs.org/en/download/prebuilt-installer");
+          MqWelcome_StatusSets.node.error.Set();
+          return;
+        } else {
+          cqStgs.pathToNode = nodePaths[0] + "/node";
+        }
         Check_Node();
         break;
       case RuntimePlatform.WindowsEditor:
