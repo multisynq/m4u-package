@@ -86,7 +86,7 @@
                             <ui:Label text="Bridge Component needs Settings" display-tooltip-when-elided="true" name="BridgeHasSettings_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
                                 <ui:Button text="Auto Connect Settings" display-tooltip-when-elided="true" name="BridgeHasSettings_AutoConnect_Btn" style="margin-left: 0;" />
-                                <ui:Button text="Goto Bridge Object" display-tooltip-when-elided="true" name="BridgeHasSettings_Goto_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Goto Croquet Settings" display-tooltip-when-elided="true" name="BridgeHasSettings_Goto_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="BridgeHasSettings_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
@@ -99,6 +99,21 @@
                                 <ui:Button text="Copy Tools to Build Folder" display-tooltip-when-elided="true" name="CopyJSBuildTools_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Goto BuildTools Folder" display-tooltip-when-elided="true" name="GotoJSBuildToolsFolder_Btn" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="JSBuildTools_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="HasAppJs_Lay" style="width: 100%; height: 100%; flex-direction: row;">
+                        <ui:VisualElement name="HasAppJs_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
+                            <ui:Label text="Has JS App Code" display-tooltip-when-elided="true" name="HasAppJs_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
+                            <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0; height: 100px;">
+                                <ui:Button text="(1) Set App Name on Bridge" display-tooltip-when-elided="true" name="SetAppName_Btn" />
+                                <ui:Button text="(2) Make App&apos;s JS File" display-tooltip-when-elided="true" name="MakeAppJsFile_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="HasAppJs_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="Btns2_Lay" style="flex-direction: row; margin-left: 0; height: 100px;">
+                                <ui:Button text="Goto Scene&apos;s App JS File" display-tooltip-when-elided="true" name="GotoAppJsFile_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Goto App JS Folder" display-tooltip-when-elided="true" name="GotoAppJsFolder_Btn" style="margin-left: 0;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
