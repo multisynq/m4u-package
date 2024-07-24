@@ -10,7 +10,8 @@ class LastInstalled {
       var json = File.ReadAllText(path);
       return FromJson(json);
     } catch (Exception e) {
-      Debug.LogError($"Need to attempt a build to have this. Could not load LastInstalled from path: {path}\n{e}");
+      var relativePath = path.Replace(Application.dataPath, "Assets");
+      Debug.LogError($"Need to attempt a build to make the missing file: /{relativePath}\n{e}");
       return new LastInstalled();
     }
   }
