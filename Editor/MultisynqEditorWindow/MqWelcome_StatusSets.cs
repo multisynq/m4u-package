@@ -10,8 +10,9 @@ static public class MqWelcome_StatusSets {
   static public StatusSet bridge;
   static public StatusSet bridgeHasSettings;
   static public StatusSet jsBuildTools;
-  static public StatusSet versionMatch;
   static public StatusSet jsBuild;
+  static public StatusSet hasAppJs;
+  static public StatusSet versionMatch;
 
   static public StatusSet[] AllMyStatusSets() {
     // return new StatusSet[]{ ready, settings, node, apiKey, bridge, bridgeHasSettings, jsBuildTools, versionMatch, jsBuild };
