@@ -26,7 +26,7 @@ console.log("unity-bridge.js loaded");
 
 // globalThis will equal window in a browser environment, and global in Node.js
 const PLATFORM_NODE = typeof window === "undefined";
-const PLATFORM_WEBGL = !PLATFORM_NODE && typeof window.unityInstance !== "undefined"; // having confirmed that window exists, we can ask about window.unityInstance (but could also use globalThis)
+const PLATFORM_WEBGL = !PLATFORM_NODE && window.UNITY_WEBGL; // set only in index-webgl.html
 const PLATFORM_WEBVIEW = !PLATFORM_NODE && !PLATFORM_WEBGL;
 const NATIVE_TIMING = !PLATFORM_WEBVIEW; // on a webview, we cannot trust JS timers
 
@@ -1481,7 +1481,7 @@ class GamePawnManager extends PawnManager {
 
       const mixinNames = manifest.mixins; // can be empty
       const mixins = ["Base"].concat(mixinNames).map((n) => gamePawnMixins[n]);
-      const PawnClass = mix(Pawn).with(...mixins);
+      const PawnClass = mix(Pawn).with(...mixins); // why are we not caching pawn classes with the same mixins?
       p = new PawnClass(actor);
       p.initialize(actor); // new: 2-phase init, so all constructors run to completion first
     }
