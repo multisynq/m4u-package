@@ -1,4 +1,6 @@
 
+using System;
+using Unity.VisualScripting.IonicZip;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -8,23 +10,25 @@ using UnityEngine.UIElements;
     public string statusStr;
     public Color color;
     public Label label;
-    public VisualElement imgToSet;
-    public VisualElement imgSrc;
+    public VisualElement statusIconToSetBgOn_VE;
+    public VisualElement iconToCloneBgFrom_VE;
     public StatusSet statusSet;
 
     public void Set() {
       label.text = message;
-      imgToSet.style.unityBackgroundImageTintColor = color;
+      statusIconToSetBgOn_VE.style.unityBackgroundImageTintColor = color;
       statusSet.status = statusStr;
-      if (imgSrc != null) {
+      if (iconToCloneBgFrom_VE != null) {
         // switch background image to the one that matches the status
-        imgToSet.style.backgroundImage = imgSrc.style.backgroundImage; // TODO: DOESN'T WORK. WHY???    =/
-        imgToSet.MarkDirtyRepaint();
-        string labelNameWithoutSuffix = label.name.Replace("_Lbl", "");
-        // Debug.Log($"{labelNameWithoutSuffix} => Status.set( {statusStr} )  srcImg.name={imgSrc.name}");
+        statusIconToSetBgOn_VE.style.backgroundImage = iconToCloneBgFrom_VE.style.backgroundImage;
+        statusIconToSetBgOn_VE.MarkDirtyRepaint();
+        // Func<string, Func<string, string>> NoSfx = (sfx)  => (name) => name.Replace(sfx, "");
+        // Func<string, string>               NoLbl = (name) => NoSfx("_Lbl")(name);
+        // Func<string, string>               NoImg = (name) => NoSfx("_Img")(name);
+        Debug.Log($"Status.Set() image of {statusIconToSetBgOn_VE.name} to be {iconToCloneBgFrom_VE.name}");
       } else {
-        imgToSet.style.backgroundImage = null;
-        imgToSet.MarkDirtyRepaint();
+        statusIconToSetBgOn_VE.style.backgroundImage = null;
+        statusIconToSetBgOn_VE.MarkDirtyRepaint();
         Debug.LogError("No source image for status: " + statusStr);
       }
     }
@@ -32,8 +36,8 @@ using UnityEngine.UIElements;
       this.message   = message;
       this.color     = color;
       this.label     = label;
-      this.imgToSet  = imgToSet;
-      this.imgSrc    = imgSrc;
+      this.statusIconToSetBgOn_VE  = imgToSet;
+      this.iconToCloneBgFrom_VE    = imgSrc;
       this.statusSet = statusSet;
       this.statusStr = statusStr;
     }

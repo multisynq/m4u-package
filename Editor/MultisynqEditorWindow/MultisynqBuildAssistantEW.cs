@@ -219,8 +219,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     // string t_js  = "<b><color=#E5DB1C>JS</color></b>";
 
     StatusSet.readyImg   = rootVisualElement.Query<VisualElement>("Checkmark_Img").First();
-    StatusSet.warningImg = rootVisualElement.Query<VisualElement>("Multiply_Img").First();
-    StatusSet.errorImg   = rootVisualElement.Query<VisualElement>("Multiply_Img").First();
+    StatusSet.warningImg = rootVisualElement.Query<VisualElement>("Warn_Img").First();
+    StatusSet.errorImg   = rootVisualElement.Query<VisualElement>("Multiply_Img").First(); // Red X
     StatusSet.successImg = rootVisualElement.Query<VisualElement>("Checkmark_Img").First();
     StatusSet.blankImg   = rootVisualElement.Query<VisualElement>("Blank_Img").First();
 
