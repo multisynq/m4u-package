@@ -7,42 +7,15 @@ const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
 
-class CustomHtmlPlugin {
-    apply(compiler) {
-        compiler.hooks.compilation.tap('CustomHtmlPlugin', (compilation) => {
-            HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
-                'CustomHtmlPlugin',
-                (data, cb) => {
-                    // Get the actual filename from the generated assets
-                    const generatedScripts = Object.keys(compilation.assets).filter(asset => asset.endsWith('.js'));
-                    const jsScriptWithHash_FName = generatedScripts.find(asset => asset.startsWith('index-') && asset.endsWith('.js'));
-                    
-                    if (jsScriptWithHash_FName) {
-                        const scriptTag = `additionalScript.src = "${jsScriptWithHash_FName}";`;
-                        data.html = data.html.replace('additionalScript.src = "index-[contenthash:8].js";', scriptTag);
-                        const outPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`);
-                        fs.writeFileSync(path.join(outPath, 'index.html'), data.html);
-                    }
-                    // // Write the altered index.html and the jsScriptWithHash_FName to WebGLTemplates
-                    // const outPath_WbGlTpmts = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`)
-                    // fs.writeFileSync(path.join(outPath_WbGlTpmts, 'index.html'          ), data.html);
-                    // fs.writeFileSync(path.join(outPath_WbGlTpmts, jsScriptWithHash_FName), data.assets.js);
-                    // console.log(`webpack.config.js: data.assets.js= ${data.assets.js?.slice(0, 100)}...`);
-                    // // Copy those to Streaming Assets as well
-                    // const outPath_StrAssts = path.join(__dirname, `../../../StreamingAssets/`)
-                    // fs.writeFileSync(path.join(outPath_StrAssts, 'index.html'          ), data.html);
-                    // fs.writeFileSync(path.join(outPath_StrAssts, jsScriptWithHash_FName), data.assets.js);
-                    cb(null, data);
-                }
-            );
-        });
-    }
-}
-
 module.exports = env => {
 const webGLPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`);
 const nonWebGLPath = path.join(__dirname, `../../../StreamingAssets/${env.appName}/`);
 const destination = env.useWebGL === 'true' ? webGLPath : nonWebGLPath;
+
+const lobbyDir = path.join(__dirname, `../../lobby`);
+const withLobby = env.useWebGL === 'true' && fs.existsSync(lobbyDir);
+
+// console.log(`Building for ${env.useWebGL==='true'?'WebGL': env.buildTarget}, ${withLobby?'with':'without'} lobby`);
 
 return {
     // infrastructureLogging: {
@@ -53,19 +26,27 @@ return {
         if (env.buildTarget === 'node') {
             try {
                 const index = `../../${env.appName}/index-node.js`;
-                require.resolve(index);
-                return index;
+                require.resolve(index); // throws if not found
+                return {index};
             } catch (e) {/* fall through and try index.js next */}
         }
         // otherwise (or if index-node not found) assume there is an index.js
         const index = `../../${env.appName}/index.js`;
         require.resolve(index);
-        return index;
+        // if this is a WebGL build, and there is a lobby, use both
+        if (withLobby) {
+            try {
+                const lobby = `../../lobby/lobby.js`;
+                require.resolve(lobby);
+                return { game: index, lobby };
+            } catch (e) { /* fall through and use index.js */}
+        }
+        return {index};
     },
     output: {
         path: destination,
         pathinfo: false,
-        filename: env.buildTarget === 'node' ? 'node-main.js' : 'index-[contenthash:8].js',
+        filename: env.buildTarget === 'node' ? 'node-main.js' : '[name]-[contenthash:8].js',
         chunkFilename: 'chunk-[contenthash:8].js',
         clean: !env.useWebGL // RemovePlugin below handles index-####.js files in WebGL
     },
@@ -82,7 +63,7 @@ return {
             '@croquet/game-models$': path.resolve(__dirname, 'sources/game-support-models.js'),
             '@croquet/unity-bridge$': path.resolve(__dirname, 'sources/unity-bridge.js'),
         },
-        fallback: { 
+        fallback: {
             "crypto": false,
             ...(env.useWebGL === 'true' ? {
                 "buffer": require.resolve("buffer/"),
@@ -123,9 +104,10 @@ return {
                         recursive: true
                     },
                     {
-                        // in build dir, remove old hashed index.js files and their maps
+                        // in build dir, remove old hashed .js files and their meta files
                         folder: webGLPath,
-                        method: absolutePath => new RegExp(/index-.+\.js/, 'm').test(absolutePath)
+                        method: absolutePath => /(index|lobby|main|game)-.+\.js/m.test(absolutePath)
+                            || (!withLobby && /game.html/m.test(absolutePath)),
                     }
                 ],
                 log: false
@@ -140,12 +122,19 @@ return {
                 }
             ]
         }),
+        // build main html if not building for node
         env.buildTarget !== 'node' && new HtmlWebpackPlugin({
             template: './sources/index.html',
-            filename: 'index.html',
-            inject: env.useWebGL !== 'true'
+            filename: withLobby ? 'game.html' : 'index.html',
+            chunks: ['index', 'game'], // main chunk is either index or game
+            inject: 'body',
         }),
-        env.useWebGL === 'true' && new CustomHtmlPlugin(), // fills in the line that loads index-[hash].js
+        withLobby && new HtmlWebpackPlugin({ // adds lobby.html to the build
+            template: `${lobbyDir}/lobby.html`,
+            filename: 'index.html',
+            inject: 'body',
+            chunks: ['lobby'],
+        }),
         env.useWebGL === 'true' && new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
         }),

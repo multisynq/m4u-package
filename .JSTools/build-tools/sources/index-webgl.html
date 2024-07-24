@@ -28,7 +28,6 @@
         color:black;
       }
       #fullscreen-button,
-      #connect-wallet-button,
       #initialize-player-button,
       #submit-score-button {
         position: absolute;
@@ -43,9 +42,6 @@
       #fullscreen-button {
         top: 500px;
       }
-      #connect-wallet-button {
-        top: 50px;
-      }
       #initialize-player-button {
         top: 90px;
         display: none;
@@ -53,13 +49,6 @@
       #submit-score-button {
         top: 130px;
         display: none;
-      }
-      #wallet-address {
-        position: absolute;
-        top: 170px;
-        right: 10px;
-        z-index: 1000;
-        color: white;
       }
       #registration-modal,
       #game-end-modal,
@@ -105,10 +94,7 @@
     </div>
 
     <script>
-      let walletAddress = "null";
-    </script>
-    <div id="script-placeholder"></div>
-    <script>
+      window.UNITY_WEBGL = true; // tell unity-bridge.js to not open websocket
       var isMobile = false;
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
@@ -209,19 +195,11 @@
               unityInstance.SetFullscreen(1);
             };
 
-            var scriptPlaceholder = document.getElementById("script-placeholder");
-            var additionalScript = document.createElement("script");
-            additionalScript.src = "index-[contenthash:8].js";
-            scriptPlaceholder.appendChild(additionalScript);
-
             if (room) {
               unityInstance.SendMessage("Croquet", "SetSessionName", room);
             }
             console.log("Sending isMobile: " + isMobile);
             window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());
-            if (walletAddress) {
-              window.unityInstance.SendMessage("Croquet", "Initialize", walletAddress);
-            }
           })
           .catch((message) => {
             alert(message);
