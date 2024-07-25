@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2948036424827437046}
   - component: {fileID: 3479632283134871797}
   - component: {fileID: 5552111265146463839}
+  - component: {fileID: -8384737280626780053}
   m_Layer: 0
   m_Name: CroquetBridge
   m_TagString: Untagged
@@ -49,7 +50,6 @@ MonoBehaviour:
   appName: 
   defaultSessionName: 
   launchViaMenuIntoScene: 
-  debugForceSceneRebuild: 0
   croquetDebugLogging:
     session: 0
     messages: 0
@@ -91,3 +91,15 @@ MonoBehaviour:
   runOffline: 0
   localReflector: 
   showWebview: 0
+--- !u!114 &-8384737280626780053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3475047936742257374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b61ccb71c8ff749478a1c1cf9b75294d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

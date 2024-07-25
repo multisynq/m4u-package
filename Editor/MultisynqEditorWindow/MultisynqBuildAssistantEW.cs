@@ -570,7 +570,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       cbGob.AddComponent<CroquetSpatialSystem>();
       cbGob.AddComponent<CroquetMaterialSystem>();
       cbGob.AddComponent<CroquetFileReader>();
-      cb.appName = "DefaultAppName";
+      // cb.appName = "DefaultAppName";
 
       Selection.activeGameObject = cbGob;
       string msg = "Created CroquetBridge\nGameObject in scene.\nSelected it.";
@@ -734,9 +734,15 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       // select the CroquetBridge in the scene
       Selection.activeGameObject = cqBridge.gameObject;
       EditorGUIUtility.PingObject(cqBridge.gameObject);
-      EditorUtility.DisplayDialog("Set App Name", "Enter a name for your app into the CroquetBridge's field \n\nappName\n\n \n\nWe will select it for you, so check the Inspector.", "Ok");
+      // in 100 ms, show a dialog to the user
+      EditorApplication.delayCall += ()=>{
+        EditorUtility.DisplayDialog(
+          "Set App Name", 
+          "Enter a name for your app into the CroquetBridge's Session Configuration field \n\nApp Name\n( appName )\n \n\nWe will select it for you, so check the Inspector.", 
+          "Ok"
+        );
+      };
     }
-
   }
   private void Clk_MakeAppJsFile() {}
   private void Clk_HasAppJs_Docs() {}
