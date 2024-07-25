@@ -15,6 +15,10 @@ using UnityEngine.UIElements;
     public StatusSet statusSet;
 
     public void Set() {
+      if (label==null) {
+        Debug.LogError("Status.Set() label is null for status: " + statusStr + " " + message);
+        return;
+      }
       label.text = message;
       statusIconToSetBgOn_VE.style.unityBackgroundImageTintColor = color;
       statusIconToSetBgOn_VE.style.backgroundImage = iconStyleToClone;

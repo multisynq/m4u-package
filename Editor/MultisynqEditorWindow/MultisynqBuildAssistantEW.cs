@@ -51,6 +51,11 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   Button GotoBridgeGob_Btn;
   Button CreateBridgeGob_Btn;
 
+  VisualElement HasCqSys_Img; // HAS CQ SYSTEMS 
+  Label HasCqSys_Message_Lbl;
+  Button AddCqSys_Btn;
+  Button ListMissingCqSys_Btn;
+
   VisualElement BridgeHasSettings_Img; // BRIDGE HAS SETTINGS
   Label BridgeHasSettings_Message_Lbl;
   Button BridgeHasSettings_AutoConnect_Btn;
@@ -178,7 +183,12 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupLabel(  "HaveBridge_Message_Lbl", ref HaveBridge_Message_Lbl);
     SetupButton( "GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,   Clk_GotoBridgeGob);
     SetupButton( "CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
-    // BRIDGE HAS STEEINGS
+    // HAS CQ SYSTEMS 
+    SetupVisElem("HasCqSys_Img",         ref HasCqSys_Img);
+    SetupLabel(  "HasCqSys_Message_Lbl", ref HasCqSys_Message_Lbl);
+    SetupButton( "AddCqSys_Btn",         ref AddCqSys_Btn, Clk_AddCqSys);
+    SetupButton( "ListMissingCqSys_Btn", ref ListMissingCqSys_Btn, Clk_ListMissingCqSys);
+    // BRIDGE HAS SETTINGS
     SetupVisElem("BridgeHasSettings_Img",             ref BridgeHasSettings_Img);
     SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref BridgeHasSettings_Message_Lbl);
     SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
@@ -294,6 +304,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       "Bridge Gob <color=#888888>(GameObject)</color> found!! Well done!",
       "Bridge GameObject status"
     );
+    MqWelcome_StatusSets.hasCqSys = new StatusSet( HasCqSys_Message_Lbl, HasCqSys_Img,
+      // (info, warning, error, success, blank)
+      "Croquet Systems are ready to go!",
+      "Croquet Systems are missing",
+      "Croquet Systems are missing! Click <b>Add Croquet Systems</b> to get them.",
+      "Croquet Systems installed!!! Well done!",
+      "Croquet Systems status"
+    );
     MqWelcome_StatusSets.bridgeHasSettings = new StatusSet( BridgeHasSettings_Message_Lbl, BridgeHasSettings_Img,
       // ... info, warning, error, success)
       "Bridge has settings!",
@@ -346,6 +364,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= Check_Node();
     allRdy &= Check_ApiKey();
     allRdy &= Check_BridgeComponent();
+    allRdy &= Check_HasCqSystems();
     allRdy &= Check_BridgeHasSettings();
     allRdy &= Check_JS_BuildTools();
     allRdy &= Check_HasAppJs();
@@ -563,7 +582,61 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Check_BridgeHasSettings();
     CheckAllStatusForReady();
   }
-
+  string EnsureComp<T>(GameObject gob) where T : Component {
+    var comp = FindObjectOfType<T>();
+    string name = typeof(T).Name;
+    if (comp == null) {
+      var go = (gob==null) ? new GameObject(name) : gob;
+      go.AddComponent<T>();
+      Debug.Log($"Created {name} Component in scene.", gob);
+      return name+"\n";
+    } else {
+      Debug.Log($"{name} already exists in scene.");
+      return "";
+    }
+  }
+  //-- Clicks - HAS CROQUET SYSTEMS --------------------------------
+  void Clk_AddCqSys() { // HAS CQ SYSTEMS  ------------- Click
+    var cqBridge = FindObjectOfType<CroquetBridge>();
+    if (cqBridge == null) {
+      NotifyAndLogError("Could not find CroquetBridge in scene!");
+      return;
+    } else {
+      var cqGob = cqBridge.gameObject;
+      string rpt = "";
+      rpt += EnsureComp<CroquetRunner>(cqGob);
+      rpt += EnsureComp<CroquetEntitySystem>(cqGob);
+      rpt += EnsureComp<CroquetSpatialSystem>(cqGob);
+      rpt += EnsureComp<CroquetMaterialSystem>(cqGob);
+      rpt += EnsureComp<CroquetFileReader>(cqGob);
+      if (rpt == "") {
+        NotifyAndLog("All Croquet Systems are present in CroquetBridge GameObject.");
+      } else {
+        NotifyAndLog("Added:\n"+rpt);
+      }
+    }
+    Check_HasCqSystems();
+    CheckAllStatusForReady();
+  }
+  void Clk_ListMissingCqSys() { // HAS CQ SYSTEMS  ------------- Click
+    var cqBridge = FindObjectOfType<CroquetBridge>();
+    if (cqBridge == null) {
+      NotifyAndLogError("Could not find CroquetBridge in scene!");
+      return;
+    } else {
+      string rpt = "";
+      rpt += (FindObjectOfType<CroquetRunner>()         == null) ? "CroquetRunner\n" : "";
+      rpt += (FindObjectOfType<CroquetEntitySystem>()   == null) ? "CroquetEntitySystem\n" : "";
+      rpt += (FindObjectOfType<CroquetSpatialSystem>()  == null) ? "CroquetSpatialSystem\n" : "";
+      rpt += (FindObjectOfType<CroquetMaterialSystem>() == null) ? "CroquetMaterialSystem\n" : "";
+      rpt += (FindObjectOfType<CroquetFileReader>()     == null) ? "CroquetFileReader\n" : "";
+      if (rpt == "") {
+        NotifyAndLog("All Croquet Systems present.");
+      } else {
+        NotifyAndLog("Missing Croquet Systems:\n"+rpt);
+      }
+    }
+  }
   //-- Clicks - BRIDGE HAS SETTINGS --------------------------------
 
   void Clk_BridgeHasSettings_AutoConnect() { // BRIDGE HAS SETTINGS  ------------- Click
@@ -874,6 +947,37 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       CreateBridgeGob_Btn.style.visibility = Visibility.Hidden;
     }
     return fountIt;
+  }
+
+  private bool Check_HasCqSystems() {
+    // look for all the types
+    var cb = FindObjectOfType<CroquetBridge>();
+    var cr = FindObjectOfType<CroquetRunner>();
+    var ce = FindObjectOfType<CroquetEntitySystem>();
+    var cs = FindObjectOfType<CroquetSpatialSystem>();
+    var cm = FindObjectOfType<CroquetMaterialSystem>();
+    var cf = FindObjectOfType<CroquetFileReader>();
+    // make a text report
+    string rpt = "";
+    rpt += (cb == null) ? "CroquetBridge\n" : "";
+    rpt += (cr == null) ? "CroquetRunner\n" : "";
+    rpt += (ce == null) ? "CroquetEntitySystem\n" : "";
+    rpt += (cs == null) ? "CroquetSpatialSystem\n" : "";
+    rpt += (cm == null) ? "CroquetMaterialSystem\n" : "";
+    rpt += (cf == null) ? "CroquetFileReader\n" : "";
+    // if any are missing, show the error
+    if (rpt.Length > 0) {
+      MqWelcome_StatusSets.hasCqSys.error.Set();
+      AddCqSys_Btn.style.visibility = Visibility.Visible;
+      Debug.LogWarning("Missing Croquet Systems:\n" + rpt);
+      ListMissingCqSys_Btn.style.visibility = Visibility.Visible;
+      return false;
+    } else {
+      MqWelcome_StatusSets.hasCqSys.success.Set();
+      AddCqSys_Btn.style.visibility = Visibility.Hidden;
+      ListMissingCqSys_Btn.style.visibility = Visibility.Hidden;
+      return true;
+    }
   }
 
   private bool Check_BridgeHasSettings() {

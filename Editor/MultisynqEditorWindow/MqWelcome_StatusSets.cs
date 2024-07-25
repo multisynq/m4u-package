@@ -8,6 +8,7 @@ static public class MqWelcome_StatusSets {
   static public StatusSet node;
   static public StatusSet apiKey;
   static public StatusSet bridge;
+  static public StatusSet hasCqSys;
   static public StatusSet bridgeHasSettings;
   static public StatusSet jsBuildTools;
   static public StatusSet jsBuild;
