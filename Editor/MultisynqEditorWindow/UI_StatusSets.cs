@@ -11,44 +11,32 @@ using UnityEngine.UIElements;
     public Color color;
     public Label label;
     public VisualElement statusIconToSetBgOn_VE;
-    public VisualElement iconToCloneBgFrom_VE;
+    public StyleBackground iconStyleToClone;
     public StatusSet statusSet;
 
     public void Set() {
       label.text = message;
       statusIconToSetBgOn_VE.style.unityBackgroundImageTintColor = color;
+      statusIconToSetBgOn_VE.style.backgroundImage = iconStyleToClone;
       statusSet.status = statusStr;
-      if (iconToCloneBgFrom_VE != null) {
-        // switch background image to the one that matches the status
-        statusIconToSetBgOn_VE.style.backgroundImage = iconToCloneBgFrom_VE.style.backgroundImage;
-        statusIconToSetBgOn_VE.MarkDirtyRepaint();
-        // Func<string, Func<string, string>> NoSfx = (sfx)  => (name) => name.Replace(sfx, "");
-        // Func<string, string>               NoLbl = (name) => NoSfx("_Lbl")(name);
-        // Func<string, string>               NoImg = (name) => NoSfx("_Img")(name);
-        Debug.Log($"Status.Set() image of {statusIconToSetBgOn_VE.name} to be {iconToCloneBgFrom_VE.name}");
-      } else {
-        statusIconToSetBgOn_VE.style.backgroundImage = null;
-        statusIconToSetBgOn_VE.MarkDirtyRepaint();
-        Debug.LogError("No source image for status: " + statusStr);
-      }
     }
-    public Status(string statusStr, Label label, VisualElement imgToSet, VisualElement imgSrc, string message, Color color, StatusSet statusSet) {
+    public Status(string statusStr, Label label, VisualElement imgToSet, StyleBackground imgSrc, string message, Color color, StatusSet statusSet) {
       this.message   = message;
       this.color     = color;
       this.label     = label;
-      this.statusIconToSetBgOn_VE  = imgToSet;
-      this.iconToCloneBgFrom_VE    = imgSrc;
+      this.statusIconToSetBgOn_VE = imgToSet;
+      this.iconStyleToClone = imgSrc;
       this.statusSet = statusSet;
       this.statusStr = statusStr;
     }
   }
   //=============================================================================
   public class StatusSet {
-    static public VisualElement readyImg;
-    static public VisualElement warningImg;
-    static public VisualElement errorImg;
-    static public VisualElement successImg;
-    static public VisualElement blankImg;
+    static public StyleBackground readyImgStyle;
+    static public StyleBackground warningImgStyle;
+    static public StyleBackground errorImgStyle;
+    static public StyleBackground successImgStyle;
+    static public StyleBackground blankImgStyle;
 
     public string status = "blank";
     public Status ready;
@@ -70,11 +58,11 @@ using UnityEngine.UIElements;
 
     public StatusSet(Label label, VisualElement img, string _info, string _warning, string _error, string _success, string _blank) {
       var colz = MultisynqBuildAssistantEW.colz;
-      ready   = new Status("ready",   label, img, readyImg,   _info,    colz.green,  this);
-      warning = new Status("warning", label, img, warningImg, _warning, colz.yellow, this);
-      error   = new Status("error",   label, img, errorImg,   _error,   colz.red,    this);
-      success = new Status("success", label, img, successImg, _success, colz.lime,   this);
-      blank   = new Status("blank",   label, img, blankImg,   _blank,   colz.grey,   this);
+      ready   = new Status("ready",   label, img, readyImgStyle,   _info,    colz.green,  this);
+      warning = new Status("warning", label, img, warningImgStyle, _warning, colz.yellow, this);
+      error   = new Status("error",   label, img, errorImgStyle,   _error,   colz.red,    this);
+      success = new Status("success", label, img, successImgStyle, _success, colz.lime,   this);
+      blank   = new Status("blank",   label, img, blankImgStyle,   _blank,   colz.grey,   this);
     }
   }
   
