@@ -16,6 +16,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   double deltaTime = 0;
   double countdown_ToConvertSuccesses = -1;
 
+  private static string img_root = "Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/";
   //==== UI Refs ================================================================
 
   Button CheckIfReady_Btn; // CHECK IF READY
@@ -235,11 +236,18 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
     // string t_js  = "<b><color=#E5DB1C>JS</color></b>";
 
-    StatusSet.readyImg   = rootVisualElement.Query<VisualElement>("Checkmark_Img").First();
-    StatusSet.warningImg = rootVisualElement.Query<VisualElement>("Warn_Img").First();
-    StatusSet.errorImg   = rootVisualElement.Query<VisualElement>("Multiply_Img").First(); // Red X
-    StatusSet.successImg = rootVisualElement.Query<VisualElement>("Checkmark_Img").First();
-    StatusSet.blankImg   = rootVisualElement.Query<VisualElement>("Blank_Img").First();
+    string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {img_root});
+
+    foreach (string guid in guids) {
+      string path = AssetDatabase.GUIDToAssetPath(guid);
+      StyleBackground newStyle = new StyleBackground(AssetDatabase.LoadAssetAtPath<Sprite>(path));
+      if (path.Contains("Checkmark")) {
+        StatusSet.readyImgStyle = newStyle;
+        StatusSet.successImgStyle = newStyle;
+      }
+      if (path.Contains("Warning"))   { StatusSet.warningImgStyle = newStyle; }
+      if (path.Contains("Multiply"))  { StatusSet.errorImgStyle = newStyle;   }
+    }
 
     var hideTheseGrp = rootVisualElement.Query<VisualElement>("HideThese_Grp").First();
     // hideTheseGrp.style.display = DisplayStyle.None;
