@@ -255,8 +255,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
         StatusSet.readyImgStyle = newStyle;
         StatusSet.successImgStyle = newStyle;
       }
-      if (path.Contains("Warning"))   { StatusSet.warningImgStyle = newStyle; }
-      if (path.Contains("Multiply"))  { StatusSet.errorImgStyle = newStyle;   }
+      if (path.Contains("Warning"))  { StatusSet.warningImgStyle = newStyle; }
+      if (path.Contains("Multiply")) { StatusSet.errorImgStyle   = newStyle; }
     }
 
     var hideTheseGrp = rootVisualElement.Query<VisualElement>("HideThese_Grp").First();
