@@ -2214,6 +2214,11 @@ async function unityDrivenStartSession() {
   // include package version and the scene-definition string as options
   // just to force sessions with different values to be distinct
   const options = { c4uPackageVersion: packageVersion, sceneText };
+  
+  // Manually join the session (need to uncomment the join_croquet button in the index-webview_or_node.html)
+  const joinButton = document.getElementById("join_croquet");
+  if (joinButton) await new Promise((resolve) => joinButton.onclick = resolve);
+
   session = await StartWorldcore({
     appId,
     apiKey,
