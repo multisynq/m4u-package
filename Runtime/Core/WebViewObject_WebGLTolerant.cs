@@ -547,7 +547,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     onLoaded = ld;
     onHooked = hooked;
     onCookies = cookies;
-    #if UNITY_WEBGL
+    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
       #if !UNITY_EDITOR
         _gree_unity_webview_init(name);
       #endif
@@ -558,6 +558,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
       Debug.LogError("Webview is not supported on this platform.");
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
       {
+        Debug.LogWarning("WebView: Init() UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX");
         var uri = new Uri(_CWebViewPlugin_GetAppPath());
         var info = File.ReadAllText(uri.LocalPath + "Contents/Info.plist");
         if (Regex.IsMatch(info, @"<key>CFBundleGetInfoString</key>\s*<string>Unity version [5-9]\.[3-9]")
@@ -598,7 +599,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   protected virtual void OnDestroy() {
-    #if UNITY_WEBGL
+    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
       #if !UNITY_EDITOR
         _gree_unity_webview_destroy(name);
       #endif
@@ -607,6 +608,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+      Debug.LogWarning("WebView: OnDestroy UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX");
       if (bg != null) {
         Destroy(bg.gameObject);
       }
@@ -627,7 +629,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void Pause() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -644,7 +646,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void Resume() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -662,11 +664,12 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   // Use this function instead of SetMargins to easily set up a centered window
   // NOTE: for historical reasons, `center` means the lower left corner and positive y values extend up.
   public void SetCenterPositionWithScale(Vector2 center, Vector2 scale) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX)
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
     #else
+      Debug.LogWarning("WebView: SetCenterPositionWithScale");
       float left = (Screen.width - scale.x) / 2.0f + center.x;
       float right = Screen.width - (left + scale.x);
       float bottom = (Screen.height - scale.y) / 2.0f + center.y;
@@ -679,7 +682,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
       return;
-    #elif UNITY_WEBPLAYER || UNITY_WEBGL
+    #elif UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX)
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
       if (webView == IntPtr.Zero) return;
     #elif UNITY_IPHONE
@@ -697,7 +700,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
 
     #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
-    #elif UNITY_WEBPLAYER || UNITY_WEBGL
+    #elif UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX)
       ml = left;
       mt = top;
       mr = right;
@@ -769,7 +772,8 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
       //TODO: UNSUPPORTED
     #elif UNITY_WEBPLAYER
       Application.ExternalCall("unityWebView.setMargins", name, (int)ml, (int)mt, (int)mr, (int)mb);
-    #elif UNITY_WEBGL && !UNITY_EDITOR
+    #elif (UNITY_WEBGL && !UNITY_EDITOR_OSX)
+    // #elif UNITY_WEBGL && !UNITY_EDITOR
       _gree_unity_webview_setMargins(name, (int)ml, (int)mt, (int)mr, (int)mb);
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
       int width = (int)(Screen.width - (ml + mr));
@@ -791,7 +795,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     if (GetVisibility() && !v) {
       EvaluateJS("if (document && document.activeElement) document.activeElement.blur();");
     }
-    #if UNITY_WEBGL
+    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
       #if !UNITY_EDITOR
         _gree_unity_webview_setVisibility(name, v);
       #endif
@@ -909,7 +913,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public bool SetURLPattern(string allowPattern, string denyPattern, string hookPattern) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
       return false;
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
@@ -926,7 +930,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
 
   public void LoadURL(string url) {
     if (string.IsNullOrEmpty(url)) return;
-    #if UNITY_WEBGL
+    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
       #if !UNITY_EDITOR
         _gree_unity_webview_loadURL(name, url);
       #endif
@@ -946,7 +950,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   public void LoadHTML(string html, string baseUrl) {
     if (string.IsNullOrEmpty(html)) return;
     if (string.IsNullOrEmpty(baseUrl)) baseUrl = "";
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -960,7 +964,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void EvaluateJS(string js) {
-    #if UNITY_WEBGL
+    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
       #if !UNITY_EDITOR
         _gree_unity_webview_evaluateJS(name, js);
       #endif
@@ -978,7 +982,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public int Progress() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
       return 0;
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
@@ -994,7 +998,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public bool CanGoBack() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
       return false;
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
@@ -1010,7 +1014,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public bool CanGoForward() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
       return false;
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
@@ -1026,7 +1030,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void GoBack() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1040,7 +1044,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void GoForward() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1054,7 +1058,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void Reload() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1124,7 +1128,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void AddCustomHeader(string headerKey, string headerValue) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1138,7 +1142,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public string GetCustomHeaderValue(string headerKey) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
       return null;
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
@@ -1154,7 +1158,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void RemoveCustomHeader(string headerKey) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || UNITY_IPHONE
       if (webView == IntPtr.Zero) return;
@@ -1166,7 +1170,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void ClearCustomHeader() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1180,7 +1184,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void ClearCookies() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1194,7 +1198,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void SaveCookies() {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1208,7 +1212,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void GetCookies(string url) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1224,7 +1228,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void SetBasicAuthInfo(string userName, string password) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1240,7 +1244,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void ClearCache(bool includeDiskFiles) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -1254,7 +1258,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void SetTextZoom(int textZoom) {
-    #if UNITY_WEBPLAYER || UNITY_WEBGL
+    #if    UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX)       
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
