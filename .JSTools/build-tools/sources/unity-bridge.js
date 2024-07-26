@@ -2217,7 +2217,10 @@ async function unityDrivenStartSession() {
   
   // Manually join the session (need to uncomment the join_croquet button in the index-webview_or_node.html)
   const joinButton = document.getElementById("join_croquet");
-  if (joinButton) await new Promise((resolve) => joinButton.onclick = resolve);
+  if (joinButton) {
+    console.log("Waiting for join button to be clicked within the WebView instance");
+    await new Promise((resolve) => joinButton.onclick = resolve);
+  }
 
   session = await StartWorldcore({
     appId,
