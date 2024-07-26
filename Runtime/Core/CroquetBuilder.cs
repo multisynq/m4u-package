@@ -181,8 +181,11 @@ public class CroquetBuilder
 
         string buildRecordContents = File.ReadAllText(buildRecordPath).Trim();
         JSBuildStateRecord record = JsonUtility.FromJson<JSBuildStateRecord>(buildRecordContents);
-
-        return record.target == target && record.localToolsLevel == installedToolsLevel;
+        bool sameTarget      = record.target == target || (record.target == "webgl" && target == "web");
+        bool sameLocalTools  = record.localToolsLevel == installedToolsLevel;
+        
+        Debug.Log($"CheckJSBuildState: app={appName}, record.target={record.target}  target={target}, sameTarget={sameTarget}, sameLocalTools={sameLocalTools}");
+        return sameTarget && sameLocalTools;
     }
 
     public static bool PrepareSceneForBuildTarget(Scene scene, bool buildForWindows)
@@ -683,6 +686,7 @@ public class CroquetBuilder
                     Debug.LogError($"JS Watcher has not reported a successful build.");
                 }
             }
+            Debug.Log($"JS build for {appName} is up to date  --> success? -->" + success);
             return success;
         }
 #endif
@@ -693,6 +697,7 @@ public class CroquetBuilder
             try
             {
                 StartBuild(false); // false => no watcher
+                Debug.Log($"JS build for {appName} started (Without watcher)");
                 return CheckJSBuildState(appName, target);
             }
             catch (Exception e)
