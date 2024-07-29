@@ -548,7 +548,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     onHooked = hooked;
     onCookies = cookies;
     #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
-      #if !UNITY_EDITOR
+      #if !UNITY_EDITOR // protect against calling a Editor func from a runtime script
         _gree_unity_webview_init(name);
       #endif
     #elif UNITY_WEBPLAYER
@@ -571,6 +571,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
         //     ua = @"Mozilla/5.0 (iPhone; CPU iPhone OS 7_1_2 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D257 Safari/9537.53";
         // }
       #endif
+      Debug.Log("_CWebViewPlugin_Init");
       webView = _CWebViewPlugin_Init(
         name,
         transparent,
@@ -664,7 +665,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   // Use this function instead of SetMargins to easily set up a centered window
   // NOTE: for historical reasons, `center` means the lower left corner and positive y values extend up.
   public void SetCenterPositionWithScale(Vector2 center, Vector2 scale) {
-    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX)
+    #if UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
@@ -682,7 +683,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
       return;
-    #elif UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX)
+    #elif UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
       if (webView == IntPtr.Zero) return;
     #elif UNITY_IPHONE
@@ -700,7 +701,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
 
     #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
-    #elif UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX)
+    #elif UNITY_WEBPLAYER || (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
       ml = left;
       mt = top;
       mr = right;
@@ -772,7 +773,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
       //TODO: UNSUPPORTED
     #elif UNITY_WEBPLAYER
       Application.ExternalCall("unityWebView.setMargins", name, (int)ml, (int)mt, (int)mr, (int)mb);
-    #elif (UNITY_WEBGL && !UNITY_EDITOR_OSX)
+    #elif (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
     // #elif UNITY_WEBGL && !UNITY_EDITOR
       _gree_unity_webview_setMargins(name, (int)ml, (int)mt, (int)mr, (int)mb);
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
@@ -795,7 +796,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     if (GetVisibility() && !v) {
       EvaluateJS("if (document && document.activeElement) document.activeElement.blur();");
     }
-    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
+    #if (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
       #if !UNITY_EDITOR
         _gree_unity_webview_setVisibility(name, v);
       #endif
@@ -930,7 +931,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
 
   public void LoadURL(string url) {
     if (string.IsNullOrEmpty(url)) return;
-    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
+    #if (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
       #if !UNITY_EDITOR
         _gree_unity_webview_loadURL(name, url);
       #endif
@@ -939,7 +940,9 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
     #elif UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_EDITOR_LINUX
       //TODO: UNSUPPORTED
     #elif UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX || UNITY_IPHONE
+      Debug.Log("LoadURL: " + url + " and (webView == IntPtr.Zero)=" + (webView == IntPtr.Zero));
       if (webView == IntPtr.Zero) return;
+      Debug.Log("ACTUALLY LoadURL: " + url);
       _CWebViewPlugin_LoadURL(webView, url);
     #elif UNITY_ANDROID
       if (webView == null) return;
@@ -964,7 +967,7 @@ public class WebViewObject_WebGLTolerant : MonoBehaviour {
   }
 
   public void EvaluateJS(string js) {
-    #if UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX
+    #if (UNITY_WEBGL && !UNITY_EDITOR_OSX && !UNITY_STANDALONE_OSX) 
       #if !UNITY_EDITOR
         _gree_unity_webview_evaluateJS(name, js);
       #endif

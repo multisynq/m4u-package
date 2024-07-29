@@ -103,6 +103,7 @@ public class CroquetBridge : MonoBehaviour
     {
         if (INTEROP_BRIDGE)
         {
+            Debug.Log($"sending to JS: {message}");
             SendMessageToJS(message);
         }
         else
@@ -110,6 +111,7 @@ public class CroquetBridge : MonoBehaviour
             if (clientSock == null || clientSock.ReadyState != WebSocketState.Open) {
                 Debug.LogWarning($"socket not ready to send: {message}");
             } else {
+                // Debug.Log($"clientSock: {clientSock} | clientSock.ReadyState: {clientSock.ReadyState} | message: {message} readyState: {clientSock.ReadyState}");
                 clientSock.Send(message);
             }
         }
@@ -239,7 +241,7 @@ public class CroquetBridge : MonoBehaviour
             Instance = this;
 
             INTEROP_BRIDGE = Application.platform == RuntimePlatform.WebGLPlayer;
-            if (!INTEROP_BRIDGE) Debug.Log("Not running in WebGL");
+            if (!INTEROP_BRIDGE) Debug.Log($"Not running in WebGL INTEROP_BRIDGE={INTEROP_BRIDGE}");
 
             Application.runInBackground = true;
 
@@ -250,6 +252,7 @@ public class CroquetBridge : MonoBehaviour
 
 #if UNITY_EDITOR
             string harvestScenes = CroquetBuilder.HarvestSceneList;
+
             if (harvestScenes != "")
             {
                 // this run has been triggered purely to harvest scenes.
@@ -303,10 +306,13 @@ public class CroquetBridge : MonoBehaviour
 #if UNITY_EDITOR
     private async void WaitForJSBuild()
     {
-        bool success = await CroquetBuilder.EnsureJSToolsAvailable()
-                       && CroquetBuilder.EnsureJSBuildAvailableToPlay();
+        bool haveTools = await CroquetBuilder.EnsureJSToolsAvailable();
+        bool haveBuild = CroquetBuilder.EnsureJSBuildAvailableToPlay();
+        bool success = haveTools && haveBuild;
         if (!success)
         {
+            // report each flag's failure
+            Debug.LogError( $" STOPPING PLAY.  ==>  Have JS tools: {haveTools}, Have JS build: {haveBuild}.");
             // error(s) will have already been reported
             EditorApplication.ExitPlaymode();
             return;
@@ -398,6 +404,7 @@ public class CroquetBridge : MonoBehaviour
 
         protected override void OnOpen()
         {
+            Debug.Log("CroquetBridgeWS.OnOpen(): server socket opened");
             if (clientSock != null)
             {
                 Debug.LogWarning("Rejecting attempt to connect second client");
@@ -444,6 +451,7 @@ public class CroquetBridge : MonoBehaviour
             HttpServer wsAttempt = null;
             try
             {
+                Debug.Log($"StartWS(): Attempting to start WS server on port {port}");
                 wsAttempt = new HttpServer(port);
                 wsAttempt.AddWebSocketService<CroquetBridgeWS>("/Bridge", s => wsb = s);
                 wsAttempt.KeepClean = false; // see comment in https://github.com/sta/websocket-sharp/issues/43
@@ -496,7 +504,8 @@ public class CroquetBridge : MonoBehaviour
         // some form of non-Windows standalone.  Node is not available.
         useNodeJS = false;
 #endif
-
+        // Log these: port, appName, useNodeJS, pathToNode
+        Debug.Log($"croquetRunner.StartCroquetConnection( port:{port}, appName:{appName}, useNodeJS:{useNodeJS}, pathToNode:{pathToNode})");
         StartCoroutine(croquetRunner.StartCroquetConnection(port, appName, useNodeJS, pathToNode));
     }
 
@@ -609,6 +618,7 @@ public class CroquetBridge : MonoBehaviour
 
     void StartCroquetSession()
     {
+        Debug.Log("StartCroquetSession()");
         SetLoadingStage(0.5f, "Starting...");
 
         string debugLogTypes = croquetDebugLogging.ToString();
@@ -828,6 +838,7 @@ public class CroquetBridge : MonoBehaviour
         }
         else if (bridgeState == "waitingForConnection")
         {
+            Debug.Log($"is clientSock null?: {clientSock == null}");
             if (!INTEROP_BRIDGE && clientSock == null) return; // not ready yet
 
             // configure which logs are forwarded
@@ -842,10 +853,14 @@ public class CroquetBridge : MonoBehaviour
         // allow to drop through (although we would catch a non-empty sessionName on the next update anyway).
         // only proceed if the JSToolsRecord is available - which in WebGL can take a
         // second or two.
-        if (bridgeState == "waitingForSessionName" && sessionName != "" && CroquetBuilder.JSToolsRecordReady())
-        {
-            SetBridgeState("waitingForSession");
-            StartCroquetSession();
+        if (bridgeState == "waitingForSessionName") {
+            Debug.Log($"sessionName: {sessionName}, JSToolsRecordReady: {CroquetBuilder.JSToolsRecordReady()}");
+            if (sessionName != "" && CroquetBuilder.JSToolsRecordReady())
+            {
+                SetBridgeState("waitingForSession");
+                Debug.Log($"Call StartCroquetSession()");
+                StartCroquetSession();
+            }
         }
     }
 
