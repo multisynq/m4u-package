@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:ScrollView style="background-color: rgb(56, 56, 56);">
+    <ui:ScrollView style="background-color: rgb(56, 56, 56); height: 100%; width: 576px;">
         <ui:VisualElement name="Root" style="flex-direction: column; width: 100%; height: 100%; color: rgb(236, 236, 236);">
             <ui:Foldout text="Welcome" name="Welcome_Foldout" style="width: 100%; height: auto; padding-bottom: 35px;">
                 <ui:VisualElement name="Hero_Ve" style="width: 100%; height: 200px;">
@@ -130,6 +130,10 @@
                                 <ui:Button text="Build JS Now" display-tooltip-when-elided="true" name="Build_JsNow_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Start JS Build Watcher" display-tooltip-when-elided="true" name="ToggleJSBuild_Btn" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="JSBuild_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="Btns2_Lay" style="flex-direction: row; margin-left: 0; height: 22px;">
+                                <ui:Button text="Goto Built Output Folder" display-tooltip-when-elided="true" name="GotoBuiltOutput_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Goto App JS Folder" display-tooltip-when-elided="true" name="GotoAppJsFolder_Btn" style="margin-left: 0; display: none;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>

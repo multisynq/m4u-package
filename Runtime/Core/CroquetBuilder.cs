@@ -1161,7 +1161,7 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
         }
     }
 
-    private static void CopyDirectory(string sourceDir, string destinationDir)
+    public static void CopyDirectory(string sourceDir, string destinationDir)
     {
         if (!Directory.Exists(destinationDir))
         {

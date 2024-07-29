@@ -140,37 +140,56 @@ public class CroquetRunner : MonoBehaviour
 
         // only compile with WebViewObject on non-Windows platforms
 #if !(UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || UNITY_WSA)
+        Debug.Log($"CroquetRunner.StartCqConnection(): Running on non-Windows platform useNodeJS={useNodeJS} && debugUsingExternalSession={debugUsingExternalSession}");
         if (!useNodeJS && !debugUsingExternalSession)
         {
+            Debug.Log("CroquetRunner.StartCqConnection(): Using WebViewObject");
             // cases (a), (h)
-            WebViewObject webViewObject = (new GameObject("WebViewObject")).AddComponent<WebViewObject>();
+            #if UNITY_WEBGL
+                Debug.Log("CroquetRunner.StartCqConnection(): Using WebViewObject_WebGLTolerant");
+                WebViewObject_WebGLTolerant webViewObject = (new GameObject("WebViewObject_WebGLTolerant")).AddComponent<WebViewObject_WebGLTolerant>();
+            #else
+                Debug.Log("CroquetRunner.StartCqConnection(): Using WebViewObject");
+                WebViewObject webViewObject = (new GameObject("WebViewObject")).AddComponent<WebViewObject>();
+            #endif
+
+            Debug.Log("CroquetRunner.StartCqConnection(): WebViewObject created");
             DontDestroyOnLoad(webViewObject.gameObject);
             webViewObject.Init(
                 separated: showWebview,
                 enableWKWebView: true,
 
-                cb: (msg) => { TimedLog(string.Format("CallFromJS[{0}]", msg)); },
-                err: (msg) => { TimedLog(string.Format("CallOnError[{0}]", msg)); },
+                cb:      (msg) => { TimedLog(string.Format("CallFromJS[{0}]", msg)); },
+                err:     (msg) => { TimedLog(string.Format("CallOnError[{0}]", msg)); },
                 httpErr: (msg) => { TimedLog(string.Format("CallOnHttpError[{0}]", msg)); },
                 started: (msg) => { /* TimedLog(string.Format("CallOnStarted[{0}]", msg)); */ },
-                hooked: (msg) => { TimedLog(string.Format("CallOnHooked[{0}]", msg)); },
-                ld: (msg) =>
+                hooked:  (msg) => { TimedLog(string.Format("CallOnHooked[{0}]", msg)); },
+                ld:      (msg) =>
                 {
                     // TimedLog(string.Format("CallOnLoaded[{0}]", msg));
                     webViewObject.EvaluateJS(@"
-                      if (window && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.unityControl) {
-                        window.Unity = {
-                          call: function(msg) {
-                            window.webkit.messageHandlers.unityControl.postMessage(msg);
-                          }
+                        console.log('webViewObject.EvaluateJS()');
+                        // make a blue bg div
+                        var div = document.createElement('div');
+                        div.style.position = 'absolute';
+                        div.style.left = '0px';
+                        div.style.top = '0px';
+                        div.style.width = '100%';
+                        div.style.height = '100%';
+                        div.style.backgroundColor = 'blue';
+                        if (window && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.unityControl) {
+                            window.Unity = {
+                                call: function(msg) {
+                                    window.webkit.messageHandlers.unityControl.postMessage(msg);
+                                }
+                            }
+                        } else {
+                            window.Unity = {
+                                call: function(msg) {
+                                    window.location = 'unity:' + msg;
+                                }
+                            }
                         }
-                      } else {
-                        window.Unity = {
-                          call: function(msg) {
-                            window.location = 'unity:' + msg;
-                          }
-                        }
-                      }
                     ");
                     webViewObject.EvaluateJS(@"Unity.call('ua=' + navigator.userAgent)");
                 }
@@ -181,7 +200,7 @@ public class CroquetRunner : MonoBehaviour
 
             //webViewObject.SetMargins(-5, -5, Screen.width - 8, Screen.height - 8);
             //webViewObject.SetMargins(5, 5, (int)(Screen.width * 0.6f), (int)(Screen.height * 0.6f));
-            webViewObject.SetMargins(Screen.width - 5, Screen.height - 5, -100, -100);
+            webViewObject.SetMargins(Screen.width - 50, Screen.height - 50, -100, -100);
             webViewObject.SetVisibility(showWebview);
 
             // webViewObject.SetTextZoom(100);  // android only. cf. https://stackoverflow.com/questions/21647641/android-webview-set-font-size-system-default/47017410#47017410
