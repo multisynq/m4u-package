@@ -117,7 +117,7 @@
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="HasAppJs_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                             <ui:VisualElement name="Btns2_Lay" style="flex-direction: row; margin-left: 0; height: 100px;">
-                                <ui:Button text="Goto Scene&apos;s App JS File" display-tooltip-when-elided="true" name="GotoAppJsFile_Btn" style="margin-left: 0;" />
+                                <ui:Button text="Goto Scene&apos;s App JS File" display-tooltip-when-elided="true" name="GotoAppJsFile_Btn" style="margin-left: 0; display: none;" />
                                 <ui:Button text="Goto App JS Folder" display-tooltip-when-elided="true" name="GotoAppJsFolder_Btn" style="margin-left: 0;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
