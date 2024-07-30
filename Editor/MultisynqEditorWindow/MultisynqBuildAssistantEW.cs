@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,11 +18,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   double deltaTime = 0;
   double countdown_ToConvertSuccesses = -1;
   //=============================================================================
-
-  private static string packageFolder = "Packages/io.croquet.multiplayer/";
-  private static string ewFolder      = packageFolder + "Editor/MultisynqEditorWindow/";
-  private static string img_root      = packageFolder + "Editor/MultisynqEditorWindow/Images/";
-  private static string cqSettingsAssetOutputPath = "Assets/Settings/CroquetSettings_XXXXXXXX.asset";
 
   //==== UI Refs ================================================================
 
@@ -107,7 +104,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   [MenuItem("Multisynq/Open Multisynq Build Assistant Window...",priority=10)]
   [MenuItem("Window/Multisynq/Open Build Assistant...",priority=1000)]
   public static void ShowMultisynqWelcome_MenuMethod() {
-    var icon = AssetDatabase.LoadAssetAtPath<Texture>(ewFolder + "Images/MultiSynq_Icon.png");
+    var icon = AssetDatabase.LoadAssetAtPath<Texture>(CqFile.ewFolder + "Images/MultiSynq_Icon.png");
     // referencing the Instance property will create the window if it doesn't exist 
     Instance.titleContent = new GUIContent("Multisynq Build Assistant", icon);
   }
@@ -118,7 +115,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   //====== EditowWindow Init (auto-called when Shown) ==================================
   public void CreateGUI() {
     // Import UXML
-    var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ewFolder + "MultisynqBuildAssistant_UI.uxml");
+    var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(CqFile.ewFolder + "MultisynqBuildAssistant_UI.uxml");
     var labelFromUXML = visualTree.Instantiate();
     rootVisualElement.Add(labelFromUXML);
 
@@ -244,7 +241,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
     // string t_js  = "<b><color=#E5DB1C>JS</color></b>";
 
-    string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {img_root});
+    string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {CqFile.img_root});
 
     foreach (string guid in guids) {
       string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -685,18 +682,26 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       return;
     }
     CroquetBuilder.StartBuild(false); // false => no watcher
+    AssetDatabase.Refresh();
+    CqFile.StreamingAssetsAppFolder().SelectAndPing();
     Check_JS_Build();
   }
 
   void Clk_GotoBuiltOutput() { // JS BUILD  ------------- Click
-    string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
-    string jsBuildFolder   = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
-    if (!Directory.Exists(jsBuildFolder)) {
+    var boF = CqFile.StreamingAssetsAppFolder();
+    if (!boF.Exists()) {
       NotifyAndLogError("Could not find\nJS Build output folder");
       return;
     }
-    NotifyAndLog("CroquetJS/.js-build \nfolder opened\nin Finder/Explorer.");
-    EditorUtility.RevealInFinder(jsBuildFolder);
+    boF.SelectAndPing();
+    // string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
+    // string jsBuildFolder   = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
+    // if (!Directory.Exists(jsBuildFolder)) {
+    //   NotifyAndLogError("Could not find\nJS Build output folder");
+    //   return;
+    // }
+    // NotifyAndLog("CroquetJS/.js-build \nfolder opened\nin Finder/Explorer.");
+    // EditorUtility.RevealInFinder(jsBuildFolder);
   }
 
   //-- JS BUILD TOOLS --------------------------------
@@ -741,25 +746,20 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     }
   }
   private void Clk_MakeAppJsFile() {
-    // Copy folder from package to the folder of FileHelper.Get...: /PrefabActorJS/templates/starter/
-    string targetFolder = FileHelper.GetAppNameFolderForOpenScene(false);
-    string srcFolder = FileHelper.GetStarterTemplateFolder();
-    CroquetBuilder.CopyDirectory(srcFolder, targetFolder);
+    string fromDir = CqFile.StarterTemplateFolder().longPath;
+    string toDir   = CqFile.AppFolder(true).longPath; // here true means log no error if missing
+    CroquetBuilder.CopyDirectory(fromDir, toDir);
     Check_HasAppJs();
     CheckAllStatusForReady();
   }
   private void Clk_HasAppJs_Docs() {}
 
   private void Clk_GotoAppJsFolder() {
-    string shortPath = FileHelper.GetAppNameFolderForOpenScene();
-    var app = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath); // select folder in Project pane
-    if (app != null) Selection.activeObject = app;
+    CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
 
   private void Clk_GotoAppJsFile() {
-    string shortPath = FileHelper.GetAppNamePathForOpenScene();
-    var app = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath); // select file in Project pane
-    if (app != null) Selection.activeObject = app;
+    CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
   
 
@@ -822,15 +822,16 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //=============================================================================
 
-  private CroquetSettings CopyDefaultSettingsFile() {
-    string path = ewFolder + "resources/CroquetSettings_Template.asset";
-    AssetDatabase.CopyAsset(path, cqSettingsAssetOutputPath);
-    return AssetDatabase.LoadAssetAtPath<CroquetSettings>(cqSettingsAssetOutputPath);
-  }
-
   private CroquetSettings FindProjectCqSettings() {
     CroquetSettings cqSettings = null;
-      // Check if the file is there
+
+    // First check for a CroquetSettings on the scene's CroquetBridge
+    var bridge = FindObjectOfType<CroquetBridge>();
+    if (bridge?.appProperties != null) {
+      return bridge.appProperties; // appProperties is a CroquetSettings
+    }
+
+    // Then look in the whole project for a file of CroquetSettings type ("t:")
     string[] guids = AssetDatabase.FindAssets("t:CroquetSettings");
     guids = Array.FindAll(guids, guid => !AssetDatabase.GUIDToAssetPath(guid).Contains("Packages/"));
 
@@ -855,6 +856,20 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       MqWelcome_StatusSets.ready.error.Set();
     }
     return cqSettings;
+  }
+
+  private CroquetSettings CopyDefaultSettingsFile() {
+    // string path = ewFolder + "resources/CroquetSettings_Template.asset";
+    // croquet-for-unity-package/Prefabs/CroquetSettings_Template.asset
+    string path = CqFile.CqSettingsTemplateFile().shortPath;
+    CqFile.EnsureAssetsFolder("Croquet");
+    Debug.Log($"Copying from '{path}' to '{CqFile.cqSettingsAssetOutputPath}'");
+    bool sourceFileExists = File.Exists(path);
+    bool targFolderExists = Directory.Exists(Path.GetDirectoryName(CqFile.cqSettingsAssetOutputPath));
+    AssetDatabase.CopyAsset(path, CqFile.cqSettingsAssetOutputPath);
+    bool copiedFileExists = File.Exists(CqFile.cqSettingsAssetOutputPath);
+    Debug.Log($"Source file exists: {sourceFileExists}  Target folder exists: {targFolderExists}, Copied file exists: {copiedFileExists}");
+    return AssetDatabase.LoadAssetAtPath<CroquetSettings>(CqFile.cqSettingsAssetOutputPath);
   }
 
   private CroquetSettings EnsureSettingsFile() {
@@ -917,54 +932,36 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     var cqStgs = FindProjectCqSettings();
     if (cqStgs == null) {
       MqWelcome_StatusSets.node.error.Set();
-      // hide AutoSetup button
-      TryAuto_Btn.style.visibility = Visibility.Hidden;
+      HideVEs(TryAuto_Btn);
       return false;
     }
-    TryAuto_Btn.style.visibility = Visibility.Visible;
-    string nodePath = cqStgs.pathToNode;
-    string nodeVer  = TryNodePath(nodePath);
-    if (nodeVer == null) {
-      MqWelcome_StatusSets.node.error.Set();
-      return false;
-    } else {
-      MqWelcome_StatusSets.node.success.Set();
-      TryAuto_Btn.style.visibility      = Visibility.Hidden;
-      GotoNodePath_Btn.style.visibility = Visibility.Visible;
-      return true;
-    }
+    string nodeVer  = TryNodePath(cqStgs.pathToNode);
+    bool nodeIsGood = (nodeVer != null);
+    MqWelcome_StatusSets.node.SetIsGood(nodeIsGood);
+    SetVEViz( nodeIsGood, GotoNodePath_Btn );
+    SetVEViz(!nodeIsGood, TryAuto_Btn); // bad, so show the TryAuto button
+    return nodeIsGood;
   }
 
   private bool Check_ApiKey() {
-    bool ok = false;
     var cqStgs = FindProjectCqSettings();
+    if (cqStgs == null)  return false;
+    ShowVEs(GotoApiKey_Btn, SignUpApi_Btn);
 
-    if (cqStgs != null) {
-      GotoApiKey_Btn.style.visibility = Visibility.Visible;
-      SignUpApi_Btn.style.visibility  = Visibility.Visible;
-      var apiKey = cqStgs.apiKey;
-      if (apiKey == null || apiKey == "<go get one at multisynq.io>" || apiKey.Length < 1) {
-        // curl -s -X GET -H "X-Croquet-Auth: 1_s77e6tyzkx5m3yryb9305sqxhkdmz65y69oy5s8e" -H "X-Croquet-App: io.croquet.vdom.ploma" -H "X-Croquet-Id: persistentId" -H "X-Croquet-Version: 1.1.0" -H "X-Croquet-Path: https://croquet.io" 'https://api.croquet.io/sign/join?meta=login'
-        MqWelcome_StatusSets.apiKey.error.Set();
-      } else {
-        MqWelcome_StatusSets.apiKey.success.Set();
-        ok = true;
-      }
-    }
-    return ok;
+    // curl -s -X GET -H "X-Croquet-Auth: 1_s77e6tyzkx5m3yryb9305sqxhkdmz65y69oy5s8e" -H "X-Croquet-App: io.croquet.vdom.ploma" -H "X-Croquet-Id: persistentId" -H "X-Croquet-Version: 1.1.0" -H "X-Croquet-Path: https://croquet.io" 'https://api.croquet.io/sign/join?meta=login'
+    var apiKey = cqStgs.apiKey;
+    bool apiKeyIsGood = (apiKey != null && apiKey != "<go get one at multisynq.io>" && apiKey.Length > 0);
+    MqWelcome_StatusSets.apiKey.SetIsGood(apiKeyIsGood);
+    return apiKeyIsGood;
+  
   }
 
   private bool Check_BridgeComponent() {
     var bridge = FindObjectOfType<CroquetBridge>();
     bool fountIt = (bridge != null);
-    if (!fountIt) {
-      MqWelcome_StatusSets.bridge.error.Set();
-      CreateBridgeGob_Btn.style.visibility = Visibility.Visible;
-    } else {
-      MqWelcome_StatusSets.bridge.success.Set();
-      GotoBridgeGob_Btn.style.visibility   = Visibility.Visible;
-      CreateBridgeGob_Btn.style.visibility = Visibility.Hidden;
-    }
+    MqWelcome_StatusSets.bridge.SetIsGood(fountIt);
+    SetVEViz( fountIt, GotoBridgeGob_Btn  );
+    SetVEViz(!fountIt, CreateBridgeGob_Btn);
     return fountIt;
   }
 
@@ -984,104 +981,90 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     rpt += (cs == null) ? "CroquetSpatialSystem\n"  : "";
     rpt += (cm == null) ? "CroquetMaterialSystem\n" : "";
     rpt += (cf == null) ? "CroquetFileReader\n"     : "";
-    // if any are missing, show the error
-    if (rpt.Length > 0) {
-      MqWelcome_StatusSets.hasCqSys.error.Set();
-      AddCqSys_Btn.style.visibility         =  Visibility.Visible;
-      Debug.LogWarning("Missing Croquet Systems:\n" + rpt);
-      ListMissingCqSys_Btn.style.visibility = Visibility.Visible;
-      return false;
+
+    bool noneMissing = (rpt == "");
+
+    MqWelcome_StatusSets.hasCqSys.SetIsGood(noneMissing);
+    if (noneMissing) {
+      HideVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
     } else {
-      MqWelcome_StatusSets.hasCqSys.success.Set();
-      AddCqSys_Btn.style.visibility         = Visibility.Hidden;
-      ListMissingCqSys_Btn.style.visibility = Visibility.Hidden;
-      return true;
+      ShowVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
+      Debug.LogWarning("Missing Croquet Systems:\n" + rpt);
     }
+    return noneMissing;
   }
 
   private bool Check_BridgeHasSettings() {
     var bridge = FindObjectOfType<CroquetBridge>();
-    bool foundIt = (bridge != null);
-    if (!foundIt) {
+    if (bridge==null) {
       MqWelcome_StatusSets.bridgeHasSettings.error.Set();
-      BridgeHasSettings_AutoConnect_Btn.style.visibility = Visibility.Hidden;
-      BridgeHasSettings_Goto_Btn.style.visibility        = Visibility.Hidden;
+      HideVEs(BridgeHasSettings_AutoConnect_Btn, BridgeHasSettings_Goto_Btn);
+      return false;
+    } 
+
+    bool hasSettings = (bridge.appProperties != null);
+    MqWelcome_StatusSets.bridgeHasSettings.SetIsGood(hasSettings);
+    if (hasSettings) {
+      ShowVEs(BridgeHasSettings_Goto_Btn);
+      HideVEs(BridgeHasSettings_AutoConnect_Btn);
     } else {
-      if (bridge.appProperties == null) {
-        MqWelcome_StatusSets.bridgeHasSettings.error.Set();
-        BridgeHasSettings_AutoConnect_Btn.style.visibility = Visibility.Visible;
-        foundIt = false;
-      } else {
-        MqWelcome_StatusSets.bridgeHasSettings.success.Set();
-        BridgeHasSettings_AutoConnect_Btn.style.visibility = Visibility.Hidden;
-        BridgeHasSettings_Goto_Btn.style.visibility        = Visibility.Visible;
-      }
+      ShowVEs(BridgeHasSettings_AutoConnect_Btn);
     }
-    return foundIt;
+    return hasSettings;
   }  
 
   private bool Check_JS_BuildTools() {
-    string croquetJSFolder = FileHelper.GetCroquetJSFolder();
-    string jsBuildFolder   = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
-    bool havejsBuildFolder = Directory.Exists(jsBuildFolder);
+    var jsBuildNmFolder = CqFile.CroquetJS().DeeperFolder(".js-build", "node_modules");
+    bool havejsBuildFolder = jsBuildNmFolder.Exists();
+    MqWelcome_StatusSets.jsBuildTools.SetIsGood(havejsBuildFolder);
+
     if (!havejsBuildFolder) {
-      MqWelcome_StatusSets.jsBuildTools.error.Set();
-      CopyJSBuildTools_Btn.style.visibility       = Visibility.Visible;
-      GotoJSBuildToolsFolder_Btn.style.visibility = Visibility.Hidden;
-      Build_JsNow_Btn.style.visibility            = Visibility.Hidden;
+      ShowVEs(CopyJSBuildTools_Btn);
+      HideVEs(GotoJSBuildToolsFolder_Btn, Build_JsNow_Btn);
+      Debug.LogError($"JS Build Tools are missing from {jsBuildNmFolder.shortPath}");
+      Debug.LogError($"JS Build Tools are missing from {jsBuildNmFolder.longPath}");
     } else {
-      MqWelcome_StatusSets.jsBuildTools.success.Set();
-      CopyJSBuildTools_Btn.style.visibility       = Visibility.Hidden;
-      GotoJSBuildToolsFolder_Btn.style.visibility = Visibility.Visible;
-      Build_JsNow_Btn.style.visibility            = Visibility.Visible;
+      ShowVEs(GotoJSBuildToolsFolder_Btn, Build_JsNow_Btn);
+      HideVEs(CopyJSBuildTools_Btn);
     }
     return havejsBuildFolder;
   }
 
-  void HideVisualElementList( List<VisualElement> ves ) {
-    foreach (var ve in ves) {
-      ve.style.visibility = Visibility.Hidden;
-    }
-  }
-
   private bool Check_HasAppJs() {
     var cqBridge = FindObjectOfType<CroquetBridge>();
-    string appName = cqBridge.appName;
-    if (appName=="") {
+    string appName = cqBridge?.appName;
+    if (appName==null || appName=="") {
       MqWelcome_StatusSets.hasAppJs.error.Set();
-      SetAppName_Btn.style.visibility      = Visibility.Visible;
-      MakeAppJsFile_Btn.style.visibility   = Visibility.Hidden;
-      GotoAppJsFile_Btn.style.visibility   = Visibility.Hidden;
-      GotoAppJsFolder_Btn.style.visibility = Visibility.Hidden;
+      ShowVEs(SetAppName_Btn);
+      HideVEs(MakeAppJsFile_Btn, GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
       return false;
     }
-    // file should be in Assets/CroquetJS/<appName>/index.js
-    // string appNameInCqJsFolder = Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", appName);
-    // string appJsFile = Path.GetFullPath(Path.Combine(appNameInCqJsFolder, "index.js"));
-    string appJsFile = FileHelper.GetAppNamePathForOpenScene(false);
-    bool haveAppJsFile = File.Exists(appJsFile);
+    var appJsFile      = CqFile.AppIndexJs();
+    bool haveAppJsFile = appJsFile.Exists(); // file should be in Assets/CroquetJS/<appName>/index.js
     if (!haveAppJsFile) {
       MqWelcome_StatusSets.hasAppJs.error.Set();
-      SetAppName_Btn.style.visibility      = Visibility.Hidden;
-      MakeAppJsFile_Btn.style.visibility   = Visibility.Visible;
-      GotoAppJsFile_Btn.style.visibility   = Visibility.Hidden;
-      GotoAppJsFolder_Btn.style.visibility = Visibility.Hidden;
+      ShowVEs(MakeAppJsFile_Btn);
+      HideVEs(SetAppName_Btn, GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
     } else {
       MqWelcome_StatusSets.hasAppJs.success.Set();
-      SetAppName_Btn.style.visibility      = Visibility.Hidden;
-      MakeAppJsFile_Btn.style.visibility   = Visibility.Hidden;
-      GotoAppJsFile_Btn.style.visibility   = Visibility.Visible;
-      GotoAppJsFolder_Btn.style.visibility = Visibility.Visible;
+      ShowVEs(GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
+      HideVEs(SetAppName_Btn, MakeAppJsFile_Btn);
     }
 
-
-    // SetAppName_Btn.style.visibility      = Visibility.Visible;
-    // MakeAppJsFile_Btn.style.visibility   = Visibility.Visible;
-    // HasAppJs_Docs_Btn.style.visibility   = Visibility.Visible;
-    // GotoAppJsFile_Btn.style.visibility   = Visibility.Visible;
-    // GotoAppJsFolder_Btn.style.visibility = Visibility.Visible;
-
     return haveAppJsFile;
+  }
+
+  private void SetVEViz(bool seen, params VisualElement[] ves) {
+    foreach (var ve in ves) {
+      ve.style.visibility = seen ? Visibility.Visible : Visibility.Hidden;
+    }
+  }
+  private void ShowVEs(params VisualElement[] ves) {
+    foreach (var ve in ves) SetVEViz(true, ve);
+  }
+
+  private void HideVEs(params VisualElement[] ves) {
+    foreach (var ve in ves) SetVEViz(false, ve);
   }
 
   private bool Check_ToolsVersionMatch() {
@@ -1092,33 +1075,24 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInBuild);
     var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInEditor);
     bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForCroquetBridge);
-    
+
+    MqWelcome_StatusSets.versionMatch.SetIsGood(allMatch);
     if (allMatch) {
-      MqWelcome_StatusSets.versionMatch.success.Set();
       Debug.Log("JSTools for Editor & Build match!!!");
     } else {
-      MqWelcome_StatusSets.versionMatch.error.Set();
       Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge) );
       ReinstallTools_Btn.style.visibility = Visibility.Visible;
     }
-    ReinstallTools_Btn.style.visibility = Visibility.Visible;
-    OpenBuildPanel_Btn.style.visibility = Visibility.Visible;
-
+    ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
     return allMatch;
   }
+
   private bool Check_JS_Build() {
-    var cqBridge = FindObjectOfType<CroquetBridge>();
-    string appName = cqBridge.appName;
-    string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, appName));
-    bool havejsBuildFolder = Directory.Exists(croquetJSFolder);
-    if (havejsBuildFolder) {
-      MqWelcome_StatusSets.jsBuild.success.Set();
-    } else {
-      MqWelcome_StatusSets.jsBuild.error.Set();
-      Build_JsNow_Btn.style.visibility   = Visibility.Visible;
-    }
-    GotoBuiltOutput_Btn.style.visibility = Visibility.Visible;
-    return havejsBuildFolder;
+    bool haveBuiltOutput = CqFile.StreamingAssetsAppFolder().Exists();
+    MqWelcome_StatusSets.jsBuild.SetIsGood(haveBuiltOutput);
+    if (!haveBuiltOutput) ShowVEs(Build_JsNow_Btn);
+    ShowVEs(GotoBuiltOutput_Btn);
+    return haveBuiltOutput;
   }
 
   //=============================================================================  
@@ -1153,7 +1127,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     pcs.StartInfo.RedirectStandardOutput = true;
     pcs.StartInfo.RedirectStandardError  = true;
     pcs.StartInfo.CreateNoWindow         = true;
-    pcs.StartInfo.WorkingDirectory       = Path.GetFullPath(ewFolder);
+    pcs.StartInfo.WorkingDirectory       = Path.GetFullPath(CqFile.ewFolder);
     pcs.StartInfo.FileName               = executable;
     pcs.StartInfo.Arguments              = arguments;
     pcs.StartInfo.UserName               = "root";

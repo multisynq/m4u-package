@@ -59,6 +59,10 @@ using UnityEngine.UIElements;
         ready.Set();
       }
     }
+    public void SetIsGood(bool isGood) {
+      if (isGood) success.Set();
+      else        error.Set();
+    }
 
     public StatusSet(Label label, VisualElement img, string _info, string _warning, string _error, string _success, string _blank) {
       var colz = MultisynqBuildAssistantEW.colz;
