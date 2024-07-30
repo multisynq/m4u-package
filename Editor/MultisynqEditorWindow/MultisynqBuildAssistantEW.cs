@@ -613,22 +613,31 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Check_HasCqSystems();
     CheckAllStatusForReady();
   }
+
+  (string,string) MissingSystemsRpt() {
+    string critRpt = "";
+    critRpt += (FindObjectOfType<CroquetRunner>()         == null) ? "CroquetRunner\n"         : "";
+    critRpt += (FindObjectOfType<CroquetFileReader>()     == null) ? "CroquetFileReader\n"     : "";
+    critRpt += (FindObjectOfType<CroquetEntitySystem>()   == null) ? "CroquetEntitySystem\n"   : "";
+    critRpt += (FindObjectOfType<CroquetSpatialSystem>()  == null) ? "CroquetSpatialSystem\n"  : "";
+    string optRpt = "";
+    optRpt += (FindObjectOfType<CroquetMaterialSystem>() == null) ? "CroquetMaterialSystem\n" : "";
+    return (critRpt, optRpt);
+  }
+
   void Clk_ListMissingCqSys() { // HAS CQ SYSTEMS  ------------- Click
     var cqBridge = FindObjectOfType<CroquetBridge>();
     if (cqBridge == null) {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
       return;
     } else {
-      string rpt = "";
-      rpt += (FindObjectOfType<CroquetRunner>()         == null) ? "CroquetRunner\n"         : "";
-      rpt += (FindObjectOfType<CroquetEntitySystem>()   == null) ? "CroquetEntitySystem\n"   : "";
-      rpt += (FindObjectOfType<CroquetSpatialSystem>()  == null) ? "CroquetSpatialSystem\n"  : "";
-      rpt += (FindObjectOfType<CroquetMaterialSystem>() == null) ? "CroquetMaterialSystem\n" : "";
-      rpt += (FindObjectOfType<CroquetFileReader>()     == null) ? "CroquetFileReader\n"     : "";
-      if (rpt == "") {
+      (string critRpt, string optRpt) = MissingSystemsRpt();
+
+      if (critRpt + optRpt == "") {
         NotifyAndLog("All Croquet Systems present.");
       } else {
-        NotifyAndLog("Missing Croquet Systems:\n"+rpt);
+        if (critRpt != "") NotifyAndLogError("Missing Critical:\n"+critRpt);
+        else if (optRpt != "") NotifyAndLogWarning("Missing Optional:\n"+optRpt);
       }
     }
   }
@@ -815,6 +824,10 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Instance.ShowNotification(new GUIContent(msg), seconds);
     Debug.LogError(msg);
   }
+  static public void NotifyAndLogWarning(string msg, float seconds = 4) {
+    Instance.ShowNotification(new GUIContent(msg), seconds);
+    Debug.LogWarning(msg);
+  }
 
   static public void Notify(string msg, float seconds = 4) {
     Instance.ShowNotification(new GUIContent(msg), seconds);
@@ -966,30 +979,22 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   private bool Check_HasCqSystems() {
-    // look for all the types
-    var cb = FindObjectOfType<CroquetBridge>();
-    var cr = FindObjectOfType<CroquetRunner>();
-    var ce = FindObjectOfType<CroquetEntitySystem>();
-    var cs = FindObjectOfType<CroquetSpatialSystem>();
-    var cm = FindObjectOfType<CroquetMaterialSystem>();
-    var cf = FindObjectOfType<CroquetFileReader>();
-    // make a text report
-    string rpt = "";
-    rpt += (cb == null) ? "CroquetBridge\n"         : "";
-    rpt += (cr == null) ? "CroquetRunner\n"         : "";
-    rpt += (ce == null) ? "CroquetEntitySystem\n"   : "";
-    rpt += (cs == null) ? "CroquetSpatialSystem\n"  : "";
-    rpt += (cm == null) ? "CroquetMaterialSystem\n" : "";
-    rpt += (cf == null) ? "CroquetFileReader\n"     : "";
+    (string critRpt, string optRpt) = MissingSystemsRpt();
+    bool noneMissing = (critRpt + optRpt == "");
+    bool critMissing = (critRpt != "");
 
-    bool noneMissing = (rpt == "");
-
-    MqWelcome_StatusSets.hasCqSys.SetIsGood(noneMissing);
     if (noneMissing) {
       HideVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
+      MqWelcome_StatusSets.hasCqSys.success.Set();
     } else {
       ShowVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
-      Debug.LogWarning("Missing Croquet Systems:\n" + rpt);
+      if (critMissing) {
+        MqWelcome_StatusSets.hasCqSys.error.Set();
+        Debug.LogError("Missing Critical Croquet Systems:\n" + critRpt);
+      } else {
+        MqWelcome_StatusSets.hasCqSys.warning.Set();
+        Debug.LogWarning("Missing Optional Croquet Systems:\n" + optRpt);
+      }
     }
     return noneMissing;
   }
