@@ -7,18 +7,18 @@ static public class CqFile {
   static public string cqSettingsAssetOutputPath = "Assets/Croquet/CroquetSettings_XXXXXXXX.asset";
   static public string pkgRootFolder = "Packages/io.croquet.multiplayer";
 
-  public static string ewFolder      = pkgRootFolder + "/Editor/MultisynqEditorWindow/";
-  public static string img_root      = pkgRootFolder + "/Editor/MultisynqEditorWindow/Images/";
+  public static string ewFolder = pkgRootFolder + "/Editor/MultisynqEditorWindow/";
+  public static string img_root = pkgRootFolder + "/Editor/MultisynqEditorWindow/Images/";
 
   static public string GetAppNameForOpenScene() {
     CroquetBridge cb = Object.FindObjectOfType<CroquetBridge>();
     if (cb == null) {
-      MultisynqBuildAssistantEW.NotifyAndLogError("Could not find CroquetBridge in scene!");
+      Debug.LogError("Could not find CroquetBridge in scene!");
       return null;
     }
     string appName = cb.appName;
     if (appName == null || appName == "") {
-      MultisynqBuildAssistantEW.NotifyAndLogError("App Name is not set in CroquetBridge!");
+      Debug.LogError("App Name is not set in CroquetBridge!");
       return null;
     }
     return appName;
@@ -112,11 +112,11 @@ public abstract class PathyThing {
     //   return;
     // }
     bool isBlank = (_shortPath == "");
-    shortPath   = _shortPath;
-    longPath    = (isBlank) ? "" : Path.GetFullPath(shortPath);
+    shortPath    = _shortPath;
+    longPath     = (isBlank) ? "" : Path.GetFullPath(shortPath);
     Debug.Log($"PathyThing: shortPath: {shortPath} longPath: {longPath}");
-    folderShort = (isBlank) ? "" : Path.GetDirectoryName(shortPath);
-    folderLong  = (isBlank) ? "" : Path.GetFullPath(folderShort);
+    folderShort  = (isBlank) ? "" : Path.GetDirectoryName(shortPath);
+    folderLong   = (isBlank) ? "" : Path.GetFullPath(folderShort);
   }
 
   abstract public bool Exists();
@@ -161,7 +161,7 @@ public class FolderThing : PathyThing {
     return doesExist;
   }
 
-  // Deeper for this
+  // Deeper sub-folder
   public FolderThing DeeperFolder(params string[] deeperPaths) {    
     string newPath = longPath;
     foreach (string deeperPath in deeperPaths) {
@@ -169,8 +169,15 @@ public class FolderThing : PathyThing {
     }
     return new FolderThing(newPath);
   }
-  public FileThing DeeperFile(string file) {
-    return new FileThing(Path.Combine(longPath, file));
+  // file in this folder
+  public FileThing DeeperFile(params string[] file) {
+    // return new FileThing(Path.Combine(longPath, file));
+    // do the equivalent of JS ...file
+    string newPath = longPath;
+    foreach (string deeperPath in file) {
+      newPath = Path.Combine(newPath, deeperPath);
+    }
+    return new FileThing(newPath);
   }
 
   public FileThing FirstFile() {
@@ -190,15 +197,6 @@ public class FileThing : PathyThing {
       MultisynqBuildAssistantEW.NotifyAndLogError("FileThing: path must be a file, not a folder");
     }
     unityObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath);
-  }
-
-  // Deeper for this
-  public FileThing DeeperFile(params string[] deeperPaths) {
-        string newPath = longPath;
-    foreach (string deeperPath in deeperPaths) {
-      newPath = Path.Combine(newPath, deeperPath);
-    }
-    return new FileThing(newPath);
   }
 
   override public bool Exists() {
