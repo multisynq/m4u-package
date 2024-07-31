@@ -134,29 +134,28 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   
   private void SetupUI() {
     // CHECK READINESS
-    SetupButton("CheckIfReady_Btn", ref CheckIfReady_Btn, Clk_CheckIfReady);
+    SetupButton("CheckIfReady_Btn",      ref CheckIfReady_Btn,   Clk_CheckIfReady);
     // READY
-    SetupVisElem("Ready_Status_Img",   ref Ready_Status_Img);
-    SetupLabel(  "Ready_Message_Lbl",  ref Ready_Message_Lbl); 
-    SetupButton( "Awesome_Btn",        ref Awesome_Btn,        Clk_BeAwesome);
-    SetupButton( "Top_Ready_Docs_Btn", ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
+    SetupVisElem("Ready_Status_Img",     ref Ready_Status_Img);
+    SetupLabel(  "Ready_Message_Lbl",    ref Ready_Message_Lbl); 
+    SetupButton( "Awesome_Btn",          ref Awesome_Btn,        Clk_BeAwesome);
+    SetupButton( "Top_Ready_Docs_Btn",   ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
     // SETTINGS
     SetupVisElem("Settings_Status_Img",  ref Settings_Status_Img);
     SetupLabel(  "Settings_Message_Lbl", ref Settings_Message_Lbl);
     SetupButton( "GotoSettings_Btn",     ref GotoSettings_Btn,   Clk_GotoSettings);
     SetupButton( "SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
     // NODE
-    SetupVisElem("Node_Status_Img",  ref Node_Status_Img);
-    SetupLabel(  "Node_Message_Lbl", ref Node_Message_Lbl);
-    SetupButton( "GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath);
-    SetupButton( "TryAuto_Btn",      ref TryAuto_Btn,      Clk_AutoSetupNode);
+    SetupVisElem("Node_Status_Img",      ref Node_Status_Img);
+    SetupLabel(  "Node_Message_Lbl",     ref Node_Message_Lbl);
+    SetupButton( "GotoNodePath_Btn",     ref GotoNodePath_Btn,   Clk_GotoNodePath);
+    SetupButton( "TryAuto_Btn",          ref TryAuto_Btn,        Clk_AutoSetupNode);
     Node_Dropdown = rootVisualElement.Query<DropdownField>("Node_Dropdown").First();
     Node_Dropdown.RegisterValueChangedCallback( (evt) => {
       string nodePath = evt.newValue.Replace(" ∕ ", "/");
       string nodeVer = TryNodePath(nodePath);
-      if (nodeVer == null) {
-        MqWelcome_StatusSets.node.error.Set();
-      } else {
+      if (nodeVer == null) MqWelcome_StatusSets.node.error.Set();
+      else {
         MqWelcome_StatusSets.node.success.Set();
         // set the CroquetSetting.nodePath
         var cqStgs = FindProjectCqSettings();
@@ -166,72 +165,68 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     });
 
     // API KEY
-    SetupVisElem("ApiKey_Status_Img",  ref ApiKey_Status_Img);
-    SetupLabel(  "ApiKey_Message_Lbl", ref ApiKey_Message_Lbl);
-    SetupButton( "SignUpApi_Btn",      ref SignUpApi_Btn,   Clk_SignUpApi);
-    SetupButton( "GotoApiKey_Btn",     ref GotoApiKey_Btn,  Clk_EnterApiKey);
-    SetupButton( "ApiKey_Docs_Btn",    ref ApiKey_Docs_Btn, Clk_ApiKey_Docs);
+    SetupVisElem("ApiKey_Status_Img",                 ref ApiKey_Status_Img);
+    SetupLabel(  "ApiKey_Message_Lbl",                ref ApiKey_Message_Lbl);
+    SetupButton( "SignUpApi_Btn",                     ref SignUpApi_Btn,                     Clk_SignUpApi);
+    SetupButton( "GotoApiKey_Btn",                    ref GotoApiKey_Btn,                    Clk_EnterApiKey);
+    SetupButton( "ApiKey_Docs_Btn",                   ref ApiKey_Docs_Btn,                   Clk_ApiKey_Docs);
     // BRIDGE
-    SetupVisElem("HaveBridge_Status_Img",  ref HaveBridge_Status_Img);
-    SetupLabel(  "HaveBridge_Message_Lbl", ref HaveBridge_Message_Lbl);
-    SetupButton( "GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,   Clk_GotoBridgeGob);
-    SetupButton( "CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
+    SetupVisElem("HaveBridge_Status_Img",             ref HaveBridge_Status_Img);
+    SetupLabel(  "HaveBridge_Message_Lbl",            ref HaveBridge_Message_Lbl);
+    SetupButton( "GotoBridgeGob_Btn",                 ref GotoBridgeGob_Btn,                 Clk_GotoBridgeGob);
+    SetupButton( "CreateBridgeGob_Btn",               ref CreateBridgeGob_Btn,               Clk_CreateBridgeGob);
     // HAS CQ SYSTEMS 
-    SetupVisElem("HasCqSys_Img",         ref HasCqSys_Img);
-    SetupLabel(  "HasCqSys_Message_Lbl", ref HasCqSys_Message_Lbl);
-    SetupButton( "AddCqSys_Btn",         ref AddCqSys_Btn, Clk_AddCqSys);
-    SetupButton( "ListMissingCqSys_Btn", ref ListMissingCqSys_Btn, Clk_ListMissingCqSys);
+    SetupVisElem("HasCqSys_Img",                      ref HasCqSys_Img);
+    SetupLabel(  "HasCqSys_Message_Lbl",              ref HasCqSys_Message_Lbl);
+    SetupButton( "AddCqSys_Btn",                      ref AddCqSys_Btn,                      Clk_AddCqSys);
+    SetupButton( "ListMissingCqSys_Btn",              ref ListMissingCqSys_Btn,              Clk_ListMissingCqSys);
     // BRIDGE HAS SETTINGS
     SetupVisElem("BridgeHasSettings_Img",             ref BridgeHasSettings_Img);
     SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref BridgeHasSettings_Message_Lbl);
     SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
     SetupButton( "BridgeHasSettings_Goto_Btn",        ref BridgeHasSettings_Goto_Btn,        Clk_BridgeHasSettings_Goto);
     // JS BUILD TOOLS
-    SetupVisElem("JSBuildTools_Img",           ref JSBuildTools_Img);
-    SetupLabel(  "JSBuildTools_Message_Lbl",   ref JSBuildTools_Message_Lbl);
-    SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
-    SetupButton( "GotoJSBuildToolsFolder_Btn", ref GotoJSBuildToolsFolder_Btn, Clk_GotoJSBuildToolsFolder);
+    SetupVisElem("JSBuildTools_Img",                  ref JSBuildTools_Img);
+    SetupLabel(  "JSBuildTools_Message_Lbl",          ref JSBuildTools_Message_Lbl);
+    SetupButton( "CopyJSBuildTools_Btn",              ref CopyJSBuildTools_Btn,              Clk_CopyJSBuildTools);
+    SetupButton( "GotoJSBuildToolsFolder_Btn",        ref GotoJSBuildToolsFolder_Btn,        Clk_GotoJSBuildToolsFolder);
 
     // HAS APP JS
-    SetupVisElem("HasAppJs_Status_Img",  ref HasAppJs_Status_Img);
-    SetupLabel(  "HasAppJs_Message_Lbl", ref HasAppJs_Message_Lbl);
-    SetupButton( "SetAppName_Btn",       ref SetAppName_Btn,      Clk_SetAppName);
-    SetupButton( "MakeAppJsFile_Btn",    ref MakeAppJsFile_Btn,   Clk_MakeAppJsFile);
-    SetupButton( "HasAppJs_Docs_Btn",    ref HasAppJs_Docs_Btn,   Clk_HasAppJs_Docs);
-    SetupButton( "GotoAppJsFile_Btn",    ref GotoAppJsFile_Btn,   Clk_GotoAppJsFile);
-    SetupButton( "GotoAppJsFolder_Btn",  ref GotoAppJsFolder_Btn, Clk_GotoAppJsFolder);
+    SetupVisElem("HasAppJs_Status_Img",               ref HasAppJs_Status_Img);
+    SetupLabel(  "HasAppJs_Message_Lbl",              ref HasAppJs_Message_Lbl);
+    SetupButton( "SetAppName_Btn",                    ref SetAppName_Btn,                    Clk_SetAppName);
+    SetupButton( "MakeAppJsFile_Btn",                 ref MakeAppJsFile_Btn,                 Clk_MakeAppJsFile);
+    SetupButton( "HasAppJs_Docs_Btn",                 ref HasAppJs_Docs_Btn,                 Clk_HasAppJs_Docs);
+    SetupButton( "GotoAppJsFile_Btn",                 ref GotoAppJsFile_Btn,                 Clk_GotoAppJsFile);
+    SetupButton( "GotoAppJsFolder_Btn",               ref GotoAppJsFolder_Btn,               Clk_GotoAppJsFolder);
 
     // JS BUILD
-    SetupVisElem("JSBuild_Status_Img",  ref JSBuild_Status_Img);
-    SetupLabel(  "JSBuild_Message_Lbl", ref JSBuild_Message_Lbl);
-    SetupButton( "ToggleJSBuild_Btn",   ref ToggleJSBuild_Btn, Clk_ToggleJSBuild); // Start JS Build Watcher
-    SetupButton( "Build_JsNow_Btn",     ref Build_JsNow_Btn,   Clk_Build_JsNow);
-    SetupButton( "GotoBuiltOutput_Btn", ref GotoBuiltOutput_Btn, Clk_GotoBuiltOutput);
+    SetupVisElem("JSBuild_Status_Img",                ref JSBuild_Status_Img);
+    SetupLabel(  "JSBuild_Message_Lbl",               ref JSBuild_Message_Lbl);
+    SetupButton( "ToggleJSBuild_Btn",                 ref ToggleJSBuild_Btn,                 Clk_ToggleJSBuild); // Start JS Build Watcher
+    SetupButton( "Build_JsNow_Btn",                   ref Build_JsNow_Btn,                   Clk_Build_JsNow);
+    SetupButton( "GotoBuiltOutput_Btn",               ref GotoBuiltOutput_Btn,               Clk_GotoBuiltOutput);
 
     // VERSION MATCH - JS BUILD TOOLS
-    SetupVisElem("JbtVersionMatch_Img",         ref JbtVersionMatch_Img);
-    SetupLabel(  "JbtVersionMatch_Message_Lbl", ref JbtVersionMatch_Message_Lbl);
-    SetupButton( "ReinstallTools_Btn",          ref ReinstallTools_Btn,     Clk_ReinstallTools);
-    SetupButton( "OpenBuildPanel_Btn",          ref OpenBuildPanel_Btn,     Clk_OpenEditorBuildPanel);
+    SetupVisElem("JbtVersionMatch_Img",               ref JbtVersionMatch_Img);
+    SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref JbtVersionMatch_Message_Lbl);
+    SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
+    SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
     //-----
     // Hide most buttons
     HideMostButtons();
   }
 
   private void HideMostButtons() {
+    string[] whitelisted = {
+      "CheckIfReady_Btn",
+      "_Docs_",
+    };
     foreach (Button button in allButtons) {
-      string[] whitelisted = {
-        "CheckIfReady_Btn",
-        "_Docs_",
-        // "GotoSettings_Btn",
-      };
-      if (whitelisted.Any(button.name.Contains)) {
-        button.style.visibility = Visibility.Visible;
-      } else {
-        button.style.visibility = Visibility.Hidden;
-      }
+      bool isWhitelisted = whitelisted.Any(button.name.Contains);
+      SetVEViz(isWhitelisted, button);
     }
-    Node_Dropdown.style.visibility = Visibility.Hidden;
+    HideVEs(Node_Dropdown);
   }
 
   private void SetupStatuses() {
@@ -239,7 +234,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     string t_key  = "<b><color=#006AFF>API Key</color></b>";
     string t_node = "<b><color=#417E37>Node</color></b>";
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
-    // string t_js  = "<b><color=#E5DB1C>JS</color></b>";
 
     string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {CqFile.img_root});
 
@@ -327,7 +321,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       // (info, warning, error, success)
       "JS file for AppName is ready to go!",
       "JS file for AppName is missing",
-      "JS file for AppName is missing! Click <b>Make App JS File</b> to create one.",
+      "JS file for AppName is missing!",
       "JS file for AppName found! Well done!",
       "JS file for AppName status"
     );
@@ -354,6 +348,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //-- Clicks - CHECK READINESS --------------------------------
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
+  Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
     bool allRdy = true;
     allRdy &= Check_Settings(); 
     allRdy &= Check_Node();
@@ -373,7 +368,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   void NodePathsToDropdownAndCheck() {
     var nps = FindAllNodeIntances().Select( f => (f+"/node").Replace("/"," ∕ ") ).ToList();
     Node_Dropdown.choices = nps;
-    Node_Dropdown.style.visibility = Visibility.Visible;
+    ShowVEs(Node_Dropdown);
     // compare to CroquetSettings
     var cqStgs = FindProjectCqSettings();
     if (cqStgs != null) {
@@ -381,9 +376,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       if (nps.Contains(nodePath)) {
         Node_Dropdown.SetValueWithoutNotify(nodePath);
         MqWelcome_StatusSets.node.success.Set();
-      } else {
-        MqWelcome_StatusSets.node.error.Set();
-      }
+      } else MqWelcome_StatusSets.node.error.Set();
     }
   }
 
@@ -410,17 +403,10 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
     // CroquetSettings in scene
     var cqStgs = EnsureSettingsFile();
-    if (cqStgs == null) {
-      Debug.LogError("Could not find or create CroquetSettings file");
-      MqWelcome_StatusSets.ready.error.Set();
-    } else {
-      MqWelcome_StatusSets.ready.success.Set();
-    }
+    MqWelcome_StatusSets.ready.SetIsGood(cqStgs != null);
+    if (cqStgs == null) Debug.LogError("Could not find or create CroquetSettings file");
     GotoSettings();
-    // make buttons for goto Node path and API key visible
-    GotoNodePath_Btn.style.visibility = Visibility.Visible;
-    GotoApiKey_Btn.style.visibility   = Visibility.Visible;
-    // TryAuto_Btn.style.visibility = Visibility.Visible;
+    ShowVEs(GotoNodePath_Btn, GotoApiKey_Btn);
     Check_Settings();
     CheckAllStatusForReady();
   }
@@ -503,9 +489,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
           NotifyAndLogError("Node not found on your system. To get it: https://nodejs.org/en/download/prebuilt-installer");
           MqWelcome_StatusSets.node.error.Set();
           return;
-        } else {
-          cqStgs.pathToNode = nodePaths[0] + "/node";
-        }
+        } else cqStgs.pathToNode = nodePaths[0] + "/node";
         Check_Node();
         break;
       case RuntimePlatform.WindowsEditor:
@@ -543,9 +527,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   private void Clk_GotoBridgeGob() { // BRIDGE  ------------- Click
     var bridge = FindObjectOfType<CroquetBridge>();  // find ComponentType CroquetBridge in scene
-    if (bridge == null) {
-      NotifyAndLogError("Could not find\nCroquetBridge in scene!");
-    } else {
+    if (bridge == null) NotifyAndLogError("Could not find\nCroquetBridge in scene!");
+    else {
       Selection.activeGameObject = bridge.gameObject; // select in Hierachy
       EditorGUIUtility.PingObject(bridge.gameObject); // highlight in yellow for a sec
       NotifyAndLog("Selected in Hierarchy.\nSee CroquetBridge in Inspector.");
@@ -565,7 +548,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       cbGob.AddComponent<CroquetSpatialSystem>();
       cbGob.AddComponent<CroquetMaterialSystem>();
       cbGob.AddComponent<CroquetFileReader>();
-      // cb.appName = "DefaultAppName";
+      var cqStgs = FindProjectCqSettings();
+      if (cqStgs != null) cb.appProperties = cqStgs;
 
       Selection.activeGameObject = cbGob;
       string msg = "Created CroquetBridge\nGameObject in scene.\nSelected it.";
@@ -575,21 +559,10 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     }
     Check_BridgeComponent();
     Check_BridgeHasSettings();
+    Check_HasCqSystems();
     CheckAllStatusForReady();
   }
-  string EnsureComp<T>(GameObject gob) where T : Component {
-    var comp = FindObjectOfType<T>();
-    string name = typeof(T).Name;
-    if (comp == null) {
-      var go = (gob==null) ? new GameObject(name) : gob;
-      go.AddComponent<T>();
-      Debug.Log($"Created {name} Component in scene.", gob);
-      return name+"\n";
-    } else {
-      Debug.Log($"{name} already exists in scene.");
-      return "";
-    }
-  }
+
   //-- Clicks - HAS CROQUET SYSTEMS --------------------------------
   void Clk_AddCqSys() { // HAS CQ SYSTEMS  ------------- Click
     var cqBridge = FindObjectOfType<CroquetBridge>();
@@ -599,16 +572,13 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     } else {
       var cqGob = cqBridge.gameObject;
       string rpt = "";
-      rpt += EnsureComp<CroquetRunner>(cqGob);
-      rpt += EnsureComp<CroquetEntitySystem>(cqGob);
-      rpt += EnsureComp<CroquetSpatialSystem>(cqGob);
-      rpt += EnsureComp<CroquetMaterialSystem>(cqGob);
-      rpt += EnsureComp<CroquetFileReader>(cqGob);
-      if (rpt == "") {
-        NotifyAndLog("All Croquet Systems are present in CroquetBridge GameObject.");
-      } else {
-        NotifyAndLog("Added:\n"+rpt);
-      }
+      rpt += SceneHelp.EnsureComp<CroquetRunner>(cqGob);
+      rpt += SceneHelp.EnsureComp<CroquetEntitySystem>(cqGob);
+      rpt += SceneHelp.EnsureComp<CroquetSpatialSystem>(cqGob);
+      rpt += SceneHelp.EnsureComp<CroquetMaterialSystem>(cqGob);
+      rpt += SceneHelp.EnsureComp<CroquetFileReader>(cqGob);
+      if (rpt == "") NotifyAndLog("All Croquet Systems are present in CroquetBridge GameObject.");
+      else           NotifyAndLog("Added:\n"+rpt);
     }
     Check_HasCqSystems();
     CheckAllStatusForReady();
@@ -632,12 +602,10 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       return;
     } else {
       (string critRpt, string optRpt) = MissingSystemsRpt();
-
-      if (critRpt + optRpt == "") {
-        NotifyAndLog("All Croquet Systems present.");
-      } else {
-        if (critRpt != "") NotifyAndLogError("Missing Critical:\n"+critRpt);
-        else if (optRpt != "") NotifyAndLogWarning("Missing Optional:\n"+optRpt);
+      if (critRpt + optRpt == "") NotifyAndLog("All Croquet Systems present.");
+      else {
+        if      (critRpt != "") NotifyAndLogError(  "Missing Critical:\n"+critRpt);
+        else if (optRpt  != "") NotifyAndLogWarning("Missing Optional:\n"+optRpt);
       }
     }
   }
@@ -703,14 +671,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       return;
     }
     boF.SelectAndPing();
-    // string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
-    // string jsBuildFolder   = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
-    // if (!Directory.Exists(jsBuildFolder)) {
-    //   NotifyAndLogError("Could not find\nJS Build output folder");
-    //   return;
-    // }
-    // NotifyAndLog("CroquetJS/.js-build \nfolder opened\nin Finder/Explorer.");
-    // EditorUtility.RevealInFinder(jsBuildFolder);
   }
 
   //-- JS BUILD TOOLS --------------------------------
@@ -758,6 +718,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     string fromDir = CqFile.StarterTemplateFolder().longPath;
     string toDir   = CqFile.AppFolder(true).longPath; // here true means log no error if missing
     CroquetBuilder.CopyDirectory(fromDir, toDir);
+    AssetDatabase.Refresh();
     Check_HasAppJs();
     CheckAllStatusForReady();
   }
@@ -770,7 +731,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   private void Clk_GotoAppJsFile() {
     CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
-  
 
   //-- VERSION MATCH - JS BUILD TOOLS --------------------------------
 
@@ -802,16 +762,12 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   private void SetupLabel(string labelName, ref Label label) {
     label = rootVisualElement.Query<Label>(labelName).First();
-    if (label == null) {
-      Debug.LogError("Could not find label: " + labelName);
-    }
+    if (label == null) Debug.LogError("Could not find label: " + labelName);
   }
 
   private void SetupVisElem(string visElemName, ref VisualElement visElem) {
     visElem = rootVisualElement.Query<VisualElement>(visElemName).First();
-    if (visElem == null) {
-      Debug.LogError("Could not find VisualElement: " + visElemName);
-    }
+    if (visElem == null) Debug.LogError("Could not find VisualElement: " + visElemName);
   }
 
   //=============================================================================
@@ -834,33 +790,15 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //=============================================================================
-
   private CroquetSettings FindProjectCqSettings() {
     CroquetSettings cqSettings = null;
-
     // First check for a CroquetSettings on the scene's CroquetBridge
-    var bridge = FindObjectOfType<CroquetBridge>();
-    if (bridge?.appProperties != null) {
+    var bridge = SceneHelp.FindComp<CroquetBridge>();
+    if (bridge != null && bridge.appProperties != null) {
       return bridge.appProperties; // appProperties is a CroquetSettings
     }
-
-    // Then look in the whole project for a file of CroquetSettings type ("t:")
-    string[] guids = AssetDatabase.FindAssets("t:CroquetSettings");
-    guids = Array.FindAll(guids, guid => !AssetDatabase.GUIDToAssetPath(guid).Contains("Packages/"));
-
-    if (guids.Length > 0) {
-      cqSettings = AssetDatabase.LoadAssetAtPath<CroquetSettings>(AssetDatabase.GUIDToAssetPath(guids[0]));
-      if (guids.Length > 1) {
-        Debug.LogWarning("Found more than one CroquetSettings file. You should only have one.");
-        // Print out path of all files found
-        int i = 1;
-        foreach (string guid in guids) {
-          string path = AssetDatabase.GUIDToAssetPath(guid);
-          // Make them select when click each log
-          Debug.LogWarning( i++ + ". " + path, AssetDatabase.LoadAssetAtPath<CroquetSettings>(path));
-        }
-      }
-    }
+    // Then look in all project folders for a file of CroquetSettings type
+    cqSettings = SceneHelp.FindCompInProject<CroquetSettings>(); 
     if (cqSettings == null) {
       Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
       MqWelcome_StatusSets.settings.error.Set();
@@ -868,6 +806,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       MqWelcome_StatusSets.apiKey.error.Set();
       MqWelcome_StatusSets.ready.error.Set();
     }
+
     return cqSettings;
   }
 
@@ -889,9 +828,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     CroquetSettings cqSettings = FindProjectCqSettings();
     // If not, copy file from ./resources/CroquetSettings_Template.asset
     // into Assets/Settings/CroquetSettings.asset
-    if (cqSettings == null) {
-      cqSettings = CopyDefaultSettingsFile();
-    }
+    if (cqSettings == null) cqSettings = CopyDefaultSettingsFile();
     return cqSettings;
   }
   
@@ -900,11 +837,11 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   private void AllAreReady(bool really = true) {
     if (really) {
       MqWelcome_StatusSets.ready.success.Set();
-      Awesome_Btn.style.visibility = Visibility.Visible;
+      ShowVEs(Awesome_Btn);
       countdown_ToConvertSuccesses = 3f;
     } else {
       MqWelcome_StatusSets.ready.error.Set();
-      Awesome_Btn.style.visibility = Visibility.Hidden;
+      HideVEs(Awesome_Btn);
     }
   }
 
@@ -929,14 +866,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     var cqStgs = FindProjectCqSettings();
     if (cqStgs == null) {
       GotoSettings_Btn.SetEnabled(false);
-      SettingsCreate_Btn.style.visibility = Visibility.Visible;
+      ShowVEs(SettingsCreate_Btn);
       MqWelcome_StatusSets.settings.error.Set();
       return false;
     } else {
       GotoSettings_Btn.SetEnabled(true);
       MqWelcome_StatusSets.settings.success.Set();
-      SettingsCreate_Btn.style.visibility = Visibility.Hidden;
-      GotoSettings_Btn.style.visibility   = Visibility.Visible;
+      HideVEs(SettingsCreate_Btn);
+      ShowVEs(GotoSettings_Btn);
       return true;
     }
   }
@@ -966,7 +903,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     bool apiKeyIsGood = (apiKey != null && apiKey != "<go get one at multisynq.io>" && apiKey.Length > 0);
     MqWelcome_StatusSets.apiKey.SetIsGood(apiKeyIsGood);
     return apiKeyIsGood;
-  
   }
 
   private bool Check_BridgeComponent() {
@@ -1012,9 +948,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     if (hasSettings) {
       ShowVEs(BridgeHasSettings_Goto_Btn);
       HideVEs(BridgeHasSettings_AutoConnect_Btn);
-    } else {
-      ShowVEs(BridgeHasSettings_AutoConnect_Btn);
-    }
+    } else ShowVEs(BridgeHasSettings_AutoConnect_Btn);
     return hasSettings;
   }  
 
@@ -1023,14 +957,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     bool havejsBuildFolder = jsBuildNmFolder.Exists();
     MqWelcome_StatusSets.jsBuildTools.SetIsGood(havejsBuildFolder);
 
-    if (!havejsBuildFolder) {
+    if (havejsBuildFolder) {
+      ShowVEs(GotoJSBuildToolsFolder_Btn, Build_JsNow_Btn);
+      HideVEs(CopyJSBuildTools_Btn);
+    } else {
       ShowVEs(CopyJSBuildTools_Btn);
       HideVEs(GotoJSBuildToolsFolder_Btn, Build_JsNow_Btn);
       Debug.LogError($"JS Build Tools are missing from {jsBuildNmFolder.shortPath}");
       Debug.LogError($"JS Build Tools are missing from {jsBuildNmFolder.longPath}");
-    } else {
-      ShowVEs(GotoJSBuildToolsFolder_Btn, Build_JsNow_Btn);
-      HideVEs(CopyJSBuildTools_Btn);
     }
     return havejsBuildFolder;
   }
@@ -1046,23 +980,16 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     }
     var appJsFile      = CqFile.AppIndexJs();
     bool haveAppJsFile = appJsFile.Exists(); // file should be in Assets/CroquetJS/<appName>/index.js
-    if (!haveAppJsFile) {
-      MqWelcome_StatusSets.hasAppJs.error.Set();
-      ShowVEs(MakeAppJsFile_Btn);
-      HideVEs(SetAppName_Btn, GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
-    } else {
-      MqWelcome_StatusSets.hasAppJs.success.Set();
-      ShowVEs(GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
-      HideVEs(SetAppName_Btn, MakeAppJsFile_Btn);
-    }
+    MqWelcome_StatusSets.hasAppJs.SetIsGood(haveAppJsFile);
+    HideVEs(SetAppName_Btn);
+    SetVEViz( haveAppJsFile, GotoAppJsFile_Btn, GotoAppJsFolder_Btn );
+    SetVEViz(!haveAppJsFile, MakeAppJsFile_Btn);
 
     return haveAppJsFile;
   }
 
   private void SetVEViz(bool seen, params VisualElement[] ves) {
-    foreach (var ve in ves) {
-      ve.style.visibility = seen ? Visibility.Visible : Visibility.Hidden;
-    }
+    foreach (var ve in ves) ve.style.visibility = seen ? Visibility.Visible : Visibility.Hidden;
   }
   private void ShowVEs(params VisualElement[] ves) {
     foreach (var ve in ves) SetVEViz(true, ve);
@@ -1086,7 +1013,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       Debug.Log("JSTools for Editor & Build match!!!");
     } else {
       Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge) );
-      ReinstallTools_Btn.style.visibility = Visibility.Visible;
+      ShowVEs(ReinstallTools_Btn);
     }
     ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
     return allMatch;
@@ -1106,10 +1033,9 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     if (!File.Exists(nodePath)) {
       Notify("Could not find node path file:\n" + nodePath);
       return null;
-    } else {
-      return GetNodeVersion(nodePath, "-v");
-    }
+    } else return GetNodeVersion(nodePath, "-v");
   }
+  
   private string GetNodeVersion(string executable = "", string arguments = "") {
     string output = RunShell(executable, arguments);
     string[] stdoutLines = output.Split('\n');
