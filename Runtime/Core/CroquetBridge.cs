@@ -103,7 +103,7 @@ public class CroquetBridge : MonoBehaviour
     {
         if (INTEROP_BRIDGE)
         {
-            Debug.Log($"sending to JS: {message}");
+            // Debug.Log($"sending to JS: {message}");
             SendMessageToJS(message);
         }
         else
@@ -854,7 +854,7 @@ public class CroquetBridge : MonoBehaviour
         // only proceed if the JSToolsRecord is available - which in WebGL can take a
         // second or two.
         if (bridgeState == "waitingForSessionName") {
-            Debug.Log($"sessionName: {sessionName}, JSToolsRecordReady: {CroquetBuilder.JSToolsRecordReady()}");
+            // Debug.Log($"sessionName: {sessionName}, JSToolsRecordReady: {CroquetBuilder.JSToolsRecordReady()}");
             if (sessionName != "" && CroquetBuilder.JSToolsRecordReady())
             {
                 SetBridgeState("waitingForSession");
