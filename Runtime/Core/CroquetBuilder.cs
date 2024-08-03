@@ -181,9 +181,9 @@ public class CroquetBuilder
 
         string buildRecordContents = File.ReadAllText(buildRecordPath).Trim();
         JSBuildStateRecord record = JsonUtility.FromJson<JSBuildStateRecord>(buildRecordContents);
-        bool sameTarget      = record.target == target || (record.target == "webgl" && target == "web");
+        bool sameTarget      = record.target == target || (record.target == "webgl" && target == "webview");
         bool sameLocalTools  = record.localToolsLevel == installedToolsLevel;
-        
+
         Debug.Log($"CheckJSBuildState: app={appName}, record.target={record.target}  target={target}, sameTarget={sameTarget}, sameLocalTools={sameLocalTools}");
         return sameTarget && sameLocalTools;
     }
@@ -378,7 +378,7 @@ public class CroquetBuilder
 
     private static void RecordJSBuildState(string appName, string target, bool success)
     {
-        // record one of "web", "node", or "" to indicate whether StreamingAssets contains a successful
+        // record one of "webview", "node", "webgl", or "" to indicate whether StreamingAssets contains a successful
         // build for web or node, or for neither.
         // also record the tools level, so we can force a rebuild after a tools update.
         string buildRecordPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS",
@@ -430,7 +430,7 @@ public class CroquetBuilder
         string nodeExecPath;
         string executable;
         string arguments = "";
-        string target = details.useNodeJS ? "node" : "web";
+        string target = details.useNodeJS ? "node" : "webview";
         string logFile = "";
 // %%% need to figure out how to let the developer create a JS build of the right type for the deployment, in the case where the editor session needs a different one
 #if UNITY_WEBGL
@@ -458,7 +458,7 @@ public class CroquetBuilder
         // arguments to the runwebpack script, however it is invoked:
         // 1. full path to the platform-relevant node engine
         // 2. app name
-        // 3. build target: 'node' or 'web'
+        // 3. build target: 'node' or 'webview' or 'webgl'
         // 4. (iff starting a watcher) path to a temporary file to be used for output
         arguments += $"{nodeExecPath} {appName} {target} ";
         if (startWatcher)
@@ -666,7 +666,7 @@ public class CroquetBuilder
 
         // at this point we have confirmed that there appears to be source code for making a build.
         // in fact, perhaps it has already been made.
-        string target = details.useNodeJS ? "node" : "web";
+        string target = details.useNodeJS ? "node" : "webview";
 
 #if UNITY_EDITOR_OSX
         if (RunningWatcherApp() == appName)

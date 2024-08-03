@@ -8,14 +8,17 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = env => {
+
+// buildTarget is either 'webgl', 'webview', or 'node'
+const isWebGL = env.buildTarget === 'webgl';
 const webGLPath = path.join(__dirname, `../../../WebGLTemplates/CroquetLoader/`);
 const nonWebGLPath = path.join(__dirname, `../../../StreamingAssets/${env.appName}/`);
-const destination = env.useWebGL === 'true' ? webGLPath : nonWebGLPath;
+const destination = isWebGL ? webGLPath : nonWebGLPath;
 
 const lobbyDir = path.join(__dirname, `../../lobby`);
-const withLobby = env.useWebGL === 'true' && fs.existsSync(lobbyDir);
+const withLobby = isWebGL && fs.existsSync(lobbyDir);
 
-// console.log(`Building for ${env.useWebGL==='true'?'WebGL': env.buildTarget}, ${withLobby?'with':'without'} lobby`);
+// console.log(`Building for ${env.buildTarget}, ${withLobby?'with':'without'} lobby`);
 
 return {
     // infrastructureLogging: {
@@ -48,11 +51,11 @@ return {
         pathinfo: false,
         filename: env.buildTarget === 'node' ? 'node-main.js' : '[name]-[contenthash:8].js',
         chunkFilename: 'chunk-[contenthash:8].js',
-        clean: !env.useWebGL // RemovePlugin below handles index-####.js files in WebGL
+        clean: !isWebGL // RemovePlugin below handles index-####.js files in WebGL
     },
     cache: {
         type: 'filesystem',
-        name: `${env.appName}-${env.buildTarget}${env.useWebGL?'-WebGL':''}`,
+        name: `${env.appName}-${env.buildTarget}${isWebGL?'-WebGL':''}`,
         buildDependencies: {
             config: [__filename],
         }
@@ -65,7 +68,7 @@ return {
         },
         fallback: {
             "crypto": false,
-            ...(env.useWebGL === 'true' ? {
+            ...(isWebGL ? {
                 "buffer": require.resolve("buffer/"),
                 "stream": require.resolve("stream-browserify"),
                 "assert": require.resolve("assert/"),
@@ -74,7 +77,7 @@ return {
     },
     module: {
         rules: [
-            env.useWebGL==='true' && {
+            isWebGL && {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
@@ -93,7 +96,7 @@ return {
         ].filter(x=>x), // removes any undefined by the && predicate being false
     },
     plugins: [
-        env.useWebGL === 'true' && new RemovePlugin({
+        isWebGL && new RemovePlugin({
             before: {
                 allowRootAndOutside: true,
                 test: [
@@ -124,7 +127,7 @@ return {
         }),
         // build main html if not building for node
         env.buildTarget !== 'node' && new HtmlWebpackPlugin({
-            template: './sources/index.html',
+            template: isWebGL ?  './sources/index-webgl.html' : './sources/index-webview_or_node.html',
             filename: withLobby ? 'game.html' : 'index.html',
             chunks: ['index', 'game'], // main chunk is either index or game
             inject: 'body',
@@ -135,10 +138,10 @@ return {
             inject: 'body',
             chunks: ['lobby'],
         }),
-        env.useWebGL === 'true' && new webpack.ProvidePlugin({
+        isWebGL && new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
         }),
-        env.useWebGL === 'true' && new webpack.ProvidePlugin({
+        isWebGL && new webpack.ProvidePlugin({
             process: 'process/browser',
         }),
     ].filter(x=>x), // removes any undefined by the && predicate being false
@@ -148,9 +151,9 @@ return {
             bufferutil: 'commonjs bufferutil',
         },
     ],
-    target: env.buildTarget,
+    target: env.buildTarget !== 'node' ? 'web' : 'node',
     experiments: {
-        outputModule: env.useWebGL==='true',
+        outputModule: isWebGL,
         asyncWebAssembly: true,
     }
 };

@@ -1,7 +1,7 @@
 :: on Windows, the CroquetBuilder.StartBuild script supplies us with 3 arguments:
 :: 1. full path to the node engine
 :: 2. app name - used in webpack.config to find the app source
-:: 3. build target ('node' or 'web') - also used in webpack.config
+:: 3. build target ('node' or 'webview' or 'webgl') - also used in webpack.config
 
 @echo off
 set nodepath=%1
