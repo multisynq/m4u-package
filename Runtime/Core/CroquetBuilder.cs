@@ -427,7 +427,7 @@ public class CroquetBuilder
         JSBuildDetails details = GetSceneBuildDetails();
         string appName = details.appName;
         string defaultBuilderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", ".js-build", "build-tools"));
-        string customBuilderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS");
+        string customBuilderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
         string appBuilderPath = Path.Combine(customBuilderPath, appName);
         // we check existence of the runwebpack.sh file in the app path first, then in its parent, then (old) default
         // once we get rid of runwebpack.sh we will use existence of package.json instead
