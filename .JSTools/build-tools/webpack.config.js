@@ -113,7 +113,9 @@ return {
                             || (!withLobby && /game.html/m.test(absolutePath)),
                     }
                 ],
-                log: false
+                log: false,
+                logWarning: false,
+                logError: false, // if nothing was deleted Unity would think there was an error
             }
         }),
         new CopyPlugin({
