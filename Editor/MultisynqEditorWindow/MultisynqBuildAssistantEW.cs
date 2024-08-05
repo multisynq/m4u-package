@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -84,6 +85,13 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   Button Build_JsNow_Btn;
   Button ToggleJSBuild_Btn;
   Button GotoBuiltOutput_Btn;
+
+  VisualElement BuiltOutput_Status_Img; // BUILD OUTPUT
+  Label BuiltOutput_Message_Lbl;
+  Button Save_Open_Scene_Btn;
+  Button Goto_Build_Panel_Btn;
+  // Button BuiltOutput_Docs_Btn;
+  Button Check_Building_Scenes_Btn;
 
   List<Button> allButtons = new();
 
@@ -212,6 +220,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref JbtVersionMatch_Message_Lbl);
     SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
     SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
+
+    // BUILT OUTPUT
+    SetupVisElem("BuiltOutput_Status_Img",            ref BuiltOutput_Status_Img);
+    SetupLabel(  "BuiltOutput_Message_Lbl",           ref BuiltOutput_Message_Lbl);
+    SetupButton( "Save_Open_Scene_Btn",               ref Save_Open_Scene_Btn,               Clk_Save_Open_Scene);
+    SetupButton( "Goto_Build_Panel_Btn",              ref Goto_Build_Panel_Btn,              Clk_Goto_Build_Panel);
+    SetupButton( "Check_Building_Scenes_Btn",         ref Check_Building_Scenes_Btn,         Clk_Check_Building_Scenes);
+    // SetupButton( "BuiltOutput_Docs_Btn
     //-----
     // Hide most buttons
     HideMostButtons();
@@ -341,11 +357,19 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       $"Versions of {t_jsb} Tools and Built output match!!! Well done!",
       "Version Match status"
     );
+    MqWelcome_StatusSets.builtOutput = new StatusSet( BuiltOutput_Message_Lbl, BuiltOutput_Status_Img,
+      // (info, warning, error, success, blank)
+      $"Built output folders match the building scene list!",
+      $"Please check built output folders with [ Check Building Scenes ] button.",
+      $"Built output folder mismatch with building scene list! Click <b>Check Building Scenes</b> to fix.",
+      $"Built output folders match the building scene list! Well done!",
+      "Built output status"
+    );
     MqWelcome_StatusSets.AllStatusSetsToBlank();
   }
   //=============================================================================
   //=============================================================================
-
+  static bool doCheckBuiltOutput = true;
   //-- Clicks - CHECK READINESS --------------------------------
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
   Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
@@ -360,6 +384,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= Check_HasAppJs();
     allRdy &= Check_ToolsVersionMatch();
     allRdy &= Check_JS_Build();
+    if (doCheckBuiltOutput) allRdy &= Check_BuiltOutput();
     //-----
     if (allRdy) AllAreReady();
     else        AllAreReady(false);
@@ -660,7 +685,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     }
     CroquetBuilder.StartBuild(false); // false => no watcher
     AssetDatabase.Refresh();
-    CqFile.StreamingAssetsAppFolder().SelectAndPing();
+    // CqFile.StreamingAssetsAppFolder().SelectAndPing();
     Check_JS_Build();
   }
 
@@ -746,6 +771,42 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     CroquetMenu.InstallJSTools();
     Check_ToolsVersionMatch();
     CheckAllStatusForReady();
+  }
+
+  //-- BUILT OUTPUT --------------------------------
+  private bool Check_BuiltOutput() {
+    bool sceneIsDirty = EditorSceneManager.GetActiveScene().isDirty;
+    if (sceneIsDirty) {
+      MqWelcome_StatusSets.builtOutput.success.Set();
+      return false;
+    } else {
+      MqWelcome_StatusSets.builtOutput.warning.Set(); // best you can get is a warning
+    }
+    SetVEViz(!sceneIsDirty, Check_Building_Scenes_Btn);
+    ShowVEs(Save_Open_Scene_Btn, Goto_Build_Panel_Btn);
+    return sceneIsDirty;
+  }
+
+  //-- BUILT OUTPUT --------------------------------
+  void Clk_Save_Open_Scene() { // Save Open Scene  -  BUILT OUTPUT  ------------- Click
+    EditorSceneManager.SaveScene( EditorSceneManager.GetActiveScene() );
+  }
+
+  void Clk_Goto_Build_Panel() { // Goto Build  -  BUILT OUTPUT  ------------- Click
+    EditorWindow.GetWindow<BuildPlayerWindow>().Show();
+  }
+
+  void Clk_Check_Building_Scenes() { // Check -  BUILT OUTPUT  ------------- Click
+    if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+    var isOk = CqFile.AllScenesHaveBridgeWithAppNameSet();
+    MqWelcome_StatusSets.builtOutput.SetIsGood(isOk);
+    if (isOk) NotifyAndLog("All scenes have CroquetBridge\n with appName set and\n app folder in StreamingAssets.");
+    else      {
+      NotifyAndLogError("Some scenes are missing CroquetBridge \nwith appName set or\n app folder in StreamingAssets.");
+    }
+    doCheckBuiltOutput = false;
+    CheckAllStatusForReady();
+    doCheckBuiltOutput = true;
   }
   //=============================================================================
   //=============================================================================

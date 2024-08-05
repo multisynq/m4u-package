@@ -14,6 +14,7 @@ static public class MqWelcome_StatusSets {
   static public StatusSet jsBuild;
   static public StatusSet hasAppJs;
   static public StatusSet versionMatch;
+  static public StatusSet builtOutput;
 
   static public StatusSet[] AllMyStatusSets() {
     // return new StatusSet[]{ ready, settings, node, apiKey, bridge, bridgeHasSettings, jsBuildTools, versionMatch, jsBuild };
