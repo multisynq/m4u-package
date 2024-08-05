@@ -3,6 +3,7 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.SceneManagement;
 
 static public class CqFile {
 
@@ -124,6 +125,39 @@ static public class CqFile {
         AssetDatabase.RenameAsset(dir.shortPath, newName);
       }
     }
+  }
+  static public bool AllScenesHaveBridgeWithAppNameSet() {
+      string[] buildingScenes = EditorBuildSettings.scenes.Where( s => s.enabled ).Select( s => s.path ).ToArray();
+      // load each scene in the list and get its CroquetBridge
+      foreach (string scenePath in buildingScenes) {
+        EditorSceneManager.OpenScene(scenePath);
+        var bridge = Object.FindObjectOfType<CroquetBridge>();
+        if (bridge == null) {
+          Debug.LogError("Could not find CroquetBridge in scene: " + scenePath);
+          return false;
+        } else {
+          // grab the appName from the CroquetBridge and make sure there is a folder for it in the StreamingAssets folder
+          string appName = bridge.appName;
+          if (appName == "") {
+            Debug.LogError("CroquetBridge in scene: " + scenePath + " has no appName set.");
+            return false;
+          } else {
+            var appFolder = CqFile.StreamingAssetsAppFolder(appName);
+            if (!appFolder.Exists()) {
+              Debug.LogError("Could not find app folder: " + appFolder);
+              return false;
+            }
+          }
+        }
+      }
+      if (buildingScenes.Length == 0) {
+        Debug.LogError("No scenes in Build Settings.\nAdd some scenes to build.");
+        return false;
+      } else {
+        Debug.Log("Yay! >> All scenes have CroquetBridge with appName set and app folder in StreamingAssets.");
+        return true;
+      }
+
   }
 }
 
