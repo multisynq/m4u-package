@@ -251,6 +251,8 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
         BuildTarget target = report.summary.platform;
         bool isWindowsBuild = target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64;
         string jsTarget = isWindowsBuild ? "node" : (target == BuildTarget.WebGL ? "webgl" : "webview");
+        
+        Debug.LogWarning($"Building for target {jsTarget}");
 
         Scene activeScene = EditorSceneManager.GetActiveScene();
         if (!CroquetBuilder.PrepareSceneForBuildTarget(activeScene, isWindowsBuild))
