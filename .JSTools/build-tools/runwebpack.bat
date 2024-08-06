@@ -11,16 +11,6 @@ set nodepath=%1
 set appname=%2
 set target=%3
 
-:: Set up TARGET and WEBGL variables
-if "%target%"=="webgl" (
-    set target=web
-    set webgl=true
-    copy .\sources\index-webgl.html .\sources\index.html
-) else (
-    set webgl=false
-    copy .\sources\index-webview_or_node.html .\sources\index.html
-)
-
 :: Set NODE_MODULES path
 set NODE_MODULES=..\node_modules
 
@@ -28,19 +18,19 @@ set NODE_MODULES=..\node_modules
 if "%4" neq "" (
     set logfile=%4
     start /B %nodepath% %NODE_MODULES%\.bin\webpack --config webpack.config.js --watch --mode development --env appName=%appname% --env buildTarget=%target% --no-color > %logfile% 2>&1
-    
+
     :: Get the Process ID of the started webpack process
     for /f "tokens=2 delims=," %%a in ('tasklist /fi "imagename eq node.exe" /fo csv /nh') do (
         set pid=%%a
         goto :break
     )
     :break
-    
+
     :: Output the webpack process ID
     echo webpack=!pid!
 ) else (
-    %nodepath% %NODE_MODULES%\.bin\webpack --config webpack.config.js --mode development --env appName=%appname% --env buildTarget=%target% --env useWebGL=%webgl% --no-color
-    
+    %nodepath% %NODE_MODULES%\.bin\webpack --config webpack.config.js --mode development --env appName=%appname% --env buildTarget=%target% --no-color
+
     :: Output the exit code
     echo webpack-exit=%errorlevel%
 )
