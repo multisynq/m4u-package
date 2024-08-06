@@ -660,7 +660,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //-- Clicks - JS BUILD --------------------------------
-
   async void Clk_ToggleJSBuild() { // JS BUILD  ------------- Click
     if (ToggleJSBuild_Btn.text == "Start JS Build Watcher") {
       bool success = await CroquetBuilder.EnsureJSToolsAvailable();
@@ -757,23 +756,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
 
-  //-- VERSION MATCH - JS BUILD TOOLS --------------------------------
-
-  void Clk_OpenEditorBuildPanel() { // Open Build - JS BUILD TOOLS  ------------- Click
-    EditorWindow.GetWindow<BuildPlayerWindow>().Show();
-    EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes.Where( s => s.enabled ).ToArray();
-    if (scenes.Length == 0) {
-      NotifyAndLogError("No scenes in Build Settings.\nAdd some scenes to build.");
-      return;
-    }
-  }
-  void Clk_ReinstallTools() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
-    CroquetMenu.InstallJSTools();
-    Check_ToolsVersionMatch();
-    CheckAllStatusForReady();
-  }
-
-  //-- BUILT OUTPUT --------------------------------
+  //-- Check - BUILT OUTPUT --------------------------------
   private bool Check_BuiltOutput() {
     bool sceneIsDirty = EditorSceneManager.GetActiveScene().isDirty;
     if (sceneIsDirty) {
@@ -783,11 +766,12 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       MqWelcome_StatusSets.builtOutput.warning.Set(); // best you can get is a warning
     }
     SetVEViz(!sceneIsDirty, Check_Building_Scenes_Btn);
-    ShowVEs(Save_Open_Scene_Btn, Goto_Build_Panel_Btn);
+    SetVEViz(sceneIsDirty, Goto_Build_Panel_Btn);
+    ShowVEs(Goto_Build_Panel_Btn);
     return sceneIsDirty;
   }
 
-  //-- BUILT OUTPUT --------------------------------
+  //-- Clicks - BUILT OUTPUT --------------------------------
   void Clk_Save_Open_Scene() { // Save Open Scene  -  BUILT OUTPUT  ------------- Click
     EditorSceneManager.SaveScene( EditorSceneManager.GetActiveScene() );
   }
@@ -808,6 +792,24 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     CheckAllStatusForReady();
     doCheckBuiltOutput = true;
   }
+
+  //-- VERSION MATCH - JS BUILD TOOLS --------------------------------
+
+  void Clk_OpenEditorBuildPanel() { // Open Build - JS BUILD TOOLS  ------------- Click
+    EditorWindow.GetWindow<BuildPlayerWindow>().Show();
+    EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes.Where( s => s.enabled ).ToArray();
+    if (scenes.Length == 0) {
+      NotifyAndLogError("No scenes in Build Settings.\nAdd some scenes to build.");
+      return;
+    }
+  }
+  void Clk_ReinstallTools() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
+    CroquetMenu.InstallJSTools();
+    Check_ToolsVersionMatch();
+    CheckAllStatusForReady();
+  }
+
+
   //=============================================================================
   //=============================================================================
 
@@ -1128,9 +1130,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     string output = pcs.StandardOutput.ReadToEnd();
     string errors = pcs.StandardError.ReadToEnd();
     pcs.WaitForExit();
+    string exeAsJustFile = Path.GetFileName(executable);
 
-    if (output.Length > 0 && logLevel > 1) Debug.Log(     "RunShell().output = '" + output + "'");
-    if (errors.Length > 0 && logLevel > 0) Debug.LogError("RunShell().errors = '" + errors + "'");
+    if (output.Length > 0 && logLevel > 1) {
+      Debug.Log(     $"RunShell({exeAsJustFile} {arguments}).output = '{output.Trim()}'");
+    }
+    if (errors.Length > 0 && logLevel > 0) {
+      Debug.LogError($"RunShell({exeAsJustFile} {arguments}).errors = '{errors.Trim()}'");
+    }
 
     return output;
   }

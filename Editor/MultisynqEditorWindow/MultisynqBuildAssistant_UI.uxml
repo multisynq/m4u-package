@@ -137,17 +137,6 @@
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement name="JbtVersionMatch_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="JbtVersionMatch_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
-                        <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
-                            <ui:Label text="Version Match - Built Output &amp; JS Build Tools" display-tooltip-when-elided="true" name="JbtVersionMatch_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
-                            <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
-                                <ui:Button text="Reinstall Tools" display-tooltip-when-elided="true" name="ReinstallTools_Btn" />
-                                <ui:Button text="Open Build Panel" display-tooltip-when-elided="true" name="OpenBuildPanel_Btn" style="display: flex;" />
-                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="JbtVersionMatch_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
-                            </ui:VisualElement>
-                        </ui:VisualElement>
-                    </ui:VisualElement>
                     <ui:VisualElement name="BuiltOutput_Lay" style="width: 100%; height: 100%; flex-direction: row;">
                         <ui:VisualElement name="BuiltOutput_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
@@ -160,6 +149,17 @@
                             <ui:VisualElement name="Btns2_Lay" style="flex-direction: row; margin-left: 0; height: 22px;">
                                 <ui:Button text="Check Building Scenes" display-tooltip-when-elided="true" name="Check_Building_Scenes_Btn" style="margin-left: 0;" />
                                 <ui:Button text="Goto App JS Folder" display-tooltip-when-elided="true" name="GotoAppJsFolder_Btn" style="margin-left: 0; display: none;" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="JbtVersionMatch_Lay" style="width: 100%; height: 100%; flex-direction: row;">
+                        <ui:VisualElement name="JbtVersionMatch_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
+                            <ui:Label text="Version Match - Built Output &amp; JS Build Tools" display-tooltip-when-elided="true" name="JbtVersionMatch_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
+                            <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
+                                <ui:Button text="Reinstall Tools" display-tooltip-when-elided="true" name="ReinstallTools_Btn" />
+                                <ui:Button text="Open Build Panel" display-tooltip-when-elided="true" name="OpenBuildPanel_Btn" style="display: flex;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="JbtVersionMatch_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
