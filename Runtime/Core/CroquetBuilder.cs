@@ -62,9 +62,9 @@ public class CroquetBuilder
 
     public static void FileReaderIsReady(CroquetFileReader reader) {
         // as soon as the file reader starts up, ask it to fetch any files we need.
-#if UNITY_WEBGL && !UNITY_EDITOR // only needed in built WebGL, not in Editor or in other builds
-        reader.FetchFile(JSToolsRecordInBuild, JSToolsRecordResult);
-#endif
+        #if UNITY_WEBGL && !UNITY_EDITOR //# # # # # # # # # # # # # # # # # # # # # # #
+            reader.FetchFile(JSToolsRecordInBuild, JSToolsRecordResult); // only needed in built WebGL, not in Editor or in other builds
+        #endif  //# # # # # # # # # # # # # # # # # # # # # # #
     }
 
     public static void JSToolsRecordResult(string result) {
@@ -79,15 +79,15 @@ public class CroquetBuilder
         //   "needsInstall" - no sign that tools have been installed, but we can go ahead and try
         //   "unavailable" - no way to install: (on Mac) no Node executable found
 
-#if UNITY_EDITOR_OSX
-        string nodeExecutable = GetSceneBuildDetails().nodeExecutable;
-        if (nodeExecutable == "" || !File.Exists(nodeExecutable))
-        {
-            Debug.LogError($"Bad path \"{nodeExecutable}\" in CroquetSettings.asset.  Please set a valid path to Node in the Settings object");
-            Debug.LogError("Cannot build JS on MacOS without a valid path to Node in the Settings object");
-            return "unavailable";
-        }
-#endif
+        #if UNITY_EDITOR_OSX //# # # # # # # # # # # # # # # # # # # # # # #
+            string nodeExecutable = GetSceneBuildDetails().nodeExecutable;
+            if (nodeExecutable == "" || !File.Exists(nodeExecutable))
+            {
+                Debug.LogError($"Bad path \"{nodeExecutable}\" in CroquetSettings.asset.  Please set a valid path to Node in the Settings object");
+                Debug.LogError("Cannot build JS on MacOS without a valid path to Node in the Settings object");
+                return "unavailable";
+            }
+        #endif //# # # # # # # # # # # # # # # # # # # # # # #
 
         InstalledToolsRecord toolsRecord = FindJSToolsRecord();
         if (toolsRecord == null)
@@ -108,11 +108,11 @@ public class CroquetBuilder
     }
 
     public static bool JSToolsRecordReady() {
-#if UNITY_WEBGL && !UNITY_EDITOR
-        return FetchedJSToolsRecord != "";
-#else
-        return true;
-#endif
+        #if UNITY_WEBGL && !UNITY_EDITOR //# # # # # # # # # # # # # # # # # # # # # # #
+            return FetchedJSToolsRecord != "";
+        #else //# # # # # # # # # # # # # # # # # # # # # # #
+            return true;
+        #endif //# # # # # # # # # # # # # # # # # # # # # # #
     }
 
     public static InstalledToolsRecord FindJSToolsRecord()
@@ -127,36 +127,37 @@ public class CroquetBuilder
         // that specific case, HasJSToolsRecord won't return true until the fetch has
         // completed.
         string installRecordContents = "";
-#if UNITY_EDITOR
-        string installRecordPath = JSToolsRecordInEditor;
-        if (!File.Exists(installRecordPath)) return null;
 
-        installRecordContents = File.ReadAllText(installRecordPath);
-#else
-        // find the file in a build.  Android needs extra care.
-        string src = JSToolsRecordInBuild;
-#if UNITY_ANDROID
-        var unityWebRequest = UnityWebRequest.Get(src);
-        unityWebRequest.SendWebRequest();
-        while (!unityWebRequest.isDone) { } // meh
-        if (unityWebRequest.result != UnityWebRequest.Result.Success)
-        {
-            if (unityWebRequest.error != null) UnityEngine.Debug.Log($"{src}: {unityWebRequest.error}");
-        }
-        else
-        {
-            byte[] contents = unityWebRequest.downloadHandler.data;
-            installRecordContents = Encoding.UTF8.GetString(contents);
-        }
-        unityWebRequest.Dispose();
-#elif UNITY_WEBGL
-        if (FetchedJSToolsRecord == "") return null;
+        #if UNITY_EDITOR //# # # # # # # # # # # # # # # # # # # # # # #
+            string installRecordPath = JSToolsRecordInEditor;
+            if (!File.Exists(installRecordPath)) return null;
 
-        installRecordContents = FetchedJSToolsRecord;
-#else
-        installRecordContents = File.ReadAllText(src);
-#endif
-#endif
+            installRecordContents = File.ReadAllText(installRecordPath);
+        #else //# # # # # # # # # # # # # # # # # # # # # # #
+            // find the file in a build.  Android needs extra care.
+            string src = JSToolsRecordInBuild;
+            #if UNITY_ANDROID //# # # # # # # # # # # # # # # # # # # # # # #
+                var unityWebRequest = UnityWebRequest.Get(src);
+                unityWebRequest.SendWebRequest();
+                while (!unityWebRequest.isDone) { } // meh
+                if (unityWebRequest.result != UnityWebRequest.Result.Success)
+                {
+                    if (unityWebRequest.error != null) UnityEngine.Debug.Log($"{src}: {unityWebRequest.error}");
+                }
+                else
+                {
+                    byte[] contents = unityWebRequest.downloadHandler.data;
+                    installRecordContents = Encoding.UTF8.GetString(contents);
+                }
+                unityWebRequest.Dispose();
+            #elif UNITY_WEBGL //# # # # # # # # # # # # # # # # # # # # # # #
+                if (FetchedJSToolsRecord == "") return null;
+
+                installRecordContents = FetchedJSToolsRecord;
+            #else //# # # # # # # # # # # # # # # # # # # # # # #
+                installRecordContents = File.ReadAllText(src);
+            #endif //# # # # # # # # # # # # # # # # # # # # # # #
+        #endif //# # # # # # # # # # # # # # # # # # # # # # #
 
         return JsonUtility.FromJson<InstalledToolsRecord>(installRecordContents);
     }
@@ -248,20 +249,20 @@ public class CroquetBuilder
         sceneBridgeComponent = bridgeComp;
         sceneRunnerComponent = runnerComp;
 
-        #if UNITY_WEBGL
+        #if UNITY_WEBGL //# # # # # # # # # # # # # # # # # # # # # # #
             if (Object.FindObjectOfType<CroquetFileReader>() == null)
             {
                 var cqBridge = Object.FindObjectOfType<CroquetBridge>();
                 Debug.LogError("Missing required CroquetFileReader in scene: '" + scene.name + "' Add one to your Croquet object!", cqBridge);
             }
-        #endif
+        #endif //# # # # # # # # # # # # # # # # # # # # # # #
     }
 
     // =========================================================================================
     //              everything from here on is only relevant in the editor
     // =========================================================================================
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR //# # # # # # # # # # # # # # # # # # # # # # #
     // on MacOS we offer the user the chance to start a webpack watcher that will
     // re-bundle the Croquet app automatically whenever the code is updated.
     // the console output from webpack is shown in the Unity console.  we do not
@@ -340,20 +341,22 @@ public class CroquetBuilder
             // and for inclusion in a Windows standalone build.
             bool forceToUseNodeJS = sceneRunnerComponent.forceToUseNodeJS;
             bool useNodeJS = forceToUseNodeJS; // default
-#if !UNITY_EDITOR_WIN
-            if (sceneBridgeComponent.appProperties == null)
-            {
-                throw new Exception("CroquetBridge has a null appProperties object. Needs to be set to a CroquetSettings.asset.");
-            }
-            string pathToNode = sceneBridgeComponent.appProperties.pathToNode;
-            // Debug.Log($"For !UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
-#else
-            // we're in a Windows editor
-            string pathToNode = NodeExeInPackage;
-            // Debug.Log($"For UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
-            // build using Node unless user has set debugUsingExternalSession and has *not* set forceToUseNodeJS
-            useNodeJS = !(sceneRunnerComponent.debugUsingExternalSession && !forceToUseNodeJS);
-#endif
+
+            #if !UNITY_EDITOR_WIN //# # # # # # # # # # # # # # # # # # # # # # #
+                if (sceneBridgeComponent.appProperties == null)
+                {
+                    throw new Exception("CroquetBridge has a null appProperties object. Needs to be set to a CroquetSettings.asset.");
+                }
+                string pathToNode = sceneBridgeComponent.appProperties.pathToNode;
+                // Debug.Log($"For !UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
+            #else //# # # # # # # # # # # # # # # # # # # # # # #
+                // we're in a Windows editor
+                string pathToNode = NodeExeInPackage;
+                // Debug.Log($"For UNITY_EDITOR_WIN: pathToNode = {pathToNode}");
+                // build using Node unless user has set debugUsingExternalSession and has *not* set forceToUseNodeJS
+                useNodeJS = !(sceneRunnerComponent.debugUsingExternalSession && !forceToUseNodeJS);
+            #endif //# # # # # # # # # # # # # # # # # # # # # # #
+
             return new JSBuildDetails(sceneBridgeComponent.appName, useNodeJS, pathToNode);
         }
         else return new JSBuildDetails("", false, "");
@@ -438,11 +441,13 @@ public class CroquetBuilder
         string arguments = "";
         string target = details.useNodeJS ? "node" : "webview";
         string logFile = "";
-// %%% need to figure out how to let the developer create a JS build of the right type for the deployment, in the case where the editor session needs a different one
-#if UNITY_WEBGL
-        // building for webgl, whatever the hosting platform
-        target = "webgl"; // our webpack config knows how to handle this
-#endif
+        // %%% need to figure out how to let the developer create a JS build of the right type for the deployment, in the case where the editor session needs a different one
+
+        #if UNITY_WEBGL //# # # # # # # # # # # # # # # # # # # # # # #
+            // building for webgl, whatever the hosting platform
+            target = "webgl"; // our webpack config knows how to handle this
+        #endif //# # # # # # # # # # # # # # # # # # # # # # #
+
         switch (Application.platform)
         {
             case RuntimePlatform.OSXEditor:
@@ -674,28 +679,28 @@ public class CroquetBuilder
         // in fact, perhaps it has already been made.
         string target = details.useNodeJS ? "node" : "webview";
 
-#if UNITY_EDITOR_OSX
-        if (RunningWatcherApp() == appName)
-        {
-            // there is a watcher
-            bool success = CheckJSBuildState(appName, target);
-            if (!success)
+        #if UNITY_EDITOR_OSX //# # # # # # # # # # # # # # # # # # # # # # #
+            if (RunningWatcherApp() == appName)
             {
-                string watcherTarget = EditorPrefs.GetString(ProjectSpecificKey(TARGET_PROP));
-                if (watcherTarget != target)
+                // there is a watcher
+                bool success = CheckJSBuildState(appName, target);
+                if (!success)
                 {
-                    Debug.LogError($"We need a JS build for target \"{target}\", but there is a Watcher building for \"{watcherTarget}\"");
+                    string watcherTarget = EditorPrefs.GetString(ProjectSpecificKey(TARGET_PROP));
+                    if (watcherTarget != target)
+                    {
+                        Debug.LogError($"We need a JS build for target \"{target}\", but there is a Watcher building for \"{watcherTarget}\"");
+                    }
+                    else
+                    {
+                        // it's building for the right target, but hasn't succeeded
+                        Debug.LogError($"JS Watcher has not reported a successful build.");
+                    }
                 }
-                else
-                {
-                    // it's building for the right target, but hasn't succeeded
-                    Debug.LogError($"JS Watcher has not reported a successful build.");
-                }
+                Debug.Log($"JS build for {appName} is up to date  --> success? -->" + success);
+                return success;
             }
-            Debug.Log($"JS build for {appName} is up to date  --> success? -->" + success);
-            return success;
-        }
-#endif
+        #endif //# # # # # # # # # # # # # # # # # # # # # # #
 
         // no watcher.  are we set up to rebuild on Play?
         if (BuildOnPlayEnabled)
