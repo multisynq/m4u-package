@@ -71,6 +71,9 @@ static public class CqFile {
   static public FolderThing AppFolder(bool canBeMissing = false) {
     return new FolderThing("Assets/CroquetJS/" + GetAppNameForOpenScene(), canBeMissing);
   }
+  static public FolderThing AppStreamingAssetsOutputFolder(bool canBeMissing = false) {
+    return new FolderThing(Application.streamingAssetsPath + "/" + GetAppNameForOpenScene(), canBeMissing);
+  }
   static public FileThing AppIndexJs() {
     return new FileThing("Assets/CroquetJS/" + GetAppNameForOpenScene() + "/index.js");
   }
@@ -87,7 +90,7 @@ static public class CqFile {
       return MakeBlank();
     }
     var ft = new FolderThing(Path.Combine(Application.streamingAssetsPath, appNm));
-    Debug.Log($"StreamingAssetsAppFolder: {ft.shortPath}");
+    // Debug.Log($"StreamingAssetsAppFolder: {ft.shortPath}");
     return ft;
   }
   static public FolderThing MakeBlank() {

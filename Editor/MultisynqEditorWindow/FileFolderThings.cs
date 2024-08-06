@@ -39,15 +39,15 @@ public abstract class PathyThing {
     }
   }
 
-  public bool Select() {
+  public bool Select( bool focus = true) {
     LookupUnityObj();
     Selection.activeObject = unityObj;
-    EditorUtility.FocusProjectWindow();
+    if (focus) EditorUtility.FocusProjectWindow();
     return true;
   }
 
-  public void SelectAndPing() {
-    if (Select()) {
+  public void SelectAndPing(bool focus = true) {
+    if (Select(focus)) {
       EditorGUIUtility.PingObject(unityObj);
     }
   }

@@ -335,18 +335,18 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     );
     MqWelcome_StatusSets.hasAppJs = new StatusSet( HasAppJs_Message_Lbl, HasAppJs_Status_Img,
       // (info, warning, error, success)
-      "JS file for AppName is ready to go!",
-      "JS file for AppName is missing",
-      "JS file for AppName is missing!",
-      "JS file for AppName found! Well done!",
-      "JS file for AppName status"
+      "Input JS: index.js for AppName is ready to go!",
+      "Input JS: index.js for AppName is missing",
+      "Input JS: index.js for AppName is missing!",
+      "Input JS: index.js for AppName found! Well done!",
+      "Input JS: index.js for AppName status"
     );
     MqWelcome_StatusSets.jsBuild = new StatusSet( JSBuild_Message_Lbl, JSBuild_Status_Img,
       // (info, warning, error, success, blank)
-      $"{t_jsb} output folder is present!",
-      $"{t_jsb} is not ready",
-      $"{t_jsb} needs your help getting set up.",
-      $"{t_jsb} Build output folder found! Well done!",
+      $"Output JS was built!",
+      $"Output JS missing.",
+      $"Output JS not found. Need to Build JS.",
+      $"Output JS was built! Well done!",
       "JS Build status"
     );
     MqWelcome_StatusSets.versionMatch = new StatusSet( JbtVersionMatch_Message_Lbl, JbtVersionMatch_Img,
@@ -360,8 +360,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     MqWelcome_StatusSets.builtOutput = new StatusSet( BuiltOutput_Message_Lbl, BuiltOutput_Status_Img,
       // (info, warning, error, success, blank)
       $"Built output folders match the building scene list!",
-      $"Please check built output folders with [ Check Building Scenes ] button.",
-      $"Built output folder mismatch with building scene list! Click <b>Check Building Scenes</b> to fix.",
+      $"Compare output JS folders to Unity Build scene list with [ Check Building Scenes ] button.",
+      $"Compare output JS folders to Unity Build scene list with [ Check Building Scenes ] button.",
       $"Built output folders match the building scene list! Well done!",
       "Built output status"
     );
@@ -684,7 +684,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     }
     CroquetBuilder.StartBuild(false); // false => no watcher
     AssetDatabase.Refresh();
-    // CqFile.StreamingAssetsAppFolder().SelectAndPing();
+    CqFile.StreamingAssetsAppFolder().SelectAndPing(false);
     Check_JS_Build();
   }
 
@@ -692,9 +692,18 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     var boF = CqFile.StreamingAssetsAppFolder();
     if (!boF.Exists()) {
       NotifyAndLogError("Could not find\nJS Build output folder");
+      var ft = new FolderThing(Application.streamingAssetsPath);
+      ft.SelectAndPing(false);
       return;
     }
     boF.SelectAndPing();
+    EditorApplication.delayCall += ()=>{
+      var ixdF = CqFile.AppStreamingAssetsOutputFolder().DeeperFile("index.html");
+      if (ixdF.Exists()) ixdF.SelectAndPing(false);
+      else {
+        NotifyAndLogWarning("Could not find\nindex.html in\nJS Build output folder");
+      }
+    };
   }
 
   //-- JS BUILD TOOLS --------------------------------
@@ -837,15 +846,15 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   static public void NotifyAndLog(string msg, float seconds = 4) {
     Instance.ShowNotification(new GUIContent(msg), seconds);
-    Debug.Log(msg);
+    Debug.Log(msg.Replace("\n", " "));
   }
   static public void NotifyAndLogError(string msg, float seconds = 4) {
     Instance.ShowNotification(new GUIContent(msg), seconds);
-    Debug.LogError(msg);
+    Debug.LogError(msg.Replace("\n", " "));
   }
   static public void NotifyAndLogWarning(string msg, float seconds = 4) {
     Instance.ShowNotification(new GUIContent(msg), seconds);
-    Debug.LogWarning(msg);
+    Debug.LogWarning(msg.Replace("\n", " "));
   }
 
   static public void Notify(string msg, float seconds = 4) {
