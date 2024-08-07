@@ -40,11 +40,11 @@ public class JSBuildStateRecord
 /// </summary>
 public class CroquetBuilder
 {
-    private static string INSTALLED_TOOLS_RECORD = "last-installed-tools"; // in .js-build folder (also preceded by .)
+    private static string INSTALLED_TOOLS_RECORD = "last-installed-tools"; // in CroquetJS folder (also preceded by .)
     private static string BUILD_STATE_RECORD = ".last-build-state"; // in each CroquetJS/<appname> folder
 
     public static string JSToolsRecordInEditor =
-        Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", ".js-build", $".{INSTALLED_TOOLS_RECORD}"));
+        Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", $".{INSTALLED_TOOLS_RECORD}"));
     // NB: a file name beginning with . won't make it into a build (at least, not on Android)
     // NB: using GetFullPath would add a leading slash that makes no sense on the URLs delivered for Android and for WebGL
     public static string JSToolsRecordInBuild =
@@ -302,7 +302,7 @@ public class CroquetBuilder
 
     public static string NodeExeInPackage
     {
-        get { return Path.GetFullPath("Packages/io.croquet.multiplayer/.JSTools/NodeJS/node.exe"); }
+        get { return Path.GetFullPath("Packages/io.croquet.multiplayer/.JSTools/_Runtime/Platforms/Node/node.exe"); }
     }
 
     public struct JSBuildDetails
@@ -429,13 +429,12 @@ public class CroquetBuilder
 
         JSBuildDetails details = GetSceneBuildDetails();
         string appName = details.appName;
-        string defaultBuilderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS", ".js-build", "build-tools"));
-        string customBuilderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
-        string appBuilderPath = Path.Combine(customBuilderPath, appName);
-        // we check existence of the runwebpack.sh file in the app path first, then in its parent, then (old) default
-        // once we get rid of runwebpack.sh we will use existence of package.json instead
-        string builderPath = File.Exists(Path.Combine(appBuilderPath, "runwebpack.sh")) ? appBuilderPath :
-            File.Exists(Path.Combine(customBuilderPath, "runwebpack.sh")) ? customBuilderPath : defaultBuilderPath;
+        string defaultBuilderPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
+        string customBuilderPath = Path.Combine(defaultBuilderPath, appName);
+        // we check existence of the runwebpack script in the app path first, then in its parent (default)
+        // once we get rid of runwebpack we will use existence of package.json instead
+        string runwebpack = Application.platform == RuntimePlatform.WindowsEditor ? "runwebpack.bat" : "runwebpack.sh";
+        string builderPath = File.Exists(Path.Combine(customBuilderPath, runwebpack)) ? customBuilderPath : defaultBuilderPath;
         string nodeExecPath;
         string executable;
         string arguments = "";
@@ -831,7 +830,9 @@ public class CroquetBuilder
         // * Croquet menu "Build JS Now" option
         // * Croquet menu "Start JS Watcher" option
 
-        // ensure that JS build tools are available.  return true if tools were already available,
+        // ensure that JS build tools are available
+        // essentially meaning that the node_modules directory is present and up to date.
+        // return true if tools were already available,
         // or have been successfully installed by this method.
 
         if (installingJSTools)
@@ -868,51 +869,23 @@ public class CroquetBuilder
     {
         string toolsRoot = CroquetBuildToolsInPackage;
         string croquetJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS"));
-        string jsBuildFolder = Path.GetFullPath(Path.Combine(croquetJSFolder, ".js-build"));
         string installRecord = JSToolsRecordInEditor;
 
         try
         {
-            if (!Directory.Exists(jsBuildFolder)) Directory.CreateDirectory(jsBuildFolder);
-
             bool needsNPMInstall;
             if (FindJSToolsRecord() == null) needsNPMInstall = true; // nothing installed; run the whole process
             else
             {
                 // compare package-lock.json before overwriting, to decide if it will be changing
                 string sourcePackageLock = Path.GetFullPath(Path.Combine(toolsRoot, "package-lock.json"));
-                string installedPackageLock = Path.GetFullPath(Path.Combine(jsBuildFolder, "package-lock.json"));
+                string installedPackageLock = Path.GetFullPath(Path.Combine(croquetJSFolder, "package-lock.json"));
                 needsNPMInstall = !File.Exists(installedPackageLock) ||
                                   !FileEquals(sourcePackageLock, installedPackageLock);
             }
 
-            // copy various files to CroquetJS
-            // dictionary maps sourceFile => destinationPath
-            Dictionary<string, string> copyDetails = new Dictionary<string, string>();
-            copyDetails["package.json"] = ".js-build/package.json";
-            copyDetails["package-lock.json"] = ".js-build/package-lock.json";
-            copyDetails[".eslintrc.json"] = ".eslintrc.json";
-            copyDetails["tools-gitignore"] = ".gitignore";
-            copyDetails[".babelrc"] = ".js-build/.babelrc";
-            foreach (KeyValuePair<string,string> keyValuePair in copyDetails)
-            {
-                string from = keyValuePair.Key;
-                string to = keyValuePair.Value;
-                string fsrc = Path.Combine(toolsRoot, from);
-                string fdest = Path.Combine(croquetJSFolder, to);
-                Debug.Log($"writing {from} as {to}");
-                FileUtil.ReplaceFile(fsrc, fdest);
-            }
-
-            string dir = ".js-build/build-tools";
-            string dsrc = Path.Combine(toolsRoot, Path.GetFileName(dir));
-            string ddest = Path.Combine(croquetJSFolder, dir);
-            Debug.Log($"writing directory {dir}");
-            FileUtil.ReplaceDirectory(dsrc, ddest);
-
-            // Copy the WebGL templates folder from the package (whether user is
-            // currently building for webgl or not)
-            CopyWebGLTemplatesFolder();
+            // copy all tool files to CroquetJS
+            CopyDirectory(toolsRoot, croquetJSFolder, true);
 
             int errorCount = 0; // look for errors in logging from npm i
             if (needsNPMInstall)
@@ -929,7 +902,7 @@ public class CroquetBuilder
                 int triesRemaining = 2;
                 while (triesRemaining > 0)
                 {
-                    errorCount = RunNPMInstall(jsBuildFolder, toolsRoot);
+                    errorCount = RunNPMInstall(croquetJSFolder, toolsRoot);
                     if (errorCount == 0) break;
 
                     if (--triesRemaining > 0)
@@ -1109,70 +1082,7 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
         return errorCount;
     }
 
-    public static void CopyWebGLTemplatesFolder()
-    {
-        string manifestPath = Path.Combine(Application.dataPath, "..", "Packages", "manifest.json");
-        if (File.Exists(manifestPath))
-        {
-            string manifestJson = File.ReadAllText(manifestPath);
-            var manifestDict = (Dictionary<string, object>)MiniJSON.Json.Deserialize(manifestJson);
-
-            if (manifestDict.TryGetValue("dependencies", out object dependenciesObj))
-            {
-                var dependencies = (Dictionary<string, object>)dependenciesObj;
-
-                if (dependencies.TryGetValue("io.croquet.multiplayer", out object packagePathObj))
-                {
-                    string packagePath = packagePathObj.ToString();
-
-                    if (packagePath.StartsWith("file:"))
-                    {
-                        // packagePath = packagePath.Substring(5);
-                        packagePath = Path.Combine(Application.dataPath, packagePath.Substring(5));
-                    }
-                    else
-                    {
-                        string packageCachePath = Path.Combine(Application.dataPath, "..", "Library", "PackageCache");
-                        string[] directories = Directory.GetDirectories(packageCachePath, "io.croquet.multiplayer@*");
-
-                        if (directories.Length > 0)
-                        {
-                            packagePath = directories[0];
-                        }
-                        else
-                        {
-                            Debug.LogError("Could not find the package in the PackageCache.");
-                            return;
-                        }
-                    }
-
-                    string sourcePath = Path.Combine(packagePath, "Runtime", "WebGLTemplates");
-                    string destinationPath = Path.Combine(Application.dataPath, "WebGLTemplates");
-
-                    if (Directory.Exists(sourcePath))
-                    {
-                        CopyDirectory(sourcePath, destinationPath);
-                        AssetDatabase.Refresh();
-                        Debug.Log("WebGLTemplates folder copied to Assets/");
-                    }
-                    else
-                    {
-                        Debug.LogError("Could not find the WebGLTemplates folder in the package.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Could not find the io.croquet.multiplayer dependency in the manifest.");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogError("Could not find the manifest.json file.");
-        }
-    }
-
-    public static void CopyDirectory(string sourceDir, string destinationDir)
+    public static void CopyDirectory(string sourceDir, string destinationDir, bool template = false)
     {
         if (!Directory.Exists(destinationDir))
         {
@@ -1183,12 +1093,19 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
         {
             // filter out any ".meta" files
             if (file.EndsWith(".meta")) continue;
-            string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+            string name = Path.GetFileName(file);
+            // rename "dot-*" to ".*"
+            if (template && name.StartsWith("dot-")) {
+                name = "." + name.Substring(4);
+            }
+            string destFile = Path.Combine(destinationDir, name);
             File.Copy(file, destFile, true);
         }
 
         foreach (var directory in Directory.GetDirectories(sourceDir))
         {
+            // skip the "node_modules" directory
+            if (template && directory.EndsWith("node_modules")) continue;
             string destDir = Path.Combine(destinationDir, Path.GetFileName(directory));
             CopyDirectory(directory, destDir);
         }

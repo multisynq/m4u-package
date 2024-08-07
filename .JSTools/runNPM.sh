@@ -1,6 +1,6 @@
 #!/bin/bash
-# This script will only be run if Assets/CroquetJS/.js-build/package-lock.json 
-#   is different from the package's original source          package-lock.json
+# This script will only be run if Assets/CroquetJS/package-lock.json
+# is different from the package's original package-lock.json
 
 # $1 will be the path to the node engine from CroquetSettings.pathToNode
 export PATH="$1:$PATH"

@@ -26,7 +26,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   VisualElement Ready_Status_Img; // ALL READY
   Label Ready_Message_Lbl;
-  Button Awesome_Btn;        
+  Button Awesome_Btn;
   Button Top_Ready_Docs_Btn;
 
   VisualElement Settings_Status_Img; // SETTINGS
@@ -42,7 +42,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   VisualElement ApiKey_Status_Img; // API KEY
   Label ApiKey_Message_Lbl;
-  Button SignUpApi_Btn;      
+  Button SignUpApi_Btn;
   Button GotoApiKey_Btn;
   Button ApiKey_Docs_Btn;
 
@@ -51,7 +51,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   Button GotoBridgeGob_Btn;
   Button CreateBridgeGob_Btn;
 
-  VisualElement HasCqSys_Img; // HAS CQ SYSTEMS 
+  VisualElement HasCqSys_Img; // HAS CQ SYSTEMS
   Label HasCqSys_Message_Lbl;
   Button AddCqSys_Btn;
   Button ListMissingCqSys_Btn;
@@ -99,7 +99,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //====== Singleton ============================================================
   static private MultisynqBuildAssistantEW _Instance;
-  static public MultisynqBuildAssistantEW Instance { 
+  static public MultisynqBuildAssistantEW Instance {
     get {
       if (_Instance == null)_Instance = GetWindow<MultisynqBuildAssistantEW>();
       return _Instance;
@@ -113,7 +113,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   [MenuItem("Window/Multisynq/Open Build Assistant...",priority=1000)]
   public static void ShowMultisynqWelcome_MenuMethod() {
     var icon = AssetDatabase.LoadAssetAtPath<Texture>(CqFile.ewFolder + "Images/MultiSynq_Icon.png");
-    // referencing the Instance property will create the window if it doesn't exist 
+    // referencing the Instance property will create the window if it doesn't exist
     Instance.titleContent = new GUIContent("Multisynq Build Assistant", icon);
   }
   void OnDestroy() {
@@ -139,13 +139,13 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //=============================================================================
-  
+
   private void SetupUI() {
     // CHECK READINESS
     SetupButton("CheckIfReady_Btn",      ref CheckIfReady_Btn,   Clk_CheckIfReady);
     // READY
     SetupVisElem("Ready_Status_Img",     ref Ready_Status_Img);
-    SetupLabel(  "Ready_Message_Lbl",    ref Ready_Message_Lbl); 
+    SetupLabel(  "Ready_Message_Lbl",    ref Ready_Message_Lbl);
     SetupButton( "Awesome_Btn",          ref Awesome_Btn,        Clk_BeAwesome);
     SetupButton( "Top_Ready_Docs_Btn",   ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
     // SETTINGS
@@ -183,7 +183,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupLabel(  "HaveBridge_Message_Lbl",            ref HaveBridge_Message_Lbl);
     SetupButton( "GotoBridgeGob_Btn",                 ref GotoBridgeGob_Btn,                 Clk_GotoBridgeGob);
     SetupButton( "CreateBridgeGob_Btn",               ref CreateBridgeGob_Btn,               Clk_CreateBridgeGob);
-    // HAS CQ SYSTEMS 
+    // HAS CQ SYSTEMS
     SetupVisElem("HasCqSys_Img",                      ref HasCqSys_Img);
     SetupLabel(  "HasCqSys_Message_Lbl",              ref HasCqSys_Message_Lbl);
     SetupButton( "AddCqSys_Btn",                      ref AddCqSys_Btn,                      Clk_AddCqSys);
@@ -374,7 +374,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
   Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
     bool allRdy = true;
-    allRdy &= Check_Settings(); 
+    allRdy &= Check_Settings();
     allRdy &= Check_Node();
     allRdy &= Check_ApiKey();
     allRdy &= Check_BridgeComponent();
@@ -465,18 +465,18 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     // loop through possible node folders (by platform) and collect found ones in a List
     var nodeFolders = new List<string>();
     // fetch the home folder and expand any ~
-    
+
     if (Application.platform == RuntimePlatform.OSXEditor) {
       string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-      nodeFolders = new List<string>{ 
-        "/usr/local/bin", 
-        "/opt/homebrew/bin", 
-        "/usr/bin", 
-        $"{home}/.nvm/versions/node/*/bin" 
+      nodeFolders = new List<string>{
+        "/usr/local/bin",
+        "/opt/homebrew/bin",
+        "/usr/bin",
+        $"{home}/.nvm/versions/node/*/bin"
       };
     } else if (Application.platform == RuntimePlatform.WindowsEditor) {
-      nodeFolders = new List<string>{ 
-        "C:/Program Files/nodejs/node.exe" 
+      nodeFolders = new List<string>{
+        "C:/Program Files/nodejs/node.exe"
       };
     }
     // loop through the subfolders and expanding any * wildcards
@@ -502,7 +502,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Debug.Log($"FindAllNodeIntances().foldersWithNode[{foldersWithNode.Count}] = [\n{foldersWithNode.Aggregate("", (acc, f) => $"{acc}  {f}/node,\n")}]");
     return foldersWithNode;
   }
-  
+
   private void Clk_AutoSetupNode() { // NODE  ------------- Click
     Debug.Log("Auto Setup Node!");
     switch (Application.platform) {
@@ -559,7 +559,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       NotifyAndLog("Selected in Hierarchy.\nSee CroquetBridge in Inspector.");
     }
   }
-  
+
   private void Clk_CreateBridgeGob() { // BRIDGE  ------------- Click
     var bridge = FindObjectOfType<CroquetBridge>();
     if (bridge != null) {
@@ -578,7 +578,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
       Selection.activeGameObject = cbGob;
       string msg = "Created CroquetBridge\nGameObject in scene.\nSelected it.";
-      Notify(msg); Debug.Log(msg); 
+      Notify(msg); Debug.Log(msg);
       Check_BridgeComponent();
       CheckAllStatusForReady();
     }
@@ -740,8 +740,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       // in 100 ms, show a dialog to the user
       EditorApplication.delayCall += ()=>{
         EditorUtility.DisplayDialog(
-          "Set App Name", 
-          "Enter a name for your app into the CroquetBridge's Session Configuration field \n\nApp Name\n( appName )\n \n\nWe will select it for you, so check the Inspector.", 
+          "Set App Name",
+          "Enter a name for your app into the CroquetBridge's Session Configuration field \n\nApp Name\n( appName )\n \n\nWe will select it for you, so check the Inspector.",
           "Ok"
         );
       };
@@ -870,7 +870,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       return bridge.appProperties; // appProperties is a CroquetSettings
     }
     // Then look in all project folders for a file of CroquetSettings type
-    cqSettings = SceneHelp.FindCompInProject<CroquetSettings>(); 
+    cqSettings = SceneHelp.FindCompInProject<CroquetSettings>();
     if (cqSettings == null) {
       Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
       MqWelcome_StatusSets.settings.error.Set();
@@ -903,7 +903,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     if (cqSettings == null) cqSettings = CopyDefaultSettingsFile();
     return cqSettings;
   }
-  
+
   //=============================================================================
 
   private void AllAreReady(bool really = true) {
@@ -929,7 +929,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= MqWelcome_StatusSets.jsBuildTools.IsOk();
     allRdy &= MqWelcome_StatusSets.versionMatch.IsOk();
     allRdy &= MqWelcome_StatusSets.jsBuild.IsOk();
-    if (allRdy) AllAreReady();      
+    if (allRdy) AllAreReady();
     else        AllAreReady(false);
   }
   //=============================================================================
@@ -1013,7 +1013,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       MqWelcome_StatusSets.bridgeHasSettings.error.Set();
       HideVEs(BridgeHasSettings_AutoConnect_Btn, BridgeHasSettings_Goto_Btn);
       return false;
-    } 
+    }
 
     bool hasSettings = (bridge.appProperties != null);
     MqWelcome_StatusSets.bridgeHasSettings.SetIsGood(hasSettings);
@@ -1022,7 +1022,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       HideVEs(BridgeHasSettings_AutoConnect_Btn);
     } else ShowVEs(BridgeHasSettings_AutoConnect_Btn);
     return hasSettings;
-  }  
+  }
 
   private bool Check_JS_BuildTools() {
     var jsBuildNmFolder = CqFile.CroquetJS().DeeperFolder(".js-build", "node_modules");
@@ -1099,7 +1099,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     return haveBuiltOutput;
   }
 
-  //=============================================================================  
+  //=============================================================================
 
   private string TryNodePath(string nodePath) {
     if (!File.Exists(nodePath)) {
@@ -1107,7 +1107,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       return null;
     } else return GetNodeVersion(nodePath, "-v");
   }
-  
+
   private string GetNodeVersion(string executable = "", string arguments = "") {
     string output = RunShell(executable, arguments);
     string[] stdoutLines = output.Split('\n');
@@ -1151,7 +1151,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     return output;
   }
 
-  //=============================================================================  
+  //=============================================================================
   void Update() {
     Update_DeltaTime();
     Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, Ready_Message_Lbl, MqWelcome_StatusSets.ready, true);
