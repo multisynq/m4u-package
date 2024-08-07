@@ -162,4 +162,46 @@ static public class CqFile {
       }
 
   }
+
+  //=============================================================================
+  static public CroquetSettings FindProjectCqSettings() {
+    // First check for a CroquetSettings on the scene's CroquetBridge
+    var bridge = SceneHelp.FindComp<CroquetBridge>();
+    if (bridge != null && bridge.appProperties != null) {
+      return bridge.appProperties; // appProperties is a CroquetSettings
+    }
+    // Then look in all project folders for a file of CroquetSettings type
+    CroquetSettings cqSettings = SceneHelp.FindCompInProject<CroquetSettings>();
+    if (cqSettings == null) {
+      Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
+      MqWelcome_StatusSets.settings.error.Set();
+      MqWelcome_StatusSets.node.error.Set();
+      MqWelcome_StatusSets.apiKey.error.Set();
+      MqWelcome_StatusSets.ready.error.Set();
+    }
+
+    return cqSettings;
+  }
+
+  static public CroquetSettings CopyDefaultSettingsFile() {
+    // string path = ewFolder + "resources/CroquetSettings_Template.asset";
+    // croquet-for-unity-package/Prefabs/CroquetSettings_Template.asset
+    string path = CqFile.CqSettingsTemplateFile().shortPath;
+    CqFile.EnsureAssetsFolder("Croquet");
+    Debug.Log($"Copying from '{path}' to '{CqFile.cqSettingsAssetOutputPath}'");
+    bool sourceFileExists = File.Exists(path);
+    bool targFolderExists = Directory.Exists(Path.GetDirectoryName(CqFile.cqSettingsAssetOutputPath));
+    AssetDatabase.CopyAsset(path, CqFile.cqSettingsAssetOutputPath);
+    bool copiedFileExists = File.Exists(CqFile.cqSettingsAssetOutputPath);
+    Debug.Log($"Source file exists: {sourceFileExists}  Target folder exists: {targFolderExists}, Copied file exists: {copiedFileExists}");
+    return AssetDatabase.LoadAssetAtPath<CroquetSettings>(CqFile.cqSettingsAssetOutputPath);
+  }
+
+  static public CroquetSettings EnsureSettingsFile() {
+    CroquetSettings cqSettings = FindProjectCqSettings();
+    // If not, copy file from ./resources/CroquetSettings_Template.asset
+    // into Assets/Settings/CroquetSettings.asset
+    if (cqSettings == null) cqSettings = CopyDefaultSettingsFile();
+    return cqSettings;
+  }
 }
