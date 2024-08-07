@@ -250,3 +250,24 @@ Contributions to the package are welcome as these projects are open source and w
 3. Open a PR against the `develop` branch
 4. Discuss and Review the PR with the team
 5. Changes will be merged into `develop` after PR approval
+
+## Local Package Development
+
+When changing and adding to the code of the package, you will want to set up a local way to experience the edits you make to the package dynamically. To do so, you will need to point to your local copy of the "io.croquet.multiplayer" package instead of the one on github.
+In your testing project folder, you will want to make an edit to the Package/manifest.json file:
+
+For example in the file:
+
+`croquet-for-unity-tutorials/Tutorials/Packages/manifest.json`
+
+Change the line:
+
+`"io.croquet.multiplayer": "https://github.com/croquet/croquet-for-unity-package.git#v0.9.3",`
+
+To:
+
+`"io.croquet.multiplayer": "file:../../../croquet-for-unity-package",`
+
+Of course, this folder path assumes you have a particular file structure with sibling project and package folders. Your path may vary a bit. Let the Unity Editor console log messages be your guide to get this wired up correctly.
+
+With that edit to the manifest correctly set, just switching back to the Unity editor and it will load from your local folder instead of the github one. Code edits to the package code will be immediately compiled when focus is returned to the Unity Editor just like project code.
