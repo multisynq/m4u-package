@@ -1,8 +1,6 @@
 # .gitignore for CroquetJS folder
 
-.gitignore
 .js-build
-.eslintrc.json
 dist
 .last-installed-tools
 .last-build-state

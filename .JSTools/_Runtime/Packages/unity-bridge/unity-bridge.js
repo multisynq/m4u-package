@@ -2215,11 +2215,12 @@ async function unityDrivenStartSession() {
   // just to force sessions with different values to be distinct
   const options = { c4uPackageVersion: packageVersion, sceneText };
 
-  // Manually join the session (need to uncomment the join_croquet button in index-webview_or_node.html)
-  const joinButton = PLATFORM_WEBVIEW && document.getElementById("join_croquet");
-  if (joinButton) {
-    console.log("Waiting for join button to be clicked within the WebView instance");
-    await new Promise((resolve) => joinButton.onclick = resolve);
+  // To debug Croquet Session start, uncomment  start_croquet button in index-webview_or_node.html
+  const startButton = document.getElementById("start_croquet");
+  if (startButton) {
+    console.log("Waiting for start button to be pressed within the WebView instance");
+    await new Promise((resolve) => startButton.onclick = resolve);
+    debugger
   }
 
   session = await StartWorldcore({

@@ -63,22 +63,32 @@ https://github.com/croquet/croquet-for-unity-package.git
 #### Install the Tools
 As part of the installation of the C4U package, the Unity editor will have been given a `Croquet` menu.
 On this menu, now invoke the option `Install JS Build Tools`.
-That option will create a "CroquetJS" folder that expects the following application structure.
+That option will create a "CroquetJS" folder that has the following application structure.
 
 ```
 - (unity project root)
     - /Assets
         - /CroquetJS
+            .gitignore
+            .eslintrc
+            package.json
+            ...
+            - /_Runtime
+                - /Packages
+                    - /game-models
+                    - /unity-bridge
+                - /Platforms
+                    - /Node
+                    - /WebGL
+                    - /WebView
             - /(your_app_name_1)
-                - Models.js
+                - index.js
             - /(your_app_name_2)
-                - Models.js
-            - /.js-build
+                - index.js
     - Packages
     - etc
 ```
-
-NB: The `/.js-build` directory is where Croquet will automatically prepare npm modules and build artifacts. Generally, you should not need to inspect/change these files directly. Our package handles automatically installing JS dependencies and building for you.
+The `CroquetJS` folder itself has various tools for building the JavaScript part of you app, while the `_Runtime` folder has mostly source files needed for building.
 
 The `your_app_name` subdirectories can be used for independent apps - for example, in our `croquet-for-unity-tutorials` repository, there are independent directories for nine introductory apps.
 

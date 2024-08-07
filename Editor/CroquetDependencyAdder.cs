@@ -16,7 +16,7 @@ public class CroquetDependencyAdder
         EditorApplication.delayCall -= AddDependencyAndCopyFolder;
 
         AddDependency();
-        CroquetBuilder.CopyWebGLTemplatesFolder();
+        // CroquetBuilder.CopyWebGLTemplatesFolder();
         SetWebGLTemplate();
     }
 
