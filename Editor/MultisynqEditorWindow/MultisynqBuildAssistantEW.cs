@@ -29,16 +29,11 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   Button Awesome_Btn;
   Button Top_Ready_Docs_Btn;
 
-  VisualElement Settings_Status_Img; // SETTINGS
-  Label Settings_Message_Lbl;
-  Button GotoSettings_Btn;
-  Button SettingsCreate_Btn;
-
-  VisualElement Node_Status_Img; // NODE
-  Label Node_Message_Lbl;
-  Button TryAuto_Btn;
-  Button GotoNodePath_Btn;
-  DropdownField Node_Dropdown;
+  // VisualElement Node_Status_Img; // NODE
+  // Label Node_Message_Lbl;
+  // Button TryAuto_Btn;
+  // Button GotoNodePath_Btn;
+  // DropdownField Node_Dropdown;
 
   VisualElement ApiKey_Status_Img; // API KEY
   Label ApiKey_Message_Lbl;
@@ -137,6 +132,9 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupUI();
     SetupStatuses();
   }
+  
+  public SI_Settings siSettings;
+  public SI_Node siNode;
 
   //=============================================================================
 
@@ -149,28 +147,12 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupButton( "Awesome_Btn",          ref Awesome_Btn,        Clk_BeAwesome);
     SetupButton( "Top_Ready_Docs_Btn",   ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
     // SETTINGS
-    SetupVisElem("Settings_Status_Img",  ref Settings_Status_Img);
-    SetupLabel(  "Settings_Message_Lbl", ref Settings_Message_Lbl);
-    SetupButton( "GotoSettings_Btn",     ref GotoSettings_Btn,   Clk_GotoSettings);
-    SetupButton( "SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
+    siSettings = new SI_Settings(this);
+    siSettings.Init();
     // NODE
-    SetupVisElem("Node_Status_Img",      ref Node_Status_Img);
-    SetupLabel(  "Node_Message_Lbl",     ref Node_Message_Lbl);
-    SetupButton( "GotoNodePath_Btn",     ref GotoNodePath_Btn,   Clk_GotoNodePath);
-    SetupButton( "TryAuto_Btn",          ref TryAuto_Btn,        Clk_AutoSetupNode);
-    Node_Dropdown = rootVisualElement.Query<DropdownField>("Node_Dropdown").First();
-    Node_Dropdown.RegisterValueChangedCallback( (evt) => {
-      string nodePath = evt.newValue.Replace(" ∕ ", "/");
-      string nodeVer = TryNodePath(nodePath);
-      if (nodeVer == null) MqWelcome_StatusSets.node.error.Set();
-      else {
-        MqWelcome_StatusSets.node.success.Set();
-        // set the CroquetSetting.nodePath
-        var cqStgs = FindProjectCqSettings();
-        cqStgs.pathToNode = nodePath;
-      }
-      CheckAllStatusForReady();
-    });
+    siNode = new SI_Node(this);
+    siNode.Init();
+
 
     // API KEY
     SetupVisElem("ApiKey_Status_Img",                 ref ApiKey_Status_Img);
@@ -216,18 +198,20 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupButton( "GotoBuiltOutput_Btn",               ref GotoBuiltOutput_Btn,               Clk_GotoBuiltOutput);
 
     // VERSION MATCH - JS BUILD TOOLS
-    SetupVisElem("JbtVersionMatch_Img",               ref JbtVersionMatch_Img);
-    SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref JbtVersionMatch_Message_Lbl);
-    SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
-    SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
+    SetupUI_VersionMatch();
+    // SetupVisElem("JbtVersionMatch_Img",               ref JbtVersionMatch_Img);
+    // SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref JbtVersionMatch_Message_Lbl);
+    // SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
+    // SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
 
     // BUILT OUTPUT
-    SetupVisElem("BuiltOutput_Status_Img",            ref BuiltOutput_Status_Img);
-    SetupLabel(  "BuiltOutput_Message_Lbl",           ref BuiltOutput_Message_Lbl);
-    SetupButton( "Save_Open_Scene_Btn",               ref Save_Open_Scene_Btn,               Clk_Save_Open_Scene);
-    SetupButton( "Goto_Build_Panel_Btn",              ref Goto_Build_Panel_Btn,              Clk_Goto_Build_Panel);
-    SetupButton( "Check_Building_Scenes_Btn",         ref Check_Building_Scenes_Btn,         Clk_Check_Building_Scenes);
-    // SetupButton( "BuiltOutput_Docs_Btn
+    SetupUI_BuiltOutput();
+    // SetupVisElem("BuiltOutput_Status_Img",            ref BuiltOutput_Status_Img);
+    // SetupLabel(  "BuiltOutput_Message_Lbl",           ref BuiltOutput_Message_Lbl);
+    // SetupButton( "Save_Open_Scene_Btn",               ref Save_Open_Scene_Btn,               Clk_Save_Open_Scene);
+    // SetupButton( "Goto_Build_Panel_Btn",              ref Goto_Build_Panel_Btn,              Clk_Goto_Build_Panel);
+    // SetupButton( "Check_Building_Scenes_Btn",         ref Check_Building_Scenes_Btn,         Clk_Check_Building_Scenes);
+
     //-----
     // Hide most buttons
     HideMostButtons();
@@ -242,13 +226,13 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       bool isWhitelisted = whitelisted.Any(button.name.Contains);
       SetVEViz(isWhitelisted, button);
     }
-    HideVEs(Node_Dropdown);
+    // HideVEs(Node_Dropdown);
   }
 
   private void SetupStatuses() {
     string t_synq = "<b><color=#006AFF>Synq</color></b>";
     string t_key  = "<b><color=#006AFF>API Key</color></b>";
-    string t_node = "<b><color=#417E37>Node</color></b>";
+    // string t_node = "<b><color=#417E37>Node</color></b>";
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
 
     string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {CqFile.img_root});
@@ -275,24 +259,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       $"W00t!!! You are ready to {t_synq}!", // displays for 5 seconds, then switches to the .ready message
       "Press   Check If Ready   above"
     );
-    MqWelcome_StatusSets.settings = new StatusSet( Settings_Message_Lbl, Settings_Status_Img,
-      // (info, warning, error, success)
-      $"Settings are ready to go!",
-      $"Settings are set to defaults! Look for other red items below to fix this.",
-      $"Settings asset is missing! Click <b>Create Settings</b> to make some.",
-      $"Settings are configured!!! Well done!",
-      "Settings status"
-    );
-    GotoSettings_Btn.SetEnabled(false);
 
-    MqWelcome_StatusSets.node = new StatusSet( Node_Message_Lbl, Node_Status_Img,
-      // (info, warning, error, success)
-      $"{t_node} is ready to go!",
-      $"{t_node} is not running",
-      $"{t_node} needs your help getting set up.",
-      $"{t_node} path configured!!! Well done!",
-      "Node status"
-    );
     MqWelcome_StatusSets.apiKey = new StatusSet( ApiKey_Message_Lbl, ApiKey_Status_Img,
       // (info, warning, error, success)
       $"The {t_key} is ready to go!",
@@ -374,8 +341,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
   Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
     bool allRdy = true;
-    allRdy &= Check_Settings();
-    allRdy &= Check_Node();
+    allRdy &= siSettings.Check();
+    allRdy &= siNode.Check();
     allRdy &= Check_ApiKey();
     allRdy &= Check_BridgeComponent();
     allRdy &= Check_HasCqSystems();
@@ -388,22 +355,9 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     //-----
     if (allRdy) AllAreReady();
     else        AllAreReady(false);
-    NodePathsToDropdownAndCheck();
+    siNode.NodePathsToDropdownAndCheck();
   }
-  void NodePathsToDropdownAndCheck() {
-    var nps = FindAllNodeIntances().Select( f => (f+"/node").Replace("/"," ∕ ") ).ToList();
-    Node_Dropdown.choices = nps;
-    ShowVEs(Node_Dropdown);
-    // compare to CroquetSettings
-    var cqStgs = FindProjectCqSettings();
-    if (cqStgs != null) {
-      string nodePath = cqStgs.pathToNode.Replace("/"," ∕ ");
-      if (nps.Contains(nodePath)) {
-        Node_Dropdown.SetValueWithoutNotify(nodePath);
-        MqWelcome_StatusSets.node.success.Set();
-      } else MqWelcome_StatusSets.node.error.Set();
-    }
-  }
+
 
   //-- Clicks - READY --------------------------------
 
@@ -417,129 +371,15 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Application.OpenURL("https://multisynq.io/docs/unity/");
   }
 
-
-  //-- Click - SETTINGS --------------------------------
-
-  private void Clk_GotoSettings() { // SETTINGS  ------------- Click
-    GotoSettings();
-    Notify("Selected in Project.\nSee Inspector.");
-  }
-
-  private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
-    // CroquetSettings in scene
-    var cqStgs = EnsureSettingsFile();
-    MqWelcome_StatusSets.ready.SetIsGood(cqStgs != null);
-    if (cqStgs == null) Debug.LogError("Could not find or create CroquetSettings file");
-    GotoSettings();
-    ShowVEs(GotoNodePath_Btn, GotoApiKey_Btn);
-    Check_Settings();
-    CheckAllStatusForReady();
-  }
-
-  private void GotoSettings() { // SETTINGS  ------------- Click
-    // Select the file in Project pane of the Editor so it shows up in the Inspector
-    var cqStgs = FindProjectCqSettings();
-    if (cqStgs == null) {
-      Debug.LogError("Could not find or create CroquetSettings file");
-      return;
-    } else {
-      Notify("Selected in Project.\nSettings in Inspector.");
-      Selection.activeObject = cqStgs;            // Select the settings you are using
-      ProjectWindowUtil.ShowCreatedAsset(cqStgs); // Also show selection in Project pane
-      EditorGUIUtility.PingObject(cqStgs);        // highlight in yellow
-    }
-  }
-
-  //-- Clicks - NODE --------------------------------
-
-  private void Clk_GotoNodePath() { // NODE  ------------- Click
-    GotoSettings();
-    // notify message
-    var msg = "See Inspector.\n\nCroquet Settings\nwith node path\nselected in Project.";
-    ShowNotification(new GUIContent(msg), 4);
-  }
-
-  List<string> FindAllNodeIntances() {
-
-    List<string> nodePaths = new List<string>();
-    // loop through possible node folders (by platform) and collect found ones in a List
-    var nodeFolders = new List<string>();
-    // fetch the home folder and expand any ~
-
-    if (Application.platform == RuntimePlatform.OSXEditor) {
-      string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-      nodeFolders = new List<string>{
-        "/usr/local/bin",
-        "/opt/homebrew/bin",
-        "/usr/bin",
-        $"{home}/.nvm/versions/node/*/bin"
-      };
-    } else if (Application.platform == RuntimePlatform.WindowsEditor) {
-      nodeFolders = new List<string>{
-        "C:/Program Files/nodejs/node.exe"
-      };
-    }
-    // loop through the subfolders and expanding any * wildcards
-    // make sure to split any folders with * into parent and wildcard
-
-    var foldersWithNode = nodeFolders
-      .SelectMany(folder => {
-        if (folder.Contains("*")) {
-          var parts = folder.Split('*');
-          // remove any trailing slashes
-          var parent = parts[0].TrimEnd('/');
-          var child = parts[1].TrimStart('/');
-          var expanded   = Directory.GetDirectories(parent, "*");
-          var candidates = expanded.Select( d => d + "/" + child );
-          // Debug.Log(  "Parent: " + parent + " Child: " + child +  " Found: " + y.Aggregate("", (acc, f) => acc + f + "\n") );
-          return candidates; // i.e ["/usr/local/bin", "/opt/homebrew/bin"]
-        } else {
-          // Debug.Log("Folder: " + folder);
-          return new string[]{ folder };
-        }
-      }).Where( folder => File.Exists(folder + "/node") && File.Exists(folder + "/npm") ).ToList();
-
-    Debug.Log($"FindAllNodeIntances().foldersWithNode[{foldersWithNode.Count}] = [\n{foldersWithNode.Aggregate("", (acc, f) => $"{acc}  {f}/node,\n")}]");
-    return foldersWithNode;
-  }
-
-  private void Clk_AutoSetupNode() { // NODE  ------------- Click
-    Debug.Log("Auto Setup Node!");
-    switch (Application.platform) {
-      case RuntimePlatform.OSXEditor:
-        Debug.Log("OSX Editor Detected");
-        var cqStgs = FindProjectCqSettings();
-        var nodePaths = FindAllNodeIntances();
-        if (nodePaths==null || nodePaths.Count == 0) {
-          NotifyAndLogError("Node not found on your system. To get it: https://nodejs.org/en/download/prebuilt-installer");
-          MqWelcome_StatusSets.node.error.Set();
-          return;
-        } else cqStgs.pathToNode = nodePaths[0] + "/node";
-        Check_Node();
-        break;
-      case RuntimePlatform.WindowsEditor:
-        Debug.Log("Windows Editor Detected");
-        string nodeVer = GetNodeVersion("cmd.exe", $"/c runwebpack.bat ");
-        break;
-      // case RuntimePlatform.LinuxEditor:
-      //   Debug.Log("Linux Editor Detected");
-      // break;
-      default:
-        Debug.LogError("Unsupported platform: " + Application.platform);
-        break;
-    }
-    CheckAllStatusForReady();
-  }
-
   //-- Clicks - API KEY --------------------------------
 
   private void Clk_SignUpApi() { // API KEY  ------------- Click
-    GotoSettings();
+    siSettings.GotoSettings();
     Application.OpenURL("https://croquet.io/account/");
   }
 
   private void Clk_EnterApiKey() {  // API KEY  ------------- Click
-    GotoSettings();
+    siSettings.GotoSettings();
     Notify("Selected in Project.\nSee Inspector.");
   }
 
@@ -573,7 +413,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       cbGob.AddComponent<CroquetSpatialSystem>();
       cbGob.AddComponent<CroquetMaterialSystem>();
       cbGob.AddComponent<CroquetFileReader>();
-      var cqStgs = FindProjectCqSettings();
+      var cqStgs = CqFile.FindProjectCqSettings();
       if (cqStgs != null) cb.appProperties = cqStgs;
 
       Selection.activeGameObject = cbGob;
@@ -642,7 +482,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
       return;
     } else {
-      var cqSettings = FindProjectCqSettings();
+      var cqSettings = CqFile.FindProjectCqSettings();
       if (cqSettings == null) {
         NotifyAndLogError("Could not find CroquetSettings in project!");
         return;
@@ -656,7 +496,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   void Clk_BridgeHasSettings_Goto() { // BRIDGE HAS SETTINGS  ------------- Click
-    GotoSettings();
+    siSettings.GotoSettings();
   }
 
   //-- Clicks - JS BUILD --------------------------------
@@ -780,6 +620,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     return sceneIsDirty;
   }
 
+  void SetupUI_BuiltOutput() {
+    SetupVisElem("BuiltOutput_Status_Img",            ref BuiltOutput_Status_Img);
+    SetupLabel(  "BuiltOutput_Message_Lbl",           ref BuiltOutput_Message_Lbl);
+    SetupButton( "Save_Open_Scene_Btn",               ref Save_Open_Scene_Btn,               Clk_Save_Open_Scene);
+    SetupButton( "Goto_Build_Panel_Btn",              ref Goto_Build_Panel_Btn,              Clk_Goto_Build_Panel);
+    SetupButton( "Check_Building_Scenes_Btn",         ref Check_Building_Scenes_Btn,         Clk_Check_Building_Scenes);
+  }
+
   //-- Clicks - BUILT OUTPUT --------------------------------
   void Clk_Save_Open_Scene() { // Save Open Scene  -  BUILT OUTPUT  ------------- Click
     EditorSceneManager.SaveScene( EditorSceneManager.GetActiveScene() );
@@ -803,6 +651,31 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //-- VERSION MATCH - JS BUILD TOOLS --------------------------------
+  void SetupUI_VersionMatch() {
+    SetupVisElem("JbtVersionMatch_Img",               ref JbtVersionMatch_Img);
+    SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref JbtVersionMatch_Message_Lbl);
+    SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
+    SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
+  }
+  private bool Check_ToolsVersionMatch() {
+    // load the two ".last-installed-tools" files to compare versions and Tools levels
+    // of (1) the tools in DotJsBuild and (2) the tools in CroquetBridge
+    // var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.installedToolsForDotJsBuild_Path);
+    // var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.installedToolsForCroquetBridge_Path);
+    var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInBuild);
+    var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInEditor);
+    bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForCroquetBridge);
+
+    MqWelcome_StatusSets.versionMatch.SetIsGood(allMatch);
+    if (allMatch) {
+      Debug.Log("JSTools for Editor & Build match!!!");
+    } else {
+      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge) );
+      ShowVEs(ReinstallTools_Btn);
+    }
+    ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
+    return allMatch;
+  }
 
   void Clk_OpenEditorBuildPanel() { // Open Build - JS BUILD TOOLS  ------------- Click
     EditorWindow.GetWindow<BuildPlayerWindow>().Show();
@@ -862,47 +735,47 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //=============================================================================
-  private CroquetSettings FindProjectCqSettings() {
-    CroquetSettings cqSettings = null;
-    // First check for a CroquetSettings on the scene's CroquetBridge
-    var bridge = SceneHelp.FindComp<CroquetBridge>();
-    if (bridge != null && bridge.appProperties != null) {
-      return bridge.appProperties; // appProperties is a CroquetSettings
-    }
-    // Then look in all project folders for a file of CroquetSettings type
-    cqSettings = SceneHelp.FindCompInProject<CroquetSettings>();
-    if (cqSettings == null) {
-      Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
-      MqWelcome_StatusSets.settings.error.Set();
-      MqWelcome_StatusSets.node.error.Set();
-      MqWelcome_StatusSets.apiKey.error.Set();
-      MqWelcome_StatusSets.ready.error.Set();
-    }
+  // private CroquetSettings FindProjectCqSettings() {
+  //   CroquetSettings cqSettings = null;
+  //   // First check for a CroquetSettings on the scene's CroquetBridge
+  //   var bridge = SceneHelp.FindComp<CroquetBridge>();
+  //   if (bridge != null && bridge.appProperties != null) {
+  //     return bridge.appProperties; // appProperties is a CroquetSettings
+  //   }
+  //   // Then look in all project folders for a file of CroquetSettings type
+  //   cqSettings = SceneHelp.FindCompInProject<CroquetSettings>();
+  //   if (cqSettings == null) {
+  //     Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
+  //     MqWelcome_StatusSets.settings.error.Set();
+  //     MqWelcome_StatusSets.node.error.Set();
+  //     MqWelcome_StatusSets.apiKey.error.Set();
+  //     MqWelcome_StatusSets.ready.error.Set();
+  //   }
 
-    return cqSettings;
-  }
+  //   return cqSettings;
+  // }
 
-  private CroquetSettings CopyDefaultSettingsFile() {
-    // string path = ewFolder + "resources/CroquetSettings_Template.asset";
-    // croquet-for-unity-package/Prefabs/CroquetSettings_Template.asset
-    string path = CqFile.CqSettingsTemplateFile().shortPath;
-    CqFile.EnsureAssetsFolder("Croquet");
-    Debug.Log($"Copying from '{path}' to '{CqFile.cqSettingsAssetOutputPath}'");
-    bool sourceFileExists = File.Exists(path);
-    bool targFolderExists = Directory.Exists(Path.GetDirectoryName(CqFile.cqSettingsAssetOutputPath));
-    AssetDatabase.CopyAsset(path, CqFile.cqSettingsAssetOutputPath);
-    bool copiedFileExists = File.Exists(CqFile.cqSettingsAssetOutputPath);
-    Debug.Log($"Source file exists: {sourceFileExists}  Target folder exists: {targFolderExists}, Copied file exists: {copiedFileExists}");
-    return AssetDatabase.LoadAssetAtPath<CroquetSettings>(CqFile.cqSettingsAssetOutputPath);
-  }
+  // private CroquetSettings CopyDefaultSettingsFile() {
+  //   // string path = ewFolder + "resources/CroquetSettings_Template.asset";
+  //   // croquet-for-unity-package/Prefabs/CroquetSettings_Template.asset
+  //   string path = CqFile.CqSettingsTemplateFile().shortPath;
+  //   CqFile.EnsureAssetsFolder("Croquet");
+  //   Debug.Log($"Copying from '{path}' to '{CqFile.cqSettingsAssetOutputPath}'");
+  //   bool sourceFileExists = File.Exists(path);
+  //   bool targFolderExists = Directory.Exists(Path.GetDirectoryName(CqFile.cqSettingsAssetOutputPath));
+  //   AssetDatabase.CopyAsset(path, CqFile.cqSettingsAssetOutputPath);
+  //   bool copiedFileExists = File.Exists(CqFile.cqSettingsAssetOutputPath);
+  //   Debug.Log($"Source file exists: {sourceFileExists}  Target folder exists: {targFolderExists}, Copied file exists: {copiedFileExists}");
+  //   return AssetDatabase.LoadAssetAtPath<CroquetSettings>(CqFile.cqSettingsAssetOutputPath);
+  // }
 
-  private CroquetSettings EnsureSettingsFile() {
-    CroquetSettings cqSettings = FindProjectCqSettings();
-    // If not, copy file from ./resources/CroquetSettings_Template.asset
-    // into Assets/Settings/CroquetSettings.asset
-    if (cqSettings == null) cqSettings = CopyDefaultSettingsFile();
-    return cqSettings;
-  }
+  // private CroquetSettings EnsureSettingsFile() {
+  //   CroquetSettings cqSettings = FindProjectCqSettings();
+  //   // If not, copy file from ./resources/CroquetSettings_Template.asset
+  //   // into Assets/Settings/CroquetSettings.asset
+  //   if (cqSettings == null) cqSettings = CopyDefaultSettingsFile();
+  //   return cqSettings;
+  // }
 
   //=============================================================================
 
@@ -919,7 +792,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //=============================================================================
 
-  private void CheckAllStatusForReady() {
+  public void CheckAllStatusForReady() {
     bool allRdy = true;
     // NEVER: allRdy &= Statuses.ready.IsOk() // NEVER want this
     allRdy &= MqWelcome_StatusSets.settings.IsOk();
@@ -934,39 +807,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
   //=============================================================================
 
-  private bool Check_Settings() {
-    var cqStgs = FindProjectCqSettings();
-    if (cqStgs == null) {
-      GotoSettings_Btn.SetEnabled(false);
-      ShowVEs(SettingsCreate_Btn);
-      MqWelcome_StatusSets.settings.error.Set();
-      return false;
-    } else {
-      GotoSettings_Btn.SetEnabled(true);
-      MqWelcome_StatusSets.settings.success.Set();
-      HideVEs(SettingsCreate_Btn);
-      ShowVEs(GotoSettings_Btn);
-      return true;
-    }
-  }
-
-  private bool Check_Node() {
-    var cqStgs = FindProjectCqSettings();
-    if (cqStgs == null) {
-      MqWelcome_StatusSets.node.error.Set();
-      HideVEs(TryAuto_Btn);
-      return false;
-    }
-    string nodeVer  = TryNodePath(cqStgs.pathToNode);
-    bool nodeIsGood = (nodeVer != null);
-    MqWelcome_StatusSets.node.SetIsGood(nodeIsGood);
-    SetVEViz( nodeIsGood, GotoNodePath_Btn );
-    SetVEViz(!nodeIsGood, TryAuto_Btn); // bad, so show the TryAuto button
-    return nodeIsGood;
-  }
-
   private bool Check_ApiKey() {
-    var cqStgs = FindProjectCqSettings();
+    var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null)  return false;
     ShowVEs(GotoApiKey_Btn, SignUpApi_Btn);
 
@@ -1025,7 +867,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   private bool Check_JS_BuildTools() {
-    var jsBuildNmFolder = CqFile.CroquetJS().DeeperFolder(".js-build", "node_modules");
+    var jsBuildNmFolder = CqFile.CroquetJS().DeeperFolder("node_modules");
     bool havejsBuildFolder = jsBuildNmFolder.Exists();
     MqWelcome_StatusSets.jsBuildTools.SetIsGood(havejsBuildFolder);
 
@@ -1071,26 +913,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     foreach (var ve in ves) SetVEViz(false, ve);
   }
 
-  private bool Check_ToolsVersionMatch() {
-    // load the two ".last-installed-tools" files to compare versions and Tools levels
-    // of (1) the tools in DotJsBuild and (2) the tools in CroquetBridge
-    // var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.installedToolsForDotJsBuild_Path);
-    // var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.installedToolsForCroquetBridge_Path);
-    var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInBuild);
-    var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInEditor);
-    bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForCroquetBridge);
-
-    MqWelcome_StatusSets.versionMatch.SetIsGood(allMatch);
-    if (allMatch) {
-      Debug.Log("JSTools for Editor & Build match!!!");
-    } else {
-      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge) );
-      ShowVEs(ReinstallTools_Btn);
-    }
-    ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
-    return allMatch;
-  }
-
   private bool Check_JS_Build() {
     bool haveBuiltOutput = CqFile.StreamingAssetsAppFolder().Exists();
     MqWelcome_StatusSets.jsBuild.SetIsGood(haveBuiltOutput);
@@ -1101,55 +923,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //=============================================================================
 
-  private string TryNodePath(string nodePath) {
-    if (!File.Exists(nodePath)) {
-      Notify("Could not find node path file:\n" + nodePath);
-      return null;
-    } else return GetNodeVersion(nodePath, "-v");
-  }
 
-  private string GetNodeVersion(string executable = "", string arguments = "") {
-    string output = RunShell(executable, arguments);
-    string[] stdoutLines = output.Split('\n');
-
-    // If output is a string that starts with v and then has a number,
-    // then it's the version number, otherwise its an error
-    foreach (string line in stdoutLines) {
-      if (line.StartsWith("v") && float.TryParse(line.Substring(1,3), out float version)) {
-        Debug.Log("Node version: " + line);
-        return line;
-      }
-    }
-    Debug.LogError("Node not found");
-    return null;
-  }
-
-  private string RunShell(string executable = "", string arguments = "", int logLevel = 2, bool shellExec = false) {
-    System.Diagnostics.Process pcs       = new();
-    pcs.StartInfo.UseShellExecute        = shellExec;
-    pcs.StartInfo.RedirectStandardOutput = true;
-    pcs.StartInfo.RedirectStandardError  = true;
-    pcs.StartInfo.CreateNoWindow         = true;
-    pcs.StartInfo.WorkingDirectory       = Path.GetFullPath(CqFile.ewFolder);
-    pcs.StartInfo.FileName               = executable;
-    pcs.StartInfo.Arguments              = arguments;
-    pcs.StartInfo.UserName               = "root";
-    pcs.Start();
-
-    string output = pcs.StandardOutput.ReadToEnd();
-    string errors = pcs.StandardError.ReadToEnd();
-    pcs.WaitForExit();
-    string exeAsJustFile = Path.GetFileName(executable);
-
-    if (output.Length > 0 && logLevel > 1) {
-      Debug.Log(     $"RunShell({exeAsJustFile} {arguments}).output = '{output.Trim()}'");
-    }
-    if (errors.Length > 0 && logLevel > 0) {
-      Debug.LogError($"RunShell({exeAsJustFile} {arguments}).errors = '{errors.Trim()}'");
-    }
-
-    return output;
-  }
 
   //=============================================================================
   void Update() {
