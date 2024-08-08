@@ -29,23 +29,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   Button Awesome_Btn;
   Button Top_Ready_Docs_Btn;
 
-  // VisualElement Node_Status_Img; // NODE
-  // Label Node_Message_Lbl;
-  // Button TryAuto_Btn;
-  // Button GotoNodePath_Btn;
-  // DropdownField Node_Dropdown;
-
-  VisualElement ApiKey_Status_Img; // API KEY
-  Label ApiKey_Message_Lbl;
-  Button SignUpApi_Btn;
-  Button GotoApiKey_Btn;
-  Button ApiKey_Docs_Btn;
-
-  VisualElement HaveBridge_Status_Img; // BRIDGE
-  Label HaveBridge_Message_Lbl;
-  Button GotoBridgeGob_Btn;
-  Button CreateBridgeGob_Btn;
-
   VisualElement HasCqSys_Img; // HAS CQ SYSTEMS
   Label HasCqSys_Message_Lbl;
   Button AddCqSys_Btn;
@@ -90,8 +73,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   List<Button> allButtons = new();
 
-
-
   //====== Singleton ============================================================
   static private MultisynqBuildAssistantEW _Instance;
   static public MultisynqBuildAssistantEW Instance {
@@ -101,7 +82,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     }
     private set{}
   }
-
 
   //====== Menu ============================================================
   [MenuItem("Multisynq/Open Multisynq Build Assistant Window...",priority=10)]
@@ -134,7 +114,10 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
   
   public SI_Settings siSettings;
-  public SI_Node siNode;
+  public SI_Node     siNode;
+  public SI_ApiKey   siApiKey;
+  public SI_Bridge   siBridge;
+  public SI_Systems  siSystems;
 
   //=============================================================================
 
@@ -148,28 +131,14 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     SetupButton( "Top_Ready_Docs_Btn",   ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);
     // SETTINGS
     siSettings = new SI_Settings(this);
-    siSettings.Init();
     // NODE
-    siNode = new SI_Node(this);
-    siNode.Init();
-
-
+    siNode     = new SI_Node(this);
     // API KEY
-    SetupVisElem("ApiKey_Status_Img",                 ref ApiKey_Status_Img);
-    SetupLabel(  "ApiKey_Message_Lbl",                ref ApiKey_Message_Lbl);
-    SetupButton( "SignUpApi_Btn",                     ref SignUpApi_Btn,                     Clk_SignUpApi);
-    SetupButton( "GotoApiKey_Btn",                    ref GotoApiKey_Btn,                    Clk_EnterApiKey);
-    SetupButton( "ApiKey_Docs_Btn",                   ref ApiKey_Docs_Btn,                   Clk_ApiKey_Docs);
+    siApiKey   = new SI_ApiKey(this);
     // BRIDGE
-    SetupVisElem("HaveBridge_Status_Img",             ref HaveBridge_Status_Img);
-    SetupLabel(  "HaveBridge_Message_Lbl",            ref HaveBridge_Message_Lbl);
-    SetupButton( "GotoBridgeGob_Btn",                 ref GotoBridgeGob_Btn,                 Clk_GotoBridgeGob);
-    SetupButton( "CreateBridgeGob_Btn",               ref CreateBridgeGob_Btn,               Clk_CreateBridgeGob);
+    siBridge   = new SI_Bridge(this);
     // HAS CQ SYSTEMS
-    SetupVisElem("HasCqSys_Img",                      ref HasCqSys_Img);
-    SetupLabel(  "HasCqSys_Message_Lbl",              ref HasCqSys_Message_Lbl);
-    SetupButton( "AddCqSys_Btn",                      ref AddCqSys_Btn,                      Clk_AddCqSys);
-    SetupButton( "ListMissingCqSys_Btn",              ref ListMissingCqSys_Btn,              Clk_ListMissingCqSys);
+    siSystems  = new SI_Systems(this);
     // BRIDGE HAS SETTINGS
     SetupVisElem("BridgeHasSettings_Img",             ref BridgeHasSettings_Img);
     SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref BridgeHasSettings_Message_Lbl);
@@ -231,8 +200,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   private void SetupStatuses() {
     string t_synq = "<b><color=#006AFF>Synq</color></b>";
-    string t_key  = "<b><color=#006AFF>API Key</color></b>";
-    // string t_node = "<b><color=#417E37>Node</color></b>";
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
 
     string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {CqFile.img_root});
@@ -248,7 +215,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       if (path.Contains("Multiply")) { StatusSet.errorImgStyle   = newStyle; }
     }
 
-    var hideTheseGrp = rootVisualElement.Query<VisualElement>("HideThese_Grp").First();
+    // var hideTheseGrp = rootVisualElement.Query<VisualElement>("HideThese_Grp").First();
     // hideTheseGrp.style.display = DisplayStyle.None;
 
     MqWelcome_StatusSets.ready = new StatusSet( Ready_Message_Lbl, Ready_Status_Img,
@@ -260,30 +227,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       "Press   Check If Ready   above"
     );
 
-    MqWelcome_StatusSets.apiKey = new StatusSet( ApiKey_Message_Lbl, ApiKey_Status_Img,
-      // (info, warning, error, success)
-      $"The {t_key} is ready to go!",
-      $"The {t_key} is not set",
-      $"Let's get you a free {t_key}. It's easy.",
-      $"The {t_key} is configured!!! Well done!",
-      "API Key status"
-    );
-    MqWelcome_StatusSets.bridge = new StatusSet( HaveBridge_Message_Lbl, HaveBridge_Status_Img,
-      // (info, warning, error, success)
-      "Bridge GameObject is ready to go!",
-      "Bridge GameObject is missing!",
-      "Bridge GameObject is missing in scene! Click <b>Create Bridge</b> to make one.",
-      "Bridge Gob <color=#888888>(GameObject)</color> found!! Well done!",
-      "Bridge GameObject status"
-    );
-    MqWelcome_StatusSets.hasCqSys = new StatusSet( HasCqSys_Message_Lbl, HasCqSys_Img,
-      // (info, warning, error, success, blank)
-      "Croquet Systems are ready to go!",
-      "Croquet Systems are missing",
-      "Croquet Systems are missing! Click <b>Add Croquet Systems</b> to get them.",
-      "Croquet Systems installed!!! Well done!",
-      "Croquet Systems status"
-    );
     MqWelcome_StatusSets.bridgeHasSettings = new StatusSet( BridgeHasSettings_Message_Lbl, BridgeHasSettings_Img,
       // ... info, warning, error, success)
       "Bridge has settings!",
@@ -337,15 +280,16 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   //=============================================================================
   //=============================================================================
   static bool doCheckBuiltOutput = true;
+
   //-- Clicks - CHECK READINESS --------------------------------
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
-  Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
+    Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
     bool allRdy = true;
     allRdy &= siSettings.Check();
     allRdy &= siNode.Check();
-    allRdy &= Check_ApiKey();
-    allRdy &= Check_BridgeComponent();
-    allRdy &= Check_HasCqSystems();
+    allRdy &= siApiKey.Check();
+    allRdy &= siBridge.Check();
+    allRdy &= siSystems.Check();
     allRdy &= Check_BridgeHasSettings();
     allRdy &= Check_JS_BuildTools();
     allRdy &= Check_HasAppJs();
@@ -371,109 +315,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Application.OpenURL("https://multisynq.io/docs/unity/");
   }
 
-  //-- Clicks - API KEY --------------------------------
 
-  private void Clk_SignUpApi() { // API KEY  ------------- Click
-    siSettings.GotoSettings();
-    Application.OpenURL("https://croquet.io/account/");
-  }
 
-  private void Clk_EnterApiKey() {  // API KEY  ------------- Click
-    siSettings.GotoSettings();
-    Notify("Selected in Project.\nSee Inspector.");
-  }
-
-  private void Clk_ApiKey_Docs() {
-    Application.OpenURL("https://croquet.io/account/");
-    // Application.OpenURL("https://multisynq.io/docs/unity/");
-  }
-
-  //-- Clicks - BRIDGE --------------------------------
-
-  private void Clk_GotoBridgeGob() { // BRIDGE  ------------- Click
-    var bridge = FindObjectOfType<CroquetBridge>();  // find ComponentType CroquetBridge in scene
-    if (bridge == null) NotifyAndLogError("Could not find\nCroquetBridge in scene!");
-    else {
-      Selection.activeGameObject = bridge.gameObject; // select in Hierachy
-      EditorGUIUtility.PingObject(bridge.gameObject); // highlight in yellow for a sec
-      NotifyAndLog("Selected in Hierarchy.\nSee CroquetBridge in Inspector.");
-    }
-  }
-
-  private void Clk_CreateBridgeGob() { // BRIDGE  ------------- Click
-    var bridge = FindObjectOfType<CroquetBridge>();
-    if (bridge != null) {
-      string msg = "CroquetBridge already exists in scene";
-      Notify(msg); Debug.LogError(msg);
-    } else {
-      var cbGob = new GameObject("CroquetBridge");
-      var cb = cbGob.AddComponent<CroquetBridge>();
-      cbGob.AddComponent<CroquetRunner>();
-      cbGob.AddComponent<CroquetEntitySystem>();
-      cbGob.AddComponent<CroquetSpatialSystem>();
-      cbGob.AddComponent<CroquetMaterialSystem>();
-      cbGob.AddComponent<CroquetFileReader>();
-      var cqStgs = CqFile.FindProjectCqSettings();
-      if (cqStgs != null) cb.appProperties = cqStgs;
-
-      Selection.activeGameObject = cbGob;
-      string msg = "Created CroquetBridge\nGameObject in scene.\nSelected it.";
-      Notify(msg); Debug.Log(msg);
-      Check_BridgeComponent();
-      CheckAllStatusForReady();
-    }
-    Check_BridgeComponent();
-    Check_BridgeHasSettings();
-    Check_HasCqSystems();
-    CheckAllStatusForReady();
-  }
-
-  //-- Clicks - HAS CROQUET SYSTEMS --------------------------------
-  void Clk_AddCqSys() { // HAS CQ SYSTEMS  ------------- Click
-    var cqBridge = FindObjectOfType<CroquetBridge>();
-    if (cqBridge == null) {
-      NotifyAndLogError("Could not find CroquetBridge in scene!");
-      return;
-    } else {
-      var cqGob = cqBridge.gameObject;
-      string rpt = "";
-      rpt += SceneHelp.EnsureComp<CroquetRunner>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetEntitySystem>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetSpatialSystem>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetMaterialSystem>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetFileReader>(cqGob);
-      if (rpt == "") NotifyAndLog("All Croquet Systems are present in CroquetBridge GameObject.");
-      else           NotifyAndLog("Added:\n"+rpt);
-    }
-    Check_HasCqSystems();
-    CheckAllStatusForReady();
-  }
-
-  (string,string) MissingSystemsRpt() {
-    string critRpt = "";
-    critRpt += (FindObjectOfType<CroquetRunner>()         == null) ? "CroquetRunner\n"         : "";
-    critRpt += (FindObjectOfType<CroquetFileReader>()     == null) ? "CroquetFileReader\n"     : "";
-    critRpt += (FindObjectOfType<CroquetEntitySystem>()   == null) ? "CroquetEntitySystem\n"   : "";
-    critRpt += (FindObjectOfType<CroquetSpatialSystem>()  == null) ? "CroquetSpatialSystem\n"  : "";
-    string optRpt = "";
-    optRpt += (FindObjectOfType<CroquetMaterialSystem>() == null) ? "CroquetMaterialSystem\n" : "";
-    return (critRpt, optRpt);
-  }
-
-  void Clk_ListMissingCqSys() { // HAS CQ SYSTEMS  ------------- Click
-    var cqBridge = FindObjectOfType<CroquetBridge>();
-    if (cqBridge == null) {
-      NotifyAndLogError("Could not find CroquetBridge in scene!");
-      return;
-    } else {
-      (string critRpt, string optRpt) = MissingSystemsRpt();
-      if (critRpt + optRpt == "") NotifyAndLog("All Croquet Systems present.");
-      else {
-        if      (critRpt != "") NotifyAndLogError(  "Missing Critical:\n"+critRpt);
-        else if (optRpt  != "") NotifyAndLogWarning("Missing Optional:\n"+optRpt);
-      }
-    }
-  }
   //-- Clicks - BRIDGE HAS SETTINGS --------------------------------
 
   void Clk_BridgeHasSettings_AutoConnect() { // BRIDGE HAS SETTINGS  ------------- Click
@@ -807,47 +650,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
   //=============================================================================
 
-  private bool Check_ApiKey() {
-    var cqStgs = CqFile.FindProjectCqSettings();
-    if (cqStgs == null)  return false;
-    ShowVEs(GotoApiKey_Btn, SignUpApi_Btn);
-
-    // curl -s -X GET -H "X-Croquet-Auth: 1_s77e6tyzkx5m3yryb9305sqxhkdmz65y69oy5s8e" -H "X-Croquet-App: io.croquet.vdom.ploma" -H "X-Croquet-Id: persistentId" -H "X-Croquet-Version: 1.1.0" -H "X-Croquet-Path: https://croquet.io" 'https://api.croquet.io/sign/join?meta=login'
-    var apiKey = cqStgs.apiKey;
-    bool apiKeyIsGood = (apiKey != null && apiKey != "<go get one at multisynq.io>" && apiKey.Length > 0);
-    MqWelcome_StatusSets.apiKey.SetIsGood(apiKeyIsGood);
-    return apiKeyIsGood;
-  }
-
-  private bool Check_BridgeComponent() {
-    var bridge = FindObjectOfType<CroquetBridge>();
-    bool fountIt = (bridge != null);
-    MqWelcome_StatusSets.bridge.SetIsGood(fountIt);
-    SetVEViz( fountIt, GotoBridgeGob_Btn  );
-    SetVEViz(!fountIt, CreateBridgeGob_Btn);
-    return fountIt;
-  }
-
-  private bool Check_HasCqSystems() {
-    (string critRpt, string optRpt) = MissingSystemsRpt();
-    bool noneMissing = (critRpt + optRpt == "");
-    bool critMissing = (critRpt != "");
-
-    if (noneMissing) {
-      HideVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
-      MqWelcome_StatusSets.hasCqSys.success.Set();
-    } else {
-      ShowVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
-      if (critMissing) {
-        MqWelcome_StatusSets.hasCqSys.error.Set();
-        Debug.LogError("Missing Critical Croquet Systems:\n" + critRpt);
-      } else {
-        MqWelcome_StatusSets.hasCqSys.warning.Set();
-        Debug.LogWarning("Missing Optional Croquet Systems:\n" + optRpt);
-      }
-    }
-    return noneMissing;
-  }
 
   private bool Check_BridgeHasSettings() {
     var bridge = FindObjectOfType<CroquetBridge>();
