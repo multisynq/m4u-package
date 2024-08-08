@@ -5,7 +5,7 @@ using System;
 
 public abstract class StatusItem {
 
-  public MultisynqBuildAssistantEW parentWindow;
+  public MultisynqBuildAssistantEW edWin;
   public StatusSet statusSet;
   public VisualElement statusImage;
   public Label messageLabel;
@@ -16,7 +16,8 @@ public abstract class StatusItem {
 
   // CONSTRUCTOR
   public StatusItem(MultisynqBuildAssistantEW parent) {
-    parentWindow = parent;
+    edWin = parent;
+    Init();
   }
 
   // MUST MAKE THESE METHODS IN SUBCLASSES (abstract)
@@ -44,7 +45,7 @@ public abstract class StatusItem {
   }
 
   public void SetupButton(string buttonName, ref Button button, Action buttonAction) {
-    button = parentWindow.rootVisualElement.Query<Button>(buttonName).First();
+    button = edWin.rootVisualElement.Query<Button>(buttonName).First();
     if (button == null) {
       Debug.LogError("Could not find button: " + buttonName);
       return;
@@ -54,19 +55,19 @@ public abstract class StatusItem {
   }
 
   public void SetupLabel(string labelName, ref Label label) {
-    label = parentWindow.rootVisualElement.Query<Label>(labelName).First();
+    label = edWin.rootVisualElement.Query<Label>(labelName).First();
     if (label == null) Debug.LogError("Could not find label: " + labelName);
     else messageLabel = label;
   }
 
   public void SetupVisElem(string visElemName, ref VisualElement visElem) {
-    visElem = parentWindow.rootVisualElement.Query<VisualElement>(visElemName).First();
+    visElem = edWin.rootVisualElement.Query<VisualElement>(visElemName).First();
     if (visElem == null) Debug.LogError("Could not find VisualElement: " + visElemName);
     else statusImage = visElem;
   }
 
   public T FindElement<T>( string nm ) where T : VisualElement {
-    return parentWindow.rootVisualElement.Query<T>(nm).First();
+    return edWin.rootVisualElement.Query<T>(nm).First();
   }
 
     //=============================================================================

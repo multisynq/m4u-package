@@ -33,7 +33,7 @@ public class SI_Settings: StatusItem {
     GotoSettings_Btn.SetEnabled(false);
     statusSet = MqWelcome_StatusSets.settings;
   }
-  override public bool Check() {
+  override public bool Check() { // SETTINGS
     Debug.Log("SI_Settings.Check()");
     var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null) {
@@ -64,7 +64,7 @@ public class SI_Settings: StatusItem {
     GotoSettings();
     ShowVEs(GotoNodePath_Btn, GotoApiKey_Btn);
     Check();
-    parentWindow.CheckAllStatusForReady();
+    edWin.CheckAllStatusForReady();
   }
 
   public void GotoSettings() { // SETTINGS  ------------- Click
@@ -82,47 +82,3 @@ public class SI_Settings: StatusItem {
   }
 
 }
-
-
-/*
-  //-- Click - SETTINGS --------------------------------
-  void SetupUI_Settings() {
-    SetupVisElem("Settings_Status_Img",  ref Settings_Status_Img);
-    SetupLabel(  "Settings_Message_Lbl", ref Settings_Message_Lbl);
-    SetupButton( "GotoSettings_Btn",     ref GotoSettings_Btn,   Clk_GotoSettings);
-    SetupButton( "SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
-  }
-
-  private bool Check_Settings() {
-    var cqStgs = FindProjectCqSettings();
-    if (cqStgs == null) {
-      GotoSettings_Btn.SetEnabled(false);
-      ShowVEs(SettingsCreate_Btn);
-      MqWelcome_StatusSets.settings.error.Set();
-      return false;
-    } else {
-      GotoSettings_Btn.SetEnabled(true);
-      MqWelcome_StatusSets.settings.success.Set();
-      HideVEs(SettingsCreate_Btn);
-      ShowVEs(GotoSettings_Btn);
-      return true;
-    }
-  }
-
-  private void Clk_GotoSettings() { // SETTINGS  ------------- Click
-    GotoSettings();
-    Notify("Selected in Project.\nSee Inspector.");
-  }
-
-  private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
-    // CroquetSettings in scene
-    var cqStgs = EnsureSettingsFile();
-    MqWelcome_StatusSets.ready.SetIsGood(cqStgs != null);
-    if (cqStgs == null) Debug.LogError("Could not find or create CroquetSettings file");
-    GotoSettings();
-    ShowVEs(GotoNodePath_Btn, GotoApiKey_Btn);
-    Check_Settings();
-    CheckAllStatusForReady();
-  }
-
- */

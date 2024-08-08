@@ -32,7 +32,7 @@ public class SI_Node: StatusItem {
         var cqStgs = CqFile.FindProjectCqSettings();
         cqStgs.pathToNode = nodePath;
       }
-      parentWindow.CheckAllStatusForReady();
+      edWin.CheckAllStatusForReady();
     });
     HideVEs(Node_Dropdown);
   }
@@ -94,10 +94,10 @@ public class SI_Node: StatusItem {
 
 
   public void Clk_GotoNodePath() { // NODE  ------------- Click
-    parentWindow.siSettings.GotoSettings();
+    edWin.siSettings.GotoSettings();
     // notify message
     var msg = "See Inspector.\n\nCroquet Settings\nwith node path\nselected in Project.";
-    parentWindow.ShowNotification(new GUIContent(msg), 4);
+    edWin.ShowNotification(new GUIContent(msg), 4);
   }
 
   List<string> FindAllNodeIntances() {
@@ -169,7 +169,7 @@ public class SI_Node: StatusItem {
         Debug.LogError("Unsupported platform: " + Application.platform);
         break;
     }
-    parentWindow.CheckAllStatusForReady();
+    edWin.CheckAllStatusForReady();
   }
 
   public void NodePathsToDropdownAndCheck() {
