@@ -11,11 +11,12 @@ public abstract class StatusItem {
   public Label messageLabel;
   public Button[] buttons;
 
-  // STATICS
-  static public List<Button> allButtons = new List<Button>();
-
   // CONSTRUCTOR
-  public StatusItem(MultisynqBuildAssistantEW parent) {
+  public StatusItem(MultisynqBuildAssistantEW parent = null) {
+    if (parent == null) {
+      Debug.LogError("StatusItem needs a parent MultisynqBuildAssistantEW");
+      return;
+    }
     edWin = parent;
     Init();
   }
@@ -51,7 +52,7 @@ public abstract class StatusItem {
       return;
     }
     if (buttonAction!=null) button.clicked += buttonAction;
-    allButtons.Add(button);
+    edWin.allButtons.Add(button);
   }
 
   public void SetupLabel(string labelName, ref Label label) {
@@ -70,7 +71,7 @@ public abstract class StatusItem {
     return edWin.rootVisualElement.Query<T>(nm).First();
   }
 
-    //=============================================================================
+  //=============================================================================
 
   static public void NotifyAndLog(string msg, float seconds = 4) {
     MultisynqBuildAssistantEW.Instance.ShowNotification(new GUIContent(msg), seconds);
