@@ -12,7 +12,6 @@ public class SI_JsBuild: StatusItem {
   public SI_JsBuild(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
-    //Debug.Log("SI_JsBuild.InitUI()");
     SetupVisElem("JSBuild_Status_Img",  ref statusImage);
     SetupLabel(  "JSBuild_Message_Lbl", ref messageLabel);
     SetupButton( "ToggleJSBuild_Btn",   ref ToggleJSBuild_Btn,    Clk_ToggleJSBuild); // Start JS Build Watcher
@@ -21,7 +20,6 @@ public class SI_JsBuild: StatusItem {
   }
 
   override public void InitText() {
-    // //Debug.Log("SI_JsBuild.InitText()");
     MqWelcome_StatusSets.jsBuild = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       $"Output JS was built!",

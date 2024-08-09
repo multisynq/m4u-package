@@ -13,8 +13,6 @@ public class SI_HasAppJs: StatusItem {
   public SI_HasAppJs(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
-    //Debug.Log("SI_HasAppJs.InitUI()");
-
     SetupVisElem("HasAppJs_Status_Img",               ref statusImage);
     SetupLabel(  "HasAppJs_Message_Lbl",              ref messageLabel);
     SetupButton( "SetAppName_Btn",                    ref SetAppName_Btn,                    Clk_SetAppName);
@@ -25,7 +23,6 @@ public class SI_HasAppJs: StatusItem {
   }
 
   override public void InitText() {
-    //Debug.Log("SI_HasAppJs.InitText()");
     MqWelcome_StatusSets.hasAppJs = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       "Input JS: index.js for AppName is ready to go!",
@@ -38,7 +35,6 @@ public class SI_HasAppJs: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    //Debug.Log("SI_HasAppJs.Check()");
     var cqBridge = Object.FindObjectOfType<CroquetBridge>();
 
     string appName = cqBridge?.appName;

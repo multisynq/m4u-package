@@ -9,7 +9,6 @@ public class SI_ReadyTotal: StatusItem {
   public SI_ReadyTotal(MultisynqBuildAssistantEW parent = null) : base(parent){}
 
   override public void InitUI() {
-    //Debug.Log("SI_ReadyTotal.InitUI()");
     SetupVisElem("Ready_Status_Img",     ref statusImage);
     SetupLabel(  "Ready_Message_Lbl",    ref messageLabel);
     SetupButton( "Awesome_Btn",          ref Awesome_Btn,        Clk_BeAwesome);
@@ -17,7 +16,6 @@ public class SI_ReadyTotal: StatusItem {
   }
 
   override public void InitText() {
-    //Debug.Log("SI_ReadyTotal.InitText()");
     string t_synq = "<b><color=#006AFF>Synq</color></b>";
     MqWelcome_StatusSets.ready = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
@@ -31,7 +29,6 @@ public class SI_ReadyTotal: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    //Debug.Log("SI_ReadyTotal.Check()");
     // the real check is in MultisynqBuildAssistantEW.CheckAllStatusForReady()
     return true;
   }

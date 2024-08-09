@@ -12,14 +12,12 @@ public class SI_Bridge: StatusItem {
     }
 
     override public void InitUI() {
-    //Debug.Log("SI_Bridge.InitUI()");
     SetupVisElem("HaveBridge_Status_Img",             ref statusImage);
     SetupLabel(  "HaveBridge_Message_Lbl",            ref messageLabel);
     SetupButton( "GotoBridgeGob_Btn",                 ref GotoBridgeGob_Btn,                 Clk_GotoBridgeGob);
     SetupButton( "CreateBridgeGob_Btn",               ref CreateBridgeGob_Btn,               Clk_CreateBridgeGob);
   }
   override public void InitText() {
-    //Debug.Log("SI_Bridge.InitText()");
     MqWelcome_StatusSets.bridge = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       "Bridge GameObject is ready to go!",
@@ -31,7 +29,6 @@ public class SI_Bridge: StatusItem {
     statusSet = MqWelcome_StatusSets.bridge;
   }
   override public bool Check() { // BRIDGE
-    //Debug.Log("SI_Bridge.Check()");
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     bool fountIt = (bridge != null);
     MqWelcome_StatusSets.bridge.SetIsGood(fountIt);

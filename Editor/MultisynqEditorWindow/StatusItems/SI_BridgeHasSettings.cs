@@ -12,7 +12,6 @@ public class SI_BridgeHasSettings: StatusItem {
     }
 
     override public void InitUI() {
-    //Debug.Log("SI_BridgeHasSettings.InitUI()");
     SetupVisElem("BridgeHasSettings_Img",             ref statusImage);
     SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref messageLabel);
     SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
@@ -20,7 +19,6 @@ public class SI_BridgeHasSettings: StatusItem {
   }
 
   override public void InitText() {
-    //Debug.Log("SI_BridgeHasSettings.InitText()");
     MqWelcome_StatusSets.bridgeHasSettings = new StatusSet( messageLabel, statusImage,
       // ... info, warning, error, success)
       "Bridge has settings!",
@@ -33,8 +31,6 @@ public class SI_BridgeHasSettings: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    //Debug.Log("SI_BridgeHasSettings.Check()");
-
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     if (bridge==null) {
       MqWelcome_StatusSets.bridgeHasSettings.error.Set();
