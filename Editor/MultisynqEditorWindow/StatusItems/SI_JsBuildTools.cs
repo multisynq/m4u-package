@@ -7,11 +7,9 @@ public class SI_JsBuildTools: StatusItem {
   Button CopyJSBuildTools_Btn;
   Button GotoJSBuildToolsFolder_Btn;
 
-    public SI_JsBuildTools(MultisynqBuildAssistantEW parent = null) : base(parent)
-    {
-    }
+  public SI_JsBuildTools(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
-    override public void InitUI() {
+  override public void InitUI() {
     SetupVisElem("JSBuildTools_Img",           ref statusImage);
     SetupLabel(  "JSBuildTools_Message_Lbl",   ref messageLabel);
     SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
@@ -19,7 +17,7 @@ public class SI_JsBuildTools: StatusItem {
   }
 
   override public void InitText() {
-    MqWelcome_StatusSets.jsBuildTools = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.jsBuildTools = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       "JS Build Tools are ready to go!",
       "JS Build Tools are missing",
@@ -27,13 +25,13 @@ public class SI_JsBuildTools: StatusItem {
       "JS Build Tools installed!!! Well done!",
       "JS Build Tools status"
     );
-    statusSet = MqWelcome_StatusSets.jsBuildTools;
+    statusSet = StatusSetMgr.jsBuildTools;
   }
 
   override public bool Check() { // SETTINGS
     var cqJsNodeModulesFolder = CqFile.CroquetJS().DeeperFolder("node_modules");
     bool haveFolder = cqJsNodeModulesFolder.Exists();
-    MqWelcome_StatusSets.jsBuildTools.SetIsGood(haveFolder);
+    StatusSetMgr.jsBuildTools.SetIsGood(haveFolder);
 
     if (haveFolder) {
       ShowVEs(GotoJSBuildToolsFolder_Btn, edWin.siJsBuild.Build_JsNow_Btn);

@@ -26,9 +26,9 @@ public class SI_Node: StatusItem {
     Node_Dropdown.RegisterValueChangedCallback( (evt) => {
       string nodePath = evt.newValue.Replace(" ∕ ", "/");
       string nodeVer = TryNodePath(nodePath);
-      if (nodeVer == null) MqWelcome_StatusSets.node.error.Set();
+      if (nodeVer == null) StatusSetMgr.node.error.Set();
       else {
-        MqWelcome_StatusSets.node.success.Set();
+        StatusSetMgr.node.success.Set();
         // set the CroquetSetting.nodePath
         var cqStgs = CqFile.FindProjectCqSettings();
         cqStgs.pathToNode = nodePath;
@@ -39,7 +39,7 @@ public class SI_Node: StatusItem {
   }
   override public void InitText() {
     string t_node = "<b><color=#417E37>Node</color></b>";
-    MqWelcome_StatusSets.node = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.node = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       $"{t_node} is ready to go!",
       $"{t_node} is not running",
@@ -47,18 +47,18 @@ public class SI_Node: StatusItem {
       $"{t_node} path configured!!! Well done!",
       "Node status"
     );
-    statusSet = MqWelcome_StatusSets.node;
+    statusSet = StatusSetMgr.node;
   }
   override public bool Check() {
     var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null) {
-      MqWelcome_StatusSets.node.error.Set();
+      StatusSetMgr.node.error.Set();
       HideVEs(TryAuto_Btn);
       return false;
     }
     string nodeVer  = TryNodePath(cqStgs.pathToNode);
     bool nodeIsGood = (nodeVer != null);
-    MqWelcome_StatusSets.node.SetIsGood(nodeIsGood);
+    StatusSetMgr.node.SetIsGood(nodeIsGood);
     SetVEViz( nodeIsGood, GotoNodePath_Btn );
     SetVEViz(!nodeIsGood, TryAuto_Btn); // bad, so show the TryAuto button
     return nodeIsGood;
@@ -151,7 +151,7 @@ public class SI_Node: StatusItem {
         var nodePaths = FindAllNodeIntances();
         if (nodePaths==null || nodePaths.Count == 0) {
           NotifyAndLogError("Node not found on your system. To get it: https://nodejs.org/en/download/prebuilt-installer");
-          MqWelcome_StatusSets.node.error.Set();
+          StatusSetMgr.node.error.Set();
           return;
         } else cqStgs.pathToNode = nodePaths[0] + "/node";
         Check();
@@ -180,8 +180,8 @@ public class SI_Node: StatusItem {
       string nodePath = cqStgs.pathToNode.Replace("/"," ∕ ");
       if (nps.Contains(nodePath)) {
         Node_Dropdown.SetValueWithoutNotify(nodePath);
-        MqWelcome_StatusSets.node.success.Set();
-      } else MqWelcome_StatusSets.node.error.Set();
+        StatusSetMgr.node.success.Set();
+      } else StatusSetMgr.node.error.Set();
     }
   }
 }

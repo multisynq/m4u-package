@@ -20,7 +20,7 @@ public class SI_Settings: StatusItem {
     SetupButton( "GotoApiKey_Btn",       ref GotoApiKey_Btn,     null);
   }
   override public void InitText() {
-    MqWelcome_StatusSets.settings = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.settings = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       $"Settings are ready to go!",
       $"Settings are set to defaults! Look for other red items below to fix this.",
@@ -29,18 +29,18 @@ public class SI_Settings: StatusItem {
       "Settings status"
     );
     GotoSettings_Btn.SetEnabled(false);
-    statusSet = MqWelcome_StatusSets.settings;
+    statusSet = StatusSetMgr.settings;
   }
   override public bool Check() { // SETTINGS
     var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null) {
       GotoSettings_Btn.SetEnabled(false);
       ShowVEs(SettingsCreate_Btn);
-      MqWelcome_StatusSets.settings.error.Set();
+      StatusSetMgr.settings.error.Set();
       return false;
     } else {
       GotoSettings_Btn.SetEnabled(true);
-      MqWelcome_StatusSets.settings.success.Set();
+      StatusSetMgr.settings.success.Set();
       HideVEs(SettingsCreate_Btn);
       ShowVEs(GotoSettings_Btn);
       return true;
@@ -56,7 +56,7 @@ public class SI_Settings: StatusItem {
   private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
     // CroquetSettings in scene
     var cqStgs = CqFile.EnsureSettingsFile();
-    MqWelcome_StatusSets.ready.SetIsGood(cqStgs != null);
+    StatusSetMgr.ready.SetIsGood(cqStgs != null);
     if (cqStgs == null) Debug.LogError("Could not find or create CroquetSettings file");
     GotoSettings();
     ShowVEs(GotoNodePath_Btn, GotoApiKey_Btn);

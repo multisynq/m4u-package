@@ -19,7 +19,7 @@ public class SI_BridgeHasSettings: StatusItem {
   }
 
   override public void InitText() {
-    MqWelcome_StatusSets.bridgeHasSettings = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.bridgeHasSettings = new StatusSet( messageLabel, statusImage,
       // ... info, warning, error, success)
       "Bridge has settings!",
       "Bridge is missing settings!",
@@ -27,19 +27,19 @@ public class SI_BridgeHasSettings: StatusItem {
       "Bridge connected to settings!!! Well done!",
       "Bridge's Settings status"
     );
-    statusSet = MqWelcome_StatusSets.bridgeHasSettings;
+    statusSet = StatusSetMgr.bridgeHasSettings;
   }
 
   override public bool Check() { // SETTINGS
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     if (bridge==null) {
-      MqWelcome_StatusSets.bridgeHasSettings.error.Set();
+      StatusSetMgr.bridgeHasSettings.error.Set();
       HideVEs(BridgeHasSettings_AutoConnect_Btn, BridgeHasSettings_Goto_Btn);
       return false;
     }
 
     bool hasSettings = (bridge.appProperties != null);
-    MqWelcome_StatusSets.bridgeHasSettings.SetIsGood(hasSettings);
+    StatusSetMgr.bridgeHasSettings.SetIsGood(hasSettings);
     if (hasSettings) {
       ShowVEs(BridgeHasSettings_Goto_Btn);
       HideVEs(BridgeHasSettings_AutoConnect_Btn);

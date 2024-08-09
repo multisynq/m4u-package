@@ -174,10 +174,10 @@ static public class CqFile {
     CroquetSettings cqSettings = SceneHelp.FindCompInProject<CroquetSettings>();
     if (cqSettings == null) {
       Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
-      MqWelcome_StatusSets.settings.error.Set();
-      MqWelcome_StatusSets.node.error.Set();
-      MqWelcome_StatusSets.apiKey.error.Set();
-      MqWelcome_StatusSets.ready.error.Set();
+      StatusSetMgr.settings.error.Set();
+      StatusSetMgr.node.error.Set();
+      StatusSetMgr.apiKey.error.Set();
+      StatusSetMgr.ready.error.Set();
     }
 
     return cqSettings;

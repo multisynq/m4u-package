@@ -20,7 +20,7 @@ public class SI_JsBuild: StatusItem {
   }
 
   override public void InitText() {
-    MqWelcome_StatusSets.jsBuild = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.jsBuild = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       $"Output JS was built!",
       $"Output JS missing.",
@@ -28,12 +28,12 @@ public class SI_JsBuild: StatusItem {
       $"Output JS was built! Well done!",
       "JS Build status"
     );
-    statusSet = MqWelcome_StatusSets.jsBuild;
+    statusSet = StatusSetMgr.jsBuild;
   }
 
   override public bool Check() { // SETTINGS
     bool haveBuiltOutput = CqFile.StreamingAssetsAppFolder().Exists();
-    MqWelcome_StatusSets.jsBuild.SetIsGood(haveBuiltOutput);
+    StatusSetMgr.jsBuild.SetIsGood(haveBuiltOutput);
     if (!haveBuiltOutput) ShowVEs(Build_JsNow_Btn);
     ShowVEs(GotoBuiltOutput_Btn);
     return haveBuiltOutput;

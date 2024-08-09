@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,17 +5,12 @@ using UnityEngine.UIElements;
 //------------------ ||||||||||||||||||||||||| ----------------------------------
 public partial class MultisynqBuildAssistantEW : EditorWindow {
 
-  //=== static ==========================================================================
-  static public HandyColors colz;
-
   //=============================================================================
   public double countdown_ToConvertSuccesses = -1;
   double lastTime = 0;
   double deltaTime = 0;
 
-  //==== UI Refs ================================================================
   Button CheckIfReady_Btn; // CHECK IF READY
-  public List<Button> allButtons = new();
 
   //==== Status Items (SI_) =====================================================
   public SI_ReadyTotal        siReadyTotal;
@@ -40,22 +33,17 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     var labelFromUXML = visualTree.Instantiate();
     rootVisualElement.Add(labelFromUXML);
 
-    // Add stylesheet to VisualElement and all of its children.
-    // var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/Editor/CustomEditor.uss");
-    // rootVisualElement.styleSheets.Add(styleSheet);
-
-    colz = new();
     SetupUI();
-    SetupStatusTextures();
+    StatusSet.InitTextures();
+    StatusItem.AllStatusSetsToBlank();
   }
-  
 
   //=============================================================================
 
   private void SetupUI() {
-
+    StatusItem.ClearStaticLists();
     siReadyTotal        = new SI_ReadyTotal(this);
-    siReadyTotal.SetupButton("CheckIfReady_Btn",      ref CheckIfReady_Btn,   Clk_CheckIfReady);
+    siReadyTotal.SetupButton("CheckIfReady_Btn", ref CheckIfReady_Btn, Clk_CheckIfReady);
     siSettings          = new SI_Settings(this);
     siNode              = new SI_Node(this);
     siApiKey            = new SI_ApiKey(this);
@@ -68,18 +56,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     siJbtVersionMatch   = new SI_JbtVersionMatch(this);
     siBuiltOutput       = new SI_BuiltOutput(this);    
 
-    HideMostButtons();
-  }
-
-  private void HideMostButtons() {
-    string[] whitelisted = {
-      "CheckIfReady_Btn",
-      "_Docs_",
-    };
-    foreach (Button button in allButtons) {
-      bool isWhitelisted = whitelisted.Any(button.name.Contains);
-      StatusItem.SetVEViz(isWhitelisted, button);
-    }
+    StatusItem.HideMostButtons();
   }
 
   //=============================================================================
@@ -111,25 +88,9 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //=============================================================================
-  private void SetupStatusTextures() {
-    string[] guids = AssetDatabase.FindAssets("t:Texture2D", new string[] {CqFile.img_root});
-    foreach (string guid in guids) {
-      string path = AssetDatabase.GUIDToAssetPath(guid);
-      StyleBackground newStyle = new StyleBackground(AssetDatabase.LoadAssetAtPath<Sprite>(path));
-      if (path.Contains("Checkmark")) {
-        StatusSet.readyImgStyle = newStyle;
-        StatusSet.successImgStyle = newStyle;
-      }
-      if (path.Contains("Warning"))  { StatusSet.warningImgStyle = newStyle; }
-      if (path.Contains("Multiply")) { StatusSet.errorImgStyle   = newStyle; }
-    }
-    MqWelcome_StatusSets.AllStatusSetsToBlank();
-  }
-
-  //=============================================================================
   void Update() {
     Update_DeltaTime();
-    Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, siReadyTotal.messageLabel, MqWelcome_StatusSets.ready, true);
+    Update_CountdownAndMessage(ref countdown_ToConvertSuccesses, siReadyTotal.messageLabel, StatusSetMgr.ready, true);
   }
 
   void Update_DeltaTime()  {
@@ -146,7 +107,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
       if (countdownSeconds <= 0f) {
         countdownSeconds = -1;
         messageField.text = status.success.message;
-        MqWelcome_StatusSets.SuccessesToReady(); // <=======
+        StatusItem.AllSuccessesToReady(); // <=======
       }
     }
   }
@@ -155,7 +116,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   static private MultisynqBuildAssistantEW _Instance;
   static public MultisynqBuildAssistantEW Instance {
     get {
-      if (_Instance == null)_Instance = GetWindow<MultisynqBuildAssistantEW>();
+      if (_Instance == null)_Instance = GetWindow<MultisynqBuildAssistantEW>(); // <-- this will auto-create the window
       return _Instance;
     }
     private set{}
@@ -168,8 +129,13 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   [MenuItem("Croquet/Open Croquet Build Assistant Window...",priority=0)]
   [MenuItem("Window/Croquet/Open Build Assistant...",priority=1000)]
   public static void ShowMultisynqWelcome_MenuMethod() {
+    if (_Instance != null) _Instance.Close(); // First destroy the old one...
     var icon = AssetDatabase.LoadAssetAtPath<Texture>(CqFile.ewFolder + "Images/MultiSynq_Icon.png");
-    Instance.titleContent = new GUIContent("Croquet Build Assistant", icon);
+    Instance.titleContent = new GUIContent("Croquet Build Assistant", icon); // Referencing the Instance property will auto-create the window
   }
 
+  [UnityEditor.Callbacks.DidReloadScripts]
+  private static void OnScriptsReloaded() { // detect recompile and reopen
+    if (_Instance != null) ShowMultisynqWelcome_MenuMethod();
+  }
 }
