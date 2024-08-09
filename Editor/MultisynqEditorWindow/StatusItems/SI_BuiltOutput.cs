@@ -9,11 +9,11 @@ public class SI_BuiltOutput: StatusItem {
   Button Goto_Build_Panel_Btn;
   Button Check_Building_Scenes_Btn;
   // Button BuiltOutput_Docs_Btn;
+  bool skipCheckingThisSi = false;
 
   public SI_BuiltOutput(MultisynqBuildAssistantEW parent = null) : base(parent){}
 
   override public void InitUI() {
-    //Debug.Log("SI_BuiltOutput.InitUI()");
     SetupVisElem("BuiltOutput_Status_Img",     ref statusImage);
     SetupLabel(  "BuiltOutput_Message_Lbl",    ref messageLabel);
     SetupButton( "Save_Open_Scene_Btn",        ref Save_Open_Scene_Btn,       Clk_Save_Open_Scene);
@@ -21,7 +21,6 @@ public class SI_BuiltOutput: StatusItem {
     SetupButton( "Check_Building_Scenes_Btn",  ref Check_Building_Scenes_Btn, Clk_Check_Building_Scenes);
   }
   override public void InitText() {
-    //Debug.Log("SI_BuiltOutput.InitText()");
     MqWelcome_StatusSets.builtOutput = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       $"Built output folders match the building scene list!",
@@ -34,7 +33,7 @@ public class SI_BuiltOutput: StatusItem {
   }
   
   override public bool Check() { // BUILT OUTPUT
-    //Debug.Log("SI_BuiltOutput.Check()");
+    if (skipCheckingThisSi) return true; // <<<<<<<<<<
     bool sceneIsDirty = EditorSceneManager.GetActiveScene().isDirty;
     if (sceneIsDirty) {
       MqWelcome_StatusSets.builtOutput.success.Set();
@@ -65,9 +64,9 @@ public class SI_BuiltOutput: StatusItem {
     else      {
       NotifyAndLogError("Some scenes are missing CroquetBridge \nwith appName set or\n app folder in StreamingAssets.");
     }
-    MultisynqBuildAssistantEW.doCheckBuiltOutput = false;
+    skipCheckingThisSi = true; // prevent double-checking
     edWin.CheckAllStatusForReady();
-    MultisynqBuildAssistantEW.doCheckBuiltOutput = true;
+    skipCheckingThisSi = false;
   }
 
   

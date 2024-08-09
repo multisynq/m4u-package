@@ -9,7 +9,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //=== static ==========================================================================
   static public HandyColors colz;
-  static public bool doCheckBuiltOutput = true;
 
   //=============================================================================
   public double countdown_ToConvertSuccesses = -1;
@@ -105,7 +104,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= siHasAppJs.Check();
     allRdy &= siJbtVersionMatch.Check();
     allRdy &= siJsBuild.Check();
-    if (doCheckBuiltOutput) allRdy &= siBuiltOutput.Check();
+    allRdy &= siBuiltOutput.Check();
     siNode.NodePathsToDropdownAndCheck();
 
     siReadyTotal.AllAreReady(allRdy);

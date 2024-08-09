@@ -12,14 +12,12 @@ public class SI_JbtVersionMatch: StatusItem {
     public SI_JbtVersionMatch(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
-    //Debug.Log("SI_JbtVersionMatch.InitUI()");
     SetupVisElem("JbtVersionMatch_Img",               ref statusImage);
     SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref messageLabel);
     SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
     SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
   }
   override public void InitText() {
-    //Debug.Log("SI_JbtVersionMatch.InitText()");
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
     MqWelcome_StatusSets.versionMatch = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
@@ -33,7 +31,6 @@ public class SI_JbtVersionMatch: StatusItem {
   }
 
   override public bool Check() { 
-    //Debug.Log("SI_JbtVersionMatch.Check()");
     // load the two ".last-installed-tools" files to compare versions and Tools levels
     // of (1) the tools in DotJsBuild and (2) the tools in CroquetBridge
     // var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.installedToolsForDotJsBuild_Path);

@@ -12,7 +12,6 @@ public class SI_JsBuildTools: StatusItem {
     }
 
     override public void InitUI() {
-    //Debug.Log("SI_JsBuildTools.InitUI()");
     SetupVisElem("JSBuildTools_Img",           ref statusImage);
     SetupLabel(  "JSBuildTools_Message_Lbl",   ref messageLabel);
     SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
@@ -20,7 +19,6 @@ public class SI_JsBuildTools: StatusItem {
   }
 
   override public void InitText() {
-    //Debug.Log("SI_JsBuildTools.InitText()");
     MqWelcome_StatusSets.jsBuildTools = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       "JS Build Tools are ready to go!",
@@ -33,7 +31,6 @@ public class SI_JsBuildTools: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    //Debug.Log("SI_JsBuildTools.Check()");
     var cqJsNodeModulesFolder = CqFile.CroquetJS().DeeperFolder("node_modules");
     bool haveFolder = cqJsNodeModulesFolder.Exists();
     MqWelcome_StatusSets.jsBuildTools.SetIsGood(haveFolder);

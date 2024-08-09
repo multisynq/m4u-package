@@ -12,7 +12,6 @@ public class SI_Settings: StatusItem {
   public SI_Settings(MultisynqBuildAssistantEW parent = null) : base(parent){}
 
   override public void InitUI() {
-    //Debug.Log("SI_Settings.InitUI()");
     SetupVisElem("Settings_Status_Img",  ref statusImage);
     SetupLabel(  "Settings_Message_Lbl", ref messageLabel);
     SetupButton( "GotoSettings_Btn",     ref GotoSettings_Btn,   Clk_GotoSettings);
@@ -21,7 +20,6 @@ public class SI_Settings: StatusItem {
     SetupButton( "GotoApiKey_Btn",       ref GotoApiKey_Btn,     null);
   }
   override public void InitText() {
-    //Debug.Log("SI_Settings.InitText()");
     MqWelcome_StatusSets.settings = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       $"Settings are ready to go!",
@@ -34,7 +32,6 @@ public class SI_Settings: StatusItem {
     statusSet = MqWelcome_StatusSets.settings;
   }
   override public bool Check() { // SETTINGS
-    //Debug.Log("SI_Settings.Check()");
     var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null) {
       GotoSettings_Btn.SetEnabled(false);

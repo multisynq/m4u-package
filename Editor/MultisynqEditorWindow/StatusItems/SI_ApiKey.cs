@@ -13,7 +13,6 @@ public class SI_ApiKey: StatusItem {
     }
 
     override public void InitUI() {
-    //Debug.Log("SI_ApiKey.InitUI()");
     SetupVisElem("ApiKey_Status_Img",  ref statusImage);
     SetupLabel(  "ApiKey_Message_Lbl", ref messageLabel);
     SetupButton( "SignUpApi_Btn",      ref SignUpApi_Btn,   Clk_SignUpApi);
@@ -22,7 +21,6 @@ public class SI_ApiKey: StatusItem {
   }
 
   override public void InitText() {
-    //Debug.Log("SI_ApiKey.InitText()");
     string t_key  = "<b><color=#006AFF>API Key</color></b>";
     MqWelcome_StatusSets.apiKey = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
@@ -54,7 +52,6 @@ public class SI_ApiKey: StatusItem {
   }
 
   override public bool Check() { // API KEY
-    //Debug.Log("SI_ApiKey.Check()");
     var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null)  return false;
     ShowVEs(GotoApiKey_Btn, SignUpApi_Btn);

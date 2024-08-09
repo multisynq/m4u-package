@@ -12,14 +12,12 @@ public class SI_Systems: StatusItem {
     }
 
     override public void InitUI() {
-    //Debug.Log("SI_Systems.InitUI()");
     SetupVisElem("HasCqSys_Img",                      ref statusImage);
     SetupLabel(  "HasCqSys_Message_Lbl",              ref messageLabel);
     SetupButton( "AddCqSys_Btn",                      ref AddCqSys_Btn,                      Clk_AddCqSys);
     SetupButton( "ListMissingCqSys_Btn",              ref ListMissingCqSys_Btn,              Clk_ListMissingCqSys);
   }
   override public void InitText() {
-    //Debug.Log("SI_Systems.InitText()");
     MqWelcome_StatusSets.hasCqSys = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       "Croquet Systems are ready to go!",

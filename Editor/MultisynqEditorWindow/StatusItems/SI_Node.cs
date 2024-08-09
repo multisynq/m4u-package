@@ -18,7 +18,6 @@ public class SI_Node: StatusItem {
     }
 
     override public void InitUI() {
-    //Debug.Log("SI_Node.InitUI()");
     SetupVisElem("Node_Status_Img",      ref statusImage);
     SetupLabel(  "Node_Message_Lbl",     ref messageLabel);
     SetupButton( "GotoNodePath_Btn",     ref GotoNodePath_Btn,   Clk_GotoNodePath);
@@ -39,8 +38,6 @@ public class SI_Node: StatusItem {
     HideVEs(Node_Dropdown);
   }
   override public void InitText() {
-    //Debug.Log("SI_Node.InitText()");
-
     string t_node = "<b><color=#417E37>Node</color></b>";
     MqWelcome_StatusSets.node = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
@@ -53,7 +50,6 @@ public class SI_Node: StatusItem {
     statusSet = MqWelcome_StatusSets.node;
   }
   override public bool Check() {
-    //Debug.Log("SI_Node.Check()");
     var cqStgs = CqFile.FindProjectCqSettings();
     if (cqStgs == null) {
       MqWelcome_StatusSets.node.error.Set();
