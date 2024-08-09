@@ -65,9 +65,9 @@ public class SI_BuiltOutput: StatusItem {
     else      {
       NotifyAndLogError("Some scenes are missing CroquetBridge \nwith appName set or\n app folder in StreamingAssets.");
     }
-    // MultisynqBuildAssistantEW.doCheckBuiltOutput = false;
+    MultisynqBuildAssistantEW.doCheckBuiltOutput = false;
     edWin.CheckAllStatusForReady();
-    // MultisynqBuildAssistantEW.doCheckBuiltOutput = true;
+    MultisynqBuildAssistantEW.doCheckBuiltOutput = true;
   }
 
   
