@@ -88,7 +88,13 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   //-- Clicks - CHECK READINESS --------------------------------
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
     Debug.Log($"<color=#006AFF>============= [ <color=#0196FF>Check If Ready</color> ] =============</color>");
+    CheckAllStatusForReady();
+  }
+
+  //=============================================================================
+  public void CheckAllStatusForReady() {
     bool allRdy = true;
+    // NEVER: allRdy &= Statuses.ready.IsOk() // NEVER want this
     allRdy &= siSettings.Check();
     allRdy &= siNode.Check();
     allRdy &= siApiKey.Check();
@@ -100,25 +106,9 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= siJbtVersionMatch.Check();
     allRdy &= siJsBuild.Check();
     if (doCheckBuiltOutput) allRdy &= siBuiltOutput.Check();
-    //-----
-    if (allRdy) siReadyTotal.AllAreReady();
-    else        siReadyTotal.AllAreReady(false);
     siNode.NodePathsToDropdownAndCheck();
-  }
 
-  //=============================================================================
-  public void CheckAllStatusForReady() {
-    bool allRdy = true;
-    // NEVER: allRdy &= Statuses.ready.IsOk() // NEVER want this
-    allRdy &= MqWelcome_StatusSets.settings.IsOk();
-    allRdy &= MqWelcome_StatusSets.node.IsOk();
-    allRdy &= MqWelcome_StatusSets.apiKey.IsOk();
-    allRdy &= MqWelcome_StatusSets.bridge.IsOk();
-    allRdy &= MqWelcome_StatusSets.jsBuildTools.IsOk();
-    allRdy &= MqWelcome_StatusSets.versionMatch.IsOk();
-    allRdy &= MqWelcome_StatusSets.jsBuild.IsOk();
-    if (allRdy) siReadyTotal.AllAreReady();
-    else        siReadyTotal.AllAreReady(false);
+    siReadyTotal.AllAreReady(allRdy);
   }
 
   //=============================================================================
