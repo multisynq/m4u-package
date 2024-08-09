@@ -2,8 +2,8 @@
     <ui:ScrollView style="background-color: rgb(56, 56, 56); height: 100%; width: 100%;">
         <ui:VisualElement name="Root" style="flex-direction: column; width: 100%; height: 100%; color: rgb(236, 236, 236);">
             <ui:Foldout text="Welcome" name="Welcome_Foldout" style="width: 100%; height: auto; padding-bottom: 35px;">
-                <ui:VisualElement name="Hero_Ve" style="width: 100%; height: 200px;">
-                    <ui:VisualElement name="Logo_Img" style="width: 100%; background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Logo.png?fileID=2800000&amp;guid=2701bc24092814a3f8dd208af8eb1600&amp;type=3#Multisynq_Logo&apos;); height: 126px; -unity-background-scale-mode: scale-to-fit;" />
+                <ui:VisualElement name="Hero_Ve" style="width: 100%; height: auto;">
+                    <ui:VisualElement name="Logo_Img" style="width: 100%; background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Logo.png?fileID=2800000&amp;guid=2701bc24092814a3f8dd208af8eb1600&amp;type=3#Multisynq_Logo&apos;); height: 126px; -unity-background-scale-mode: scale-to-fit; display: none;" />
                     <ui:VisualElement name="BlurbLbl_Ve">
                         <ui:Label text="Thanks for joining this community of connected visionaries engaged in bringing people closer together as peers without ominous servers." display-tooltip-when-elided="true" name="Blurb_Label" style="white-space: normal; font-size: 14px; margin-top: 25px; align-items: auto; -unity-text-align: middle-center; justify-content: flex-start; -unity-paragraph-spacing: 0; letter-spacing: 2px; word-spacing: 0;" />
                         <ui:Label text="Join us to help synq up the whole world." display-tooltip-when-elided="true" name="Blurb_Label" style="white-space: normal; font-size: 16px; margin-top: 24px; align-items: auto; -unity-text-align: middle-center; justify-content: flex-start; color: rgb(0, 106, 255); -unity-font-style: bold;" />
