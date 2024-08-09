@@ -18,7 +18,7 @@ public class SI_Bridge: StatusItem {
     SetupButton( "CreateBridgeGob_Btn",               ref CreateBridgeGob_Btn,               Clk_CreateBridgeGob);
   }
   override public void InitText() {
-    MqWelcome_StatusSets.bridge = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.bridge = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       "Bridge GameObject is ready to go!",
       "Bridge GameObject is missing!",
@@ -26,12 +26,12 @@ public class SI_Bridge: StatusItem {
       "Bridge Gob <color=#888888>(GameObject)</color> found!! Well done!",
       "Bridge GameObject status"
     );
-    statusSet = MqWelcome_StatusSets.bridge;
+    statusSet = StatusSetMgr.bridge;
   }
   override public bool Check() { // BRIDGE
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     bool fountIt = (bridge != null);
-    MqWelcome_StatusSets.bridge.SetIsGood(fountIt);
+    StatusSetMgr.bridge.SetIsGood(fountIt);
     SetVEViz( fountIt, GotoBridgeGob_Btn  );
     SetVEViz(!fountIt, CreateBridgeGob_Btn);
     return fountIt;

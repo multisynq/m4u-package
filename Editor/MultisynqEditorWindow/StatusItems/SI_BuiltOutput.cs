@@ -21,7 +21,7 @@ public class SI_BuiltOutput: StatusItem {
     SetupButton( "Check_Building_Scenes_Btn",  ref Check_Building_Scenes_Btn, Clk_Check_Building_Scenes);
   }
   override public void InitText() {
-    MqWelcome_StatusSets.builtOutput = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.builtOutput = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       $"Built output folders match the building scene list!",
       $"Compare output JS folders to Unity Build scene list with [ Check Building Scenes ] button.",
@@ -29,17 +29,17 @@ public class SI_BuiltOutput: StatusItem {
       $"Built output folders match the building scene list! Well done!",
       "Built output status"
     );
-    statusSet = MqWelcome_StatusSets.builtOutput;
+    statusSet = StatusSetMgr.builtOutput;
   }
   
   override public bool Check() { // BUILT OUTPUT
     if (skipCheckingThisSi) return true; // <<<<<<<<<<
     bool sceneIsDirty = EditorSceneManager.GetActiveScene().isDirty;
     if (sceneIsDirty) {
-      MqWelcome_StatusSets.builtOutput.success.Set();
+      StatusSetMgr.builtOutput.success.Set();
       return false;
     } else {
-      MqWelcome_StatusSets.builtOutput.warning.Set(); // best you can get is a warning
+      StatusSetMgr.builtOutput.warning.Set(); // best you can get is a warning
     }
     SetVEViz(!sceneIsDirty, Check_Building_Scenes_Btn);
     SetVEViz(sceneIsDirty, Goto_Build_Panel_Btn);
@@ -59,7 +59,7 @@ public class SI_BuiltOutput: StatusItem {
   void Clk_Check_Building_Scenes() { // Check -  BUILT OUTPUT  ------------- Click
     if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
     var isOk = CqFile.AllScenesHaveBridgeWithAppNameSet();
-    MqWelcome_StatusSets.builtOutput.SetIsGood(isOk);
+    StatusSetMgr.builtOutput.SetIsGood(isOk);
     if (isOk) NotifyAndLog("All scenes have CroquetBridge\n with appName set and\n app folder in StreamingAssets.");
     else      {
       NotifyAndLogError("Some scenes are missing CroquetBridge \nwith appName set or\n app folder in StreamingAssets.");

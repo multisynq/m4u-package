@@ -1,6 +1,5 @@
-
-using System;
-using Unity.VisualScripting.IonicZip;
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -41,6 +40,7 @@ using UnityEngine.UIElements;
     static public StyleBackground errorImgStyle;
     static public StyleBackground successImgStyle;
     static public StyleBackground blankImgStyle;
+    static public HandyColors handyColors;
 
     public string status = "blank";
     public Status ready;
@@ -50,6 +50,41 @@ using UnityEngine.UIElements;
     public Status blank;
     public Label label;
     public VisualElement img;
+
+    // --- CONSTRUCTOR ----------------------
+    public StatusSet(Label label, VisualElement img, string _info, string _warning, string _error, string _success, string _blank) {
+      var clr = EnsureHandyColors();
+      EnsureTextures();
+      ready   = new Status("ready",   label, img, readyImgStyle,   _info,    clr.green,  this);
+      warning = new Status("warning", label, img, warningImgStyle, _warning, clr.yellow, this);
+      error   = new Status("error",   label, img, errorImgStyle,   _error,   clr.red,    this);
+      success = new Status("success", label, img, successImgStyle, _success, clr.lime,   this);
+      blank   = new Status("blank",   label, img, blankImgStyle,   _blank,   clr.grey,   this);
+    }
+    // --- STATICS ----------------------
+    static public void EnsureTextures() {
+      if (readyImgStyle == null) InitTextures();
+    }
+    static public void InitTextures() {
+      readyImgStyle   = LoadTexture("Checkmark.png");
+      warningImgStyle = LoadTexture("Warning.png");
+      errorImgStyle   = LoadTexture("Multiply.png");
+      successImgStyle = LoadTexture("Checkmark.png");
+      blankImgStyle   = LoadTexture("Blank.png");
+    }
+
+    //=============================================================================
+    static public StyleBackground LoadTexture(string fNm) {
+      string path = Path.Combine(CqFile.img_root, fNm);
+      return new StyleBackground(AssetDatabase.LoadAssetAtPath<Sprite>(path));
+    }
+
+    static public HandyColors EnsureHandyColors() {
+      if (handyColors == null) handyColors = new HandyColors();
+      return handyColors;
+    }
+
+    // --- METHODS ----------------------
     public bool IsOk() {
       return (status == "ready") || (status == "success");
     }
@@ -64,13 +99,5 @@ using UnityEngine.UIElements;
       else        error.Set();
     }
 
-    public StatusSet(Label label, VisualElement img, string _info, string _warning, string _error, string _success, string _blank) {
-      var colz = MultisynqBuildAssistantEW.colz;
-      ready   = new Status("ready",   label, img, readyImgStyle,   _info,    colz.green,  this);
-      warning = new Status("warning", label, img, warningImgStyle, _warning, colz.yellow, this);
-      error   = new Status("error",   label, img, errorImgStyle,   _error,   colz.red,    this);
-      success = new Status("success", label, img, successImgStyle, _success, colz.lime,   this);
-      blank   = new Status("blank",   label, img, blankImgStyle,   _blank,   colz.grey,   this);
-    }
   }
   

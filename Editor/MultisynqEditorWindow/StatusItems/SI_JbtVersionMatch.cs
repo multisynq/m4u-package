@@ -19,7 +19,7 @@ public class SI_JbtVersionMatch: StatusItem {
   }
   override public void InitText() {
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
-    MqWelcome_StatusSets.versionMatch = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.versionMatch = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       $"Versions of {t_jsb} Tools and Built output match!",
       $"Versions of {t_jsb} Tools and Built output do not match",
@@ -27,7 +27,7 @@ public class SI_JbtVersionMatch: StatusItem {
       $"Versions of {t_jsb} Tools and Built output match!!! Well done!",
       "Version Match status"
     );
-    statusSet = MqWelcome_StatusSets.versionMatch;
+    statusSet = StatusSetMgr.versionMatch;
   }
 
   override public bool Check() { 
@@ -39,7 +39,7 @@ public class SI_JbtVersionMatch: StatusItem {
     var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInEditor);
     bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForCroquetBridge);
 
-    MqWelcome_StatusSets.versionMatch.SetIsGood(allMatch);
+    StatusSetMgr.versionMatch.SetIsGood(allMatch);
     if (allMatch) {
       Debug.Log("JSTools for Editor & Build match!!!");
     } else {

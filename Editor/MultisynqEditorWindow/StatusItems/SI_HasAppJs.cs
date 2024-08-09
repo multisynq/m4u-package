@@ -23,7 +23,7 @@ public class SI_HasAppJs: StatusItem {
   }
 
   override public void InitText() {
-    MqWelcome_StatusSets.hasAppJs = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.hasAppJs = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
       "Input JS: index.js for AppName is ready to go!",
       "Input JS: index.js for AppName is missing",
@@ -31,7 +31,7 @@ public class SI_HasAppJs: StatusItem {
       "Input JS: index.js for AppName found! Well done!",
       "Input JS: index.js for AppName status"
     );
-    statusSet = MqWelcome_StatusSets.hasAppJs;
+    statusSet = StatusSetMgr.hasAppJs;
   }
 
   override public bool Check() { // SETTINGS
@@ -39,14 +39,14 @@ public class SI_HasAppJs: StatusItem {
 
     string appName = cqBridge?.appName;
     if (appName==null || appName=="") {
-      MqWelcome_StatusSets.hasAppJs.error.Set();
+      StatusSetMgr.hasAppJs.error.Set();
       ShowVEs(SetAppName_Btn);
       HideVEs(MakeAppJsFile_Btn, GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
       return false;
     }
     var appJsFile      = CqFile.AppIndexJs();
     bool haveAppJsFile = appJsFile.Exists(); // file should be in Assets/CroquetJS/<appName>/index.js
-    MqWelcome_StatusSets.hasAppJs.SetIsGood(haveAppJsFile);
+    StatusSetMgr.hasAppJs.SetIsGood(haveAppJsFile);
     HideVEs(SetAppName_Btn);
     SetVEViz( haveAppJsFile, GotoAppJsFile_Btn, GotoAppJsFolder_Btn );
     SetVEViz(!haveAppJsFile, MakeAppJsFile_Btn);

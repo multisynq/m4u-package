@@ -18,7 +18,7 @@ public class SI_Systems: StatusItem {
     SetupButton( "ListMissingCqSys_Btn",              ref ListMissingCqSys_Btn,              Clk_ListMissingCqSys);
   }
   override public void InitText() {
-    MqWelcome_StatusSets.hasCqSys = new StatusSet( messageLabel, statusImage,
+    StatusSetMgr.hasCqSys = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
       "Croquet Systems are ready to go!",
       "Croquet Systems are missing",
@@ -26,7 +26,7 @@ public class SI_Systems: StatusItem {
       "Croquet Systems installed!!! Well done!",
       "Croquet Systems status"
     );
-    statusSet = MqWelcome_StatusSets.hasCqSys;
+    statusSet = StatusSetMgr.hasCqSys;
   }
 
   override public bool Check() { // SYSTEMS
@@ -36,14 +36,14 @@ public class SI_Systems: StatusItem {
 
     if (noneMissing) {
       HideVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
-      MqWelcome_StatusSets.hasCqSys.success.Set();
+      StatusSetMgr.hasCqSys.success.Set();
     } else {
       ShowVEs( AddCqSys_Btn, ListMissingCqSys_Btn );
       if (critMissing) {
-        MqWelcome_StatusSets.hasCqSys.error.Set();
+        StatusSetMgr.hasCqSys.error.Set();
         Debug.LogError("Missing Critical Croquet Systems:\n" + critRpt);
       } else {
-        MqWelcome_StatusSets.hasCqSys.warning.Set();
+        StatusSetMgr.hasCqSys.warning.Set();
         Debug.LogWarning("Missing Optional Croquet Systems:\n" + optRpt);
       }
     }
