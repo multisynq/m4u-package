@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 
 //=============================================================================
 static public class StatusSetMgr {
@@ -21,14 +22,25 @@ static public class StatusSetMgr {
     // use reflection to get all the static fields of this class
     return typeof(StatusSetMgr).GetFields().Select(f => f.GetValue(null)).OfType<StatusSet>().ToArray();
   }
-  // static public void SuccessesToReady() {
-  //   foreach (var ss in AllMyStatusSets()) {
-  //     ss.SuccessToReady();
-  //   }
-  // }
-  // static public void AllStatusSetsToBlank() {
-  //   foreach (var ss in AllMyStatusSets()) {
-  //     ss?.blank.Set();
-  //   }
-  // }
+  //=============================================================================
+  static public CroquetSettings FindProjectCqSettings() {
+    // First check for a CroquetSettings on the scene's CroquetBridge
+    var bridge = SceneHelp.FindComp<CroquetBridge>();
+    if (bridge != null && bridge.appProperties != null) {
+      return bridge.appProperties; // appProperties is a CroquetSettings
+    }
+    // Then look in all project folders for a file of CroquetSettings type
+    CroquetSettings cqSettings = SceneHelp.FindCompInProject<CroquetSettings>();
+    if (cqSettings == null) {
+      Debug.LogWarning("Could not find CroquetSettings.asset in your Assets folders.");
+      StatusSetMgr.settings.error.Set();
+      StatusSetMgr.node.error.Set();
+      StatusSetMgr.apiKey.error.Set();
+      StatusSetMgr.ready.error.Set();
+    }
+
+    return cqSettings;
+  }
+
+
 }

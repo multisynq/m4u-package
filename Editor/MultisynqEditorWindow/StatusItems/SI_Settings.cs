@@ -32,7 +32,7 @@ public class SI_Settings: StatusItem {
     statusSet = StatusSetMgr.settings;
   }
   override public bool Check() { // SETTINGS
-    var cqStgs = CqFile.FindProjectCqSettings();
+    var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null) {
       GotoSettings_Btn.SetEnabled(false);
       ShowVEs(SettingsCreate_Btn);
@@ -55,7 +55,7 @@ public class SI_Settings: StatusItem {
 
   private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
     // CroquetSettings in scene
-    var cqStgs = CqFile.EnsureSettingsFile();
+    var cqStgs = CqProject.EnsureSettingsFile();
     StatusSetMgr.ready.SetIsGood(cqStgs != null);
     if (cqStgs == null) Debug.LogError("Could not find or create CroquetSettings file");
     GotoSettings();
@@ -66,7 +66,7 @@ public class SI_Settings: StatusItem {
 
   public void GotoSettings() { // SETTINGS  ------------- Click
     // Select the file in Project pane of the Editor so it shows up in the Inspector
-    var cqStgs = CqFile.FindProjectCqSettings();
+    var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null) {
       Debug.LogError("Could not find or create CroquetSettings file");
       return;

@@ -535,7 +535,7 @@ public class CroquetBuilder
             int errorCount = LogProcessOutput(filteredLines.ToArray(), errors.Split('\n'), "JS builder");
             bool success = webpackExit == 0 && errorCount == 0;
             Debug.Log($"recording JS build state: app={appName}, target={target}, success={success}");
-            if (success) Debug.Log(">>> SUCCESS <<<   JS build succeeded");
+            if (success) Debug.Log("<color=#55ff55> >>> SUCCESS <<< </color>  <color=#11cc11>JS build succeeded</color>");
             RecordJSBuildState(appName, target, success);
         }
         else

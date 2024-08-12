@@ -30,7 +30,7 @@ public class SI_Node: StatusItem {
       else {
         StatusSetMgr.node.success.Set();
         // set the CroquetSetting.nodePath
-        var cqStgs = CqFile.FindProjectCqSettings();
+        var cqStgs = StatusSetMgr.FindProjectCqSettings();
         cqStgs.pathToNode = nodePath;
       }
       edWin.CheckAllStatusForReady();
@@ -50,7 +50,7 @@ public class SI_Node: StatusItem {
     statusSet = StatusSetMgr.node;
   }
   override public bool Check() {
-    var cqStgs = CqFile.FindProjectCqSettings();
+    var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null) {
       StatusSetMgr.node.error.Set();
       HideVEs(TryAuto_Btn);
@@ -147,7 +147,7 @@ public class SI_Node: StatusItem {
     switch (Application.platform) {
       case RuntimePlatform.OSXEditor:
         Debug.Log("OSX Editor Detected");
-        var cqStgs = CqFile.FindProjectCqSettings();
+        var cqStgs = StatusSetMgr.FindProjectCqSettings();
         var nodePaths = FindAllNodeIntances();
         if (nodePaths==null || nodePaths.Count == 0) {
           NotifyAndLogError("Node not found on your system. To get it: https://nodejs.org/en/download/prebuilt-installer");
@@ -175,7 +175,7 @@ public class SI_Node: StatusItem {
     Node_Dropdown.choices = nps;
     ShowVEs(Node_Dropdown);
     // compare to CroquetSettings
-    var cqStgs = CqFile.FindProjectCqSettings();
+    var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs != null) {
       string nodePath = cqStgs.pathToNode.Replace("/"," ∕ ");
       if (nps.Contains(nodePath)) {

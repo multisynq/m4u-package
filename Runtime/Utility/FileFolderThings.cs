@@ -125,8 +125,11 @@ public class FileThing : PathyThing {
     }
     return doesExist;
   }
-  public bool MakeFile(string txt) {
+  public bool WriteAllText(string txt) {
     File.WriteAllText(longPath, txt);
     return Exists();
+  }
+  public string ReadAllText() {
+    return File.ReadAllText(longPath);
   }
 }
