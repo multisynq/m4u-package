@@ -26,7 +26,9 @@ class LastInstalled {
     // return false if any are null
     if (other == null) return false;
     if (packageVersion == null || other.packageVersion == null) return false;
-    return packageVersion == other.packageVersion && localToolsLevel == other.localToolsLevel;
+    bool isSamePkgVersion = packageVersion == other.packageVersion;
+    bool isSameToolsLevel = localToolsLevel == other.localToolsLevel;
+    return isSamePkgVersion && isSameToolsLevel;
   }
 
   public string ReportDiffs(LastInstalled other) {
