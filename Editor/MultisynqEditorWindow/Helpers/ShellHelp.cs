@@ -18,8 +18,8 @@ static public class ShellHelp {
     string output = pcs.StandardOutput.ReadToEnd();
     string errors = pcs.StandardError.ReadToEnd();
     pcs.WaitForExit();
-    string exeAsJustFile = Path.GetFileName(executable);
 
+    string exeAsJustFile = Path.GetFileName(executable);
     if (output.Length > 0 && logLevel > 1) {
       Debug.Log(     $"RunShell({exeAsJustFile} {arguments}).output = '{output.Trim()}'");
     }

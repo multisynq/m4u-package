@@ -55,7 +55,7 @@ public class SI_BridgeHasSettings: StatusItem {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
       return;
     } else {
-      var cqSettings = CqFile.FindProjectCqSettings();
+      var cqSettings = StatusSetMgr.FindProjectCqSettings();
       if (cqSettings == null) {
         NotifyAndLogError("Could not find CroquetSettings in project!");
         return;

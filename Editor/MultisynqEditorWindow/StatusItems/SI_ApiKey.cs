@@ -52,7 +52,7 @@ public class SI_ApiKey: StatusItem {
   }
 
   override public bool Check() { // API KEY
-    var cqStgs = CqFile.FindProjectCqSettings();
+    var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null)  return false;
     ShowVEs(GotoApiKey_Btn, SignUpApi_Btn);
 

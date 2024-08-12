@@ -58,7 +58,7 @@ public class SI_BuiltOutput: StatusItem {
 
   void Clk_Check_Building_Scenes() { // Check -  BUILT OUTPUT  ------------- Click
     if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-    var isOk = CqFile.AllScenesHaveBridgeWithAppNameSet();
+    var isOk = CqProject.AllScenesHaveBridgeWithAppNameSet();
     StatusSetMgr.builtOutput.SetIsGood(isOk);
     if (isOk) NotifyAndLog("All scenes have CroquetBridge\n with appName set and\n app folder in StreamingAssets.");
     else      {

@@ -62,7 +62,7 @@ public class SI_Bridge: StatusItem {
       cbGob.AddComponent<CroquetSpatialSystem>();
       cbGob.AddComponent<CroquetMaterialSystem>();
       cbGob.AddComponent<CroquetFileReader>();
-      var cqStgs = CqFile.FindProjectCqSettings();
+      var cqStgs = StatusSetMgr.FindProjectCqSettings();
       if (cqStgs != null) cb.appProperties = cqStgs;
 
       Selection.activeGameObject = cbGob;
