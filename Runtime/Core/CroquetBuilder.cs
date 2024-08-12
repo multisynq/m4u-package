@@ -385,7 +385,7 @@ public class CroquetBuilder
         // build for web or node, or for neither.
         // also record the tools level, so we can force a rebuild after a tools update.
         string buildRecordPath = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "CroquetJS",
-            appName, BUILD_STATE_RECORD));
+            appName, BUILD_STATE_RECORD)); // ".last-build-state" in the app's CroquetJS folder
         if (success)
         {
             int toolsLevel = FindJSToolsRecord().localToolsLevel;
