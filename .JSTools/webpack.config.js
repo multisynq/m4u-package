@@ -47,6 +47,7 @@ module.exports = env => {
             path: destination,
             pathinfo: false,
             filename: env.buildTarget === 'node' ? 'node-main.js' : '[name]-[contenthash:8].js',
+            // filename: env.buildTarget === 'node' ? 'node-main.js' : '[name]_croquet.js',
             chunkFilename: 'chunk-[contenthash:8].js',
             clean: !isWebGL // RemovePlugin below handles index-####.js files in WebGL
         },
@@ -101,6 +102,7 @@ module.exports = env => {
                         {
                             // in build dir, remove old hashed .js files and their meta files
                             folder: webGLPath,
+                            // method: absolutePath => /(index|lobby|main|game)_croquet.js/m.test(absolutePath)
                             method: absolutePath => /(index|lobby|main|game)-.+\.js/m.test(absolutePath)
                                 || (!withLobby && /game.html/m.test(absolutePath)),
                         }
