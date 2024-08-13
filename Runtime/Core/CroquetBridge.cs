@@ -103,7 +103,7 @@ public class CroquetBridge : MonoBehaviour
     {
         if (INTEROP_BRIDGE)
         {
-            Debug.Log($"sending to JS: {message}");
+            if (!message.Contains("tick")) Debug.Log($"sending to JS: {message}");
             SendMessageToJS(message);
         }
         else
