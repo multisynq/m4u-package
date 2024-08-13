@@ -49,14 +49,17 @@ public class SI_BuiltOutput: StatusItem {
 
   //-- Clicks - BUILT OUTPUT --------------------------------
   void Clk_Save_Open_Scene() { // Save Open Scene  -  BUILT OUTPUT  ------------- Click
+    Logger.MethodHeader();
     EditorSceneManager.SaveScene( EditorSceneManager.GetActiveScene() );
   }
 
   void Clk_Goto_Build_Panel() { // Goto Build  -  BUILT OUTPUT  ------------- Click
+    Logger.MethodHeader();
     EditorWindow.GetWindow<BuildPlayerWindow>().Show();
   }
 
   void Clk_Check_Building_Scenes() { // Check -  BUILT OUTPUT  ------------- Click
+    Logger.MethodHeader();
     if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
     var isOk = CqProject.AllScenesHaveBridgeWithAppNameSet();
     StatusSetMgr.builtOutput.SetIsGood(isOk);
@@ -69,5 +72,4 @@ public class SI_BuiltOutput: StatusItem {
     skipCheckingThisSi = false;
   }
 
-  
 }

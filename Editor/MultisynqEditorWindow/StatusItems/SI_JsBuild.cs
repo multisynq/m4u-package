@@ -41,6 +41,7 @@ public class SI_JsBuild: StatusItem {
 
   //-- Clicks - JS BUILD --------------------------------
   async void Clk_ToggleJSBuild() { // JS BUILD  ------------- Click
+    Logger.MethodHeader();
     if (ToggleJSBuild_Btn.text == "Start JS Build Watcher") {
       bool success = await CroquetBuilder.EnsureJSToolsAvailable();
       if (!success) return;
@@ -53,7 +54,8 @@ public class SI_JsBuild: StatusItem {
     }
   }
 
-  async void Clk_Build_JsNow() { // JS BUILD  ------------- Click
+  async public void Clk_Build_JsNow() { // JS BUILD  ------------- Click
+    Logger.MethodHeader();
     Debug.Log("Building JS...");
     bool success = await CroquetBuilder.EnsureJSToolsAvailable();
     if (!success) {
@@ -69,6 +71,7 @@ public class SI_JsBuild: StatusItem {
   }
 
   void Clk_GotoBuiltOutput() { // JS BUILD  ------------- Click
+    Logger.MethodHeader();
     var boF = CqFile.StreamingAssetsAppFolder();
     if (!boF.Exists()) {
       NotifyAndLogError("Could not find\nJS Build output folder");
