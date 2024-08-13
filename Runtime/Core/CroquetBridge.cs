@@ -645,7 +645,8 @@ public class CroquetBridge : MonoBehaviour
             packageVersion = CroquetBuilder.FindJSToolsRecord().packageVersion, // uses different lookups in editor and in a build (and a potentially length async fetch on WebGL)
             sessionName = sessionName,
             debugFlags = debugFlags,
-            isEditor = Application.isEditor
+            isEditor = Application.isEditor,
+            manualStart = (croquetRunner.manualStart && croquetRunner.showWebview)
         };
 
         string propsJson = JsonUtility.ToJson(props);
@@ -671,6 +672,7 @@ public class CroquetBridge : MonoBehaviour
         public string sessionName;
         public string debugFlags;
         public bool isEditor;
+        public bool manualStart;
     }
 
 

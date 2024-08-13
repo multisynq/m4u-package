@@ -251,7 +251,7 @@ class BridgeToUnity {
         const {
           apiKey, appId, appName,
           packageVersion, sessionName,
-          debugFlags, isEditor,
+          debugFlags, isEditor, manualStart
         } = JSON.parse(args[0]);
         globalThis.timedLog(`starting session of ${appId} with key ${apiKey}`);
         this.apiKey = apiKey;
@@ -262,6 +262,7 @@ class BridgeToUnity {
         this.debugFlags = debugFlags; // comma-separated list
         this.runOffline = debugFlags.includes("offline");
         this.isEditor = isEditor;
+        this.manualStart = manualStart;
         unityDrivenStartSession();
         break;
       }
@@ -2188,7 +2189,10 @@ async function unityDrivenStartSession() {
     debugFlags,
     runOffline,
     socketPortStr,
+    manualStart,
   } = theGameEngineBridge;
+  
+  console.log({ manualStart });
 
   const sceneFileName = "scene-definitions.txt";
   let sceneText = "";
@@ -2217,10 +2221,13 @@ async function unityDrivenStartSession() {
 
   // To debug Croquet Session start, uncomment  start_croquet button in index-webview_or_node.html
   const startButton = document.getElementById("start_croquet");
-  if (startButton) {
+  if (startButton && manualStart) {
     console.log("Waiting for start button to be pressed within the WebView instance");
-    await new Promise((resolve) => startButton.onclick = resolve);
+    await new Promise((resolve) => startButton.onclick = resolve); // hangs here until the button is clicked
+    startButton.remove();
     debugger
+  } else {
+    if (startButton) startButton.remove();
   }
 
   session = await StartWorldcore({

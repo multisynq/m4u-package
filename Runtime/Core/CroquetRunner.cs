@@ -30,9 +30,12 @@ public class CroquetRunner : MonoBehaviour
 
 #if UNITY_EDITOR_WIN
     [HideInInspector] public bool showWebview;
+    [HideInInspector] public bool manualStart;
 #else
     [Tooltip("For debug use.  If selected, and running with a WebView, the view will appear at bottom-left on the desktop as a small featureless window.  The window's right-click menu provides access to JavaScript debug tools.")]
     public bool showWebview;
+    [Tooltip("Require developer to press a button in the WebView page to start the Croquet session.")]
+    public bool manualStart;
 #endif
     #endregion
 
@@ -42,7 +45,7 @@ public class CroquetRunner : MonoBehaviour
     private static string nodeExecPath = ""; // provided by CroquetBridge
 
     #endregion
-
+    
     struct CroquetNodeProcess : IJob
     {
         public int port;
