@@ -59,6 +59,7 @@ public class SI_JbtVersionMatch: StatusItem {
     }
   }
   void Clk_BuildJsNow() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
+    Logger.MethodHeader();
     edWin.siJsBuild.Clk_Build_JsNow();
     Check();
     edWin.CheckAllStatusForReady();

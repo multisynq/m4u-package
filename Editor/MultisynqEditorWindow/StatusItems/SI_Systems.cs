@@ -52,6 +52,7 @@ public class SI_Systems: StatusItem {
 
   //-- Clicks - HAS CROQUET SYSTEMS --------------------------------
   void Clk_AddCqSys() { // HAS CQ SYSTEMS  ------------- Click
+    Logger.MethodHeader();
     var cqBridge = Object.FindObjectOfType<CroquetBridge>();
     if (cqBridge == null) {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
@@ -83,6 +84,7 @@ public class SI_Systems: StatusItem {
   }
 
   void Clk_ListMissingCqSys() { // HAS CQ SYSTEMS  ------------- Click
+    Logger.MethodHeader();
     var cqBridge = Object.FindObjectOfType<CroquetBridge>();
     if (cqBridge == null) {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
@@ -96,7 +98,5 @@ public class SI_Systems: StatusItem {
       }
     }
   }
-
-
 
 }

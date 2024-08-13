@@ -55,6 +55,7 @@ public class SI_HasAppJs: StatusItem {
   }
 
   private void Clk_SetAppName() { // HAS APP JS  ------------- Click
+    Logger.MethodHeader();
     var cqBridge = Object.FindObjectOfType<CroquetBridge>();
     if (cqBridge == null) {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
@@ -75,6 +76,7 @@ public class SI_HasAppJs: StatusItem {
     }
   }
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
+    Logger.MethodHeader();
     string fromDir = CqFile.StarterTemplateFolder().longPath;
     string toDir   = CqFile.AppFolder(true).longPath; // here true means log no error if missing
     CroquetBuilder.CopyDirectory(fromDir, toDir);
@@ -83,14 +85,16 @@ public class SI_HasAppJs: StatusItem {
     edWin.CheckAllStatusForReady();
   }
   private void Clk_HasAppJs_Docs() {// HAS APP JS  ------------- Click
-
+    Logger.MethodHeader();
   }
 
   private void Clk_GotoAppJsFolder() {// HAS APP JS  ------------- Click
+    Logger.MethodHeader();
     CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
 
   private void Clk_GotoAppJsFile() {// HAS APP JS  ------------- Click
+    Logger.MethodHeader();
     CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
 }

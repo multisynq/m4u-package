@@ -48,12 +48,14 @@ public class SI_JsBuildTools: StatusItem {
   //-- JS BUILD TOOLS --------------------------------
 
   private async void Clk_CopyJSBuildTools() { // JS BUILD TOOLS  ------------- Click
+    Logger.MethodHeader();
     await CroquetBuilder.InstallJSTools();
     Check(); // recheck (this SI_JsBuildTools)
     edWin.CheckAllStatusForReady();
   }
 
   private void Clk_GotoJSBuildToolsFolder() { // JS BUILD TOOLS  ------------- Click
+    Logger.MethodHeader();
     var croquetJSFolder = CqFile.CroquetJS();
     if (croquetJSFolder.Exists()) {
       NotifyAndLog("Assets/CroquetJS/ \nfolder opened\nin Finder/Explorer.");

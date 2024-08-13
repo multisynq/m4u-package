@@ -50,6 +50,7 @@ public class SI_BridgeHasSettings: StatusItem {
   //-- Clicks - BRIDGE HAS SETTINGS --------------------------------
 
   void Clk_BridgeHasSettings_AutoConnect() { // BRIDGE HAS SETTINGS  ------------- Click
+    Logger.MethodHeader();
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     if (bridge == null) {
       NotifyAndLogError("Could not find CroquetBridge in scene!");
@@ -69,6 +70,7 @@ public class SI_BridgeHasSettings: StatusItem {
   }
 
   void Clk_BridgeHasSettings_Goto() { // BRIDGE HAS SETTINGS  ------------- Click
+    Logger.MethodHeader();
     edWin.siSettings.GotoSettings();
   }
 

@@ -48,12 +48,14 @@ public class SI_Settings: StatusItem {
   }
   
   private void Clk_GotoSettings() { // SETTINGS  ------------- Click
+    Logger.MethodHeader();
     GotoSettings();
     Notify("Selected in Project.\nSee Inspector.");
   }
 
 
   private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
+    Logger.MethodHeader();
     // CroquetSettings in scene
     var cqStgs = CqProject.EnsureSettingsFile();
     StatusSetMgr.ready.SetIsGood(cqStgs != null);

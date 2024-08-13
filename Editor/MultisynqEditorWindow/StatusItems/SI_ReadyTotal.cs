@@ -36,12 +36,14 @@ public class SI_ReadyTotal: StatusItem {
   //-- Clicks - READY --------------------------------
 
   void Clk_BeAwesome() { // READY  ------------- Click
+    Logger.MethodHeader();
     Debug.Log("Be Awesome!!!!");
     // Application.OpenURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ"); // Copilot thinks you should go to this url. You know you want to. =]
     Application.OpenURL("https://giphy.com/search/everything-is-awesome");
   }
 
   void Clk_Top_Ready_Docs() { // READY  ------------- Click
+    Logger.MethodHeader();
     Application.OpenURL("https://multisynq.io/docs/unity/");
   }
 

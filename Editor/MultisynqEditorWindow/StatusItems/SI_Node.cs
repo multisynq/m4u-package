@@ -92,6 +92,7 @@ public class SI_Node: StatusItem {
 
 
   public void Clk_GotoNodePath() { // NODE  ------------- Click
+    Logger.MethodHeader();
     edWin.siSettings.GotoSettings();
     // notify message
     var msg = "See Inspector.\n\nCroquet Settings\nwith node path\nselected in Project.";
@@ -143,6 +144,7 @@ public class SI_Node: StatusItem {
   }
 
   private void Clk_AutoSetupNode() { // NODE  ------------- Click
+    Logger.MethodHeader();
     Debug.Log("Auto Setup Node!");
     switch (Application.platform) {
       case RuntimePlatform.OSXEditor:

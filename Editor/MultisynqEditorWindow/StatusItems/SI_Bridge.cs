@@ -40,6 +40,7 @@ public class SI_Bridge: StatusItem {
   //-- Clicks - BRIDGE --------------------------------
 
   private void Clk_GotoBridgeGob() { // BRIDGE  ------------- Click
+    Logger.MethodHeader();
     var bridge = Object.FindObjectOfType<CroquetBridge>();  // find ComponentType CroquetBridge in scene
     if (bridge == null) NotifyAndLogError("Could not find\nCroquetBridge in scene!");
     else {
@@ -50,6 +51,7 @@ public class SI_Bridge: StatusItem {
   }
 
   private void Clk_CreateBridgeGob() { // BRIDGE  ------------- Click
+    Logger.MethodHeader();
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     if (bridge != null) {
       string msg = "CroquetBridge already exists in scene";
