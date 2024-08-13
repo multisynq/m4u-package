@@ -31,15 +31,15 @@ class LastInstalled {
     return isSamePkgVersion && isSameToolsLevel;
   }
 
-  public string ReportDiffs(LastInstalled other) {
+  public string ReportDiffs(LastInstalled other, string selfNm="", string otherNm="") {
     string diffs = "";
     if (packageVersion != other.packageVersion) {
-      diffs += $"packageVersion: '{packageVersion}' != '{other.packageVersion}'\n";
+      diffs += $"packageVersion: [{selfNm}]'{packageVersion}'   !=   [{otherNm}]'{other.packageVersion}'\n";
     }
     if (localToolsLevel != other.localToolsLevel) {
-      diffs += $"localToolsLevel: '{localToolsLevel}' != '{other.localToolsLevel}'\n";
+      diffs += $"localToolsLevel: [{selfNm}]'{localToolsLevel}' != [{otherNm}]'{other.localToolsLevel}'\n";
     }
-    return (diffs=="") ? "match" : diffs;
+    return ((diffs=="") ? "match" : diffs).Trim();
   }
 
 }
