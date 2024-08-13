@@ -1,6 +1,8 @@
 using UnityEngine;
-using UnityEditor;
 using System.IO;
+#if UNITY_EDITOR
+  using UnityEditor;
+#endif
 
 //=================== |||||||||| ====================
 public abstract class PathyThing {
@@ -32,24 +34,34 @@ public abstract class PathyThing {
   abstract public bool Exists();
 
   public void LookupUnityObj() {
-    if (unityObj != null) return;
-    unityObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath);
-    if (unityObj == null) {
-      Debug.LogWarning("PathyThing: unityObj is null for " + shortPath);
-    }
+    #if UNITY_EDITOR //# # # # # # # # # # # # # # # # # # # # # # #
+      if (unityObj != null) return;
+      unityObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath);
+      if (unityObj == null) {
+        Debug.LogWarning("PathyThing: unityObj is null for " + shortPath);
+      }
+    #else
+      Debug.LogWarning("PathyThing: LookupUnityObj only works in editor");
+    #endif //# # # # # # # # # # # # # # # # # # # # # # # # # # # #
   }
 
   public bool Select( bool focus = true) {
     LookupUnityObj();
-    Selection.activeObject = unityObj;
-    if (focus) EditorUtility.FocusProjectWindow();
+
+    #if UNITY_EDITOR
+      Selection.activeObject = unityObj;
+      if (focus) EditorUtility.FocusProjectWindow();
+    #endif
+
     return true;
   }
 
   public void SelectAndPing(bool focus = true) {
-    if (Select(focus)) {
-      EditorGUIUtility.PingObject(unityObj);
-    }
+    #if UNITY_EDITOR
+      if (Select(focus)) {
+        EditorGUIUtility.PingObject(unityObj);
+      }
+    #endif
   }
 }
 
@@ -57,10 +69,12 @@ public abstract class PathyThing {
 public class FolderThing : PathyThing {
 
   public FolderThing(string _shortPath, bool canBeMissing = false) : base(_shortPath) {
-    bool isValidAstDbFolder = AssetDatabase.IsValidFolder(shortPath);
-    if (isValidAstDbFolder) return;
-    if (Directory.Exists(longPath)) return;
-    if (!canBeMissing) Debug.LogWarning($"Got '{shortPath}' path must be a valid folder\n longPath='{longPath}'");
+    #if UNITY_EDITOR
+      bool isValidAstDbFolder = AssetDatabase.IsValidFolder(shortPath);
+      if (isValidAstDbFolder) return;
+      if (Directory.Exists(longPath)) return;
+      if (!canBeMissing) Debug.LogWarning($"Got '{shortPath}' path must be a valid folder\n longPath='{longPath}'");
+    #endif
   }
 
   override public bool Exists() {
@@ -112,10 +126,12 @@ public class FolderThing : PathyThing {
 public class FileThing : PathyThing {
 
   public FileThing(string _shortPath) : base(_shortPath) {
-    if (AssetDatabase.IsValidFolder(shortPath)) {
-      Debug.LogWarning("FileThing: path must be a file, not a folder");
-    }
-    unityObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath);
+    #if UNITY_EDITOR
+      if (AssetDatabase.IsValidFolder(shortPath)) {
+        Debug.LogWarning("FileThing: path must be a file, not a folder");
+      }
+      unityObj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(shortPath);
+    #endif
   }
 
   override public bool Exists() {

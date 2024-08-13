@@ -1,4 +1,3 @@
-import { mix } from "@croquet/worldcore-kernel";
 import { GameActor } from "./GameActor";
 
 //------------------------------------------------------------------------------------------
@@ -13,7 +12,7 @@ import { GameActor } from "./GameActor";
 // subscriptions to listen for keyboard events. 
 // When any user presses W,A,S or D, the actor moves in the corresponding direction.
 
-export class KeyMovedActor extends mix(GameActor) {
+export class KeyMovedActor extends GameActor {
 
   init(options) {
     super.init(options);
@@ -37,4 +36,4 @@ export class KeyMovedActor extends mix(GameActor) {
   }
   
 }
-ExampleKeyMovingActor.register('KeyMovedActor'); // All Worldcore actors must be registered after they're defined.
+KeyMovedActor.register('KeyMovedActor'); // All Worldcore actors must be registered after they're defined.
