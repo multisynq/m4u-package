@@ -1103,7 +1103,7 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
             }
             string destFile = Path.Combine(destinationDir, name);
             if (File.Exists(destFile)) rpt += "'" + name + "', ";
-            File.Copy(file, destFile, false);
+            else File.Copy(file, destFile, false);
         }
         if (rpt != "") Debug.LogWarning($"Skipping overwrite of files: {rpt}".TrimEnd(',', ' '));
 
