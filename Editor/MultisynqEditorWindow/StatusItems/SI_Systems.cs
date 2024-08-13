@@ -6,17 +6,20 @@ public class SI_Systems: StatusItem {
 
   Button AddCqSys_Btn;        
   Button ListMissingCqSys_Btn;
+  Button Systems_Docs_Btn;
 
-    public SI_Systems(MultisynqBuildAssistantEW parent = null) : base(parent)
-    {
-    }
-
-    override public void InitUI() {
-    SetupVisElem("HasCqSys_Img",                      ref statusImage);
-    SetupLabel(  "HasCqSys_Message_Lbl",              ref messageLabel);
-    SetupButton( "AddCqSys_Btn",                      ref AddCqSys_Btn,                      Clk_AddCqSys);
-    SetupButton( "ListMissingCqSys_Btn",              ref ListMissingCqSys_Btn,              Clk_ListMissingCqSys);
+  public SI_Systems(MultisynqBuildAssistantEW parent = null) : base(parent) {
+    
   }
+
+  override public void InitUI() {
+    SetupVisElem("HasCqSys_Img",         ref statusImage);
+    SetupLabel(  "HasCqSys_Message_Lbl", ref messageLabel);
+    SetupButton( "AddCqSys_Btn",         ref AddCqSys_Btn,         Clk_AddCqSys);
+    SetupButton( "ListMissingCqSys_Btn", ref ListMissingCqSys_Btn, Clk_ListMissingCqSys);
+    SetupButton( "HasCqSys_Docs_Btn",    ref Systems_Docs_Btn,     Clk_Systems_Docs);
+  }
+
   override public void InitText() {
     StatusSetMgr.hasCqSys = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success, blank)
@@ -97,6 +100,10 @@ public class SI_Systems: StatusItem {
         else if (optRpt  != "") NotifyAndLogWarning("Missing Optional:\n"+optRpt);
       }
     }
+  }
+
+  private void Clk_Systems_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
   }
 
 }

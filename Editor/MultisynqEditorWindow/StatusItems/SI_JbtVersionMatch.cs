@@ -5,16 +5,17 @@ using UnityEngine.UIElements;
 
 public class SI_JbtVersionMatch: StatusItem {
 
-
   Button ReinstallTools_Btn;
+  Button Docs_Btn;
   // Button OpenBuildPanel_Btn;
 
-    public SI_JbtVersionMatch(MultisynqBuildAssistantEW parent = null) : base(parent) {}
+  public SI_JbtVersionMatch(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
     SetupVisElem("JbtVersionMatch_Img",         ref statusImage);
     SetupLabel(  "JbtVersionMatch_Message_Lbl", ref messageLabel);
     SetupButton( "BuildJsNow2_Btn",             ref ReinstallTools_Btn, Clk_BuildJsNow);
+    SetupButton( "JbtVersionMatch_Docs_Btn",    ref Docs_Btn, Clk_JbtVersionMatch_Docs);
     // SetupButton( "OpenBuildPanel_Btn",       ref OpenBuildPanel_Btn, Clk_OpenEditorBuildPanel);
   }
   override public void InitText() {
@@ -51,6 +52,7 @@ public class SI_JbtVersionMatch: StatusItem {
   }
 
   void Clk_OpenEditorBuildPanel() { // Open Build - JS BUILD TOOLS  ------------- Click
+    Logger.MethodHeader();
     EditorWindow.GetWindow<BuildPlayerWindow>().Show();
     EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes.Where( s => s.enabled ).ToArray();
     if (scenes.Length == 0) {
@@ -58,10 +60,16 @@ public class SI_JbtVersionMatch: StatusItem {
       return;
     }
   }
+
   void Clk_BuildJsNow() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
     Logger.MethodHeader();
     edWin.siJsBuild.Clk_Build_JsNow();
     Check();
     edWin.CheckAllStatusForReady();
   }
+
+  void Clk_JbtVersionMatch_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
+  }
+
 }

@@ -8,7 +8,7 @@ public class SI_BuiltOutput: StatusItem {
   Button Save_Open_Scene_Btn;
   Button Goto_Build_Panel_Btn;
   Button Check_Building_Scenes_Btn;
-  // Button BuiltOutput_Docs_Btn;
+  Button BuiltOutput_Docs_Btn;
   bool skipCheckingThisSi = false;
 
   public SI_BuiltOutput(MultisynqBuildAssistantEW parent = null) : base(parent){}
@@ -19,6 +19,7 @@ public class SI_BuiltOutput: StatusItem {
     SetupButton( "Save_Open_Scene_Btn",        ref Save_Open_Scene_Btn,       Clk_Save_Open_Scene);
     SetupButton( "Goto_Build_Panel_Btn",       ref Goto_Build_Panel_Btn,      Clk_Goto_Build_Panel);
     SetupButton( "Check_Building_Scenes_Btn",  ref Check_Building_Scenes_Btn, Clk_Check_Building_Scenes);
+    SetupButton( "BuiltOutput_Docs_Btn",       ref BuiltOutput_Docs_Btn,      Clk_BuiltOutput_Docs);
   }
   override public void InitText() {
     StatusSetMgr.builtOutput = new StatusSet( messageLabel, statusImage,
@@ -72,4 +73,7 @@ public class SI_BuiltOutput: StatusItem {
     skipCheckingThisSi = false;
   }
 
+  void Clk_BuiltOutput_Docs() { // Built Output Docs  -  BUILT OUTPUT  ------------- Click
+    Logger.MethodHeaderAndOpenUrl();
+  }
 }

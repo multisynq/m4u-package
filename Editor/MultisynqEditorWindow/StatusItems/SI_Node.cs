@@ -10,18 +10,21 @@ public class SI_Node: StatusItem {
 
   Button GotoNodePath_Btn;
   Button TryAuto_Btn;
+  Button Docs_Btn;
 
   DropdownField Node_Dropdown;
 
-    public SI_Node(MultisynqBuildAssistantEW parent = null) : base(parent)
-    {
-    }
+  public SI_Node(MultisynqBuildAssistantEW parent = null) : base(parent) {
+    
+  }
 
-    override public void InitUI() {
-    SetupVisElem("Node_Status_Img",      ref statusImage);
-    SetupLabel(  "Node_Message_Lbl",     ref messageLabel);
-    SetupButton( "GotoNodePath_Btn",     ref GotoNodePath_Btn,   Clk_GotoNodePath);
-    SetupButton( "TryAuto_Btn",          ref TryAuto_Btn,        Clk_AutoSetupNode);
+  override public void InitUI() {
+    SetupVisElem("Node_Status_Img",  ref statusImage);
+    SetupLabel(  "Node_Message_Lbl", ref messageLabel);
+    SetupButton( "GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath);
+    SetupButton( "TryAuto_Btn",      ref TryAuto_Btn,      Clk_AutoSetupNode);
+    SetupButton( "Node_Docs_Btn",    ref Docs_Btn,         Clk_Node_Docs);
+
     Node_Dropdown = FindElement<DropdownField>("Node_Dropdown");
     Node_Dropdown.RegisterValueChangedCallback( (evt) => {
       string nodePath = evt.newValue.Replace(" ∕ ", "/");
@@ -37,6 +40,7 @@ public class SI_Node: StatusItem {
     });
     HideVEs(Node_Dropdown);
   }
+
   override public void InitText() {
     string t_node = "<b><color=#417E37>Node</color></b>";
     StatusSetMgr.node = new StatusSet( messageLabel, statusImage,
@@ -49,6 +53,7 @@ public class SI_Node: StatusItem {
     );
     statusSet = StatusSetMgr.node;
   }
+
   override public bool Check() {
     var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null) {
@@ -63,7 +68,6 @@ public class SI_Node: StatusItem {
     SetVEViz(!nodeIsGood, TryAuto_Btn); // bad, so show the TryAuto button
     return nodeIsGood;
   }
-
 
   public string TryNodePath(string nodePath) {
     if (!File.Exists(nodePath)) {
@@ -87,9 +91,6 @@ public class SI_Node: StatusItem {
     Debug.LogError("Node not found");
     return null;
   }
-  
-
-
 
   public void Clk_GotoNodePath() { // NODE  ------------- Click
     Logger.MethodHeader();
@@ -186,5 +187,9 @@ public class SI_Node: StatusItem {
       } else StatusSetMgr.node.error.Set();
     }
   }
-}
 
+  private void Clk_Node_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
+  }
+
+}

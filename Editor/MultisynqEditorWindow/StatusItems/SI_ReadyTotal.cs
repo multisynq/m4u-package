@@ -43,8 +43,8 @@ public class SI_ReadyTotal: StatusItem {
   }
 
   void Clk_Top_Ready_Docs() { // READY  ------------- Click
-    Logger.MethodHeader();
-    Application.OpenURL("https://multisynq.io/docs/unity/");
+    Logger.MethodHeaderAndOpenUrl();
+    // Application.OpenURL("https://multisynq.io/docs/unity/");
   }
 
 
