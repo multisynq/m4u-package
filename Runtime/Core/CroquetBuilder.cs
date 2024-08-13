@@ -1091,7 +1091,7 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
         {
             Directory.CreateDirectory(destinationDir);
         }
-
+        string rpt = "";
         foreach (var file in Directory.GetFiles(sourceDir))
         {
             // filter out any ".meta" files
@@ -1102,8 +1102,10 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
                 name = "." + name.Substring(4);
             }
             string destFile = Path.Combine(destinationDir, name);
-            File.Copy(file, destFile, true);
+            if (File.Exists(destFile)) rpt += "'" + name + "', ";
+            File.Copy(file, destFile, false);
         }
+        if (rpt != "") Debug.LogWarning($"Skipping overwrite of files: {rpt}".TrimEnd(',', ' '));
 
         foreach (var directory in Directory.GetDirectories(sourceDir))
         {
