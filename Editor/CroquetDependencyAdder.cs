@@ -55,19 +55,20 @@ public class CroquetDependencyAdder
     }
     static void SetWebGLTemplate()
     {
-        string templateName = "CroquetLoader"; // Replace with the name of your WebGL template folder
+        string templateName = "CroquetLoader"; // our WebGL template folder
         string templatePath = Path.Combine("WebGLTemplates", templateName);
 
-        Debug.Log("Setting WebGL template to: " + templateName + " at path: " + templatePath);
-
-        if (Directory.Exists(Path.Combine(Application.dataPath, templatePath)))
+        if (!Directory.Exists(Path.Combine(Application.dataPath, templatePath)))
         {
-            PlayerSettings.WebGL.template = "PROJECT:"+templateName;//templatePath;
-            Debug.Log("WebGL template set to: " + templateName);
+            Debug.LogError("WebGL template folder does not exist: " + Path.Combine(Application.dataPath, templatePath));
         }
         else
         {
-            Debug.LogError("WebGL template folder does not exist: " + Path.Combine(Application.dataPath, templatePath));
+            string template = "PROJECT:" + templateName;
+            if (PlayerSettings.WebGL.template != template) {
+                PlayerSettings.WebGL.template = template;
+                Debug.Log("WebGL template set to: " + templateName);
+            }
         }
     }
 }
