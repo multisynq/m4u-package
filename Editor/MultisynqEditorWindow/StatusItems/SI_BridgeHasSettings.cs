@@ -6,16 +6,18 @@ public class SI_BridgeHasSettings: StatusItem {
 
   Button BridgeHasSettings_AutoConnect_Btn;
   Button BridgeHasSettings_Goto_Btn;
+  Button BridgeHasSettings_Docs;
 
-    public SI_BridgeHasSettings(MultisynqBuildAssistantEW parent = null) : base(parent)
-    {
-    }
+  public SI_BridgeHasSettings(MultisynqBuildAssistantEW parent = null) : base(parent) {
+    
+  }
 
-    override public void InitUI() {
+  override public void InitUI() {
     SetupVisElem("BridgeHasSettings_Img",             ref statusImage);
     SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref messageLabel);
     SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
     SetupButton( "BridgeHasSettings_Goto_Btn",        ref BridgeHasSettings_Goto_Btn,        Clk_BridgeHasSettings_Goto);
+    SetupButton( "BridgeHasSettings_Docs_Btn",        ref BridgeHasSettings_Docs,            Clk_BridgeHasSettings_Docs);
   }
 
   override public void InitText() {
@@ -74,5 +76,8 @@ public class SI_BridgeHasSettings: StatusItem {
     edWin.siSettings.GotoSettings();
   }
 
+  void Clk_BridgeHasSettings_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
+  }
 
 }

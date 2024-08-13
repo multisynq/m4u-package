@@ -4,19 +4,20 @@ using UnityEngine.UIElements;
 
 public class SI_JsBuild: StatusItem {
 
-  
   public Button Build_JsNow_Btn;
   Button ToggleJSBuild_Btn;
   Button GotoBuiltOutput_Btn;
+  Button Docs_Btn;
 
   public SI_JsBuild(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
-    SetupVisElem("JSBuild_Status_Img",  ref statusImage);
-    SetupLabel(  "JSBuild_Message_Lbl", ref messageLabel);
-    SetupButton( "ToggleJSBuild_Btn",   ref ToggleJSBuild_Btn,    Clk_ToggleJSBuild); // Start JS Build Watcher
-    SetupButton( "Build_JsNow_Btn",     ref Build_JsNow_Btn,      Clk_Build_JsNow);
-    SetupButton( "GotoBuiltOutput_Btn", ref GotoBuiltOutput_Btn,  Clk_GotoBuiltOutput);
+    SetupVisElem("JSBuild_Status_Img",   ref statusImage);
+    SetupLabel(  "JSBuild_Message_Lbl",  ref messageLabel);
+    SetupButton( "ToggleJSBuild_Btn",    ref ToggleJSBuild_Btn,    Clk_ToggleJSBuild); // Start JS Build Watcher
+    SetupButton( "Build_JsNow_Btn",      ref Build_JsNow_Btn,      Clk_Build_JsNow);
+    SetupButton( "GotoBuiltOutput_Btn",  ref GotoBuiltOutput_Btn,  Clk_GotoBuiltOutput);
+    SetupButton( "JSBuild_Docs_Btn",     ref Docs_Btn,             Clk_JsBuild_Docs);
   }
 
   override public void InitText() {
@@ -87,5 +88,9 @@ public class SI_JsBuild: StatusItem {
         NotifyAndLogWarning("Could not find\nindex.html in\nJS Build output folder");
       }
     };
+  }
+
+  void Clk_JsBuild_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
   }
 }

@@ -13,13 +13,13 @@ public class SI_HasAppJs: StatusItem {
   public SI_HasAppJs(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
-    SetupVisElem("HasAppJs_Status_Img",               ref statusImage);
-    SetupLabel(  "HasAppJs_Message_Lbl",              ref messageLabel);
-    SetupButton( "SetAppName_Btn",                    ref SetAppName_Btn,                    Clk_SetAppName);
-    SetupButton( "MakeAppJsFile_Btn",                 ref MakeAppJsFile_Btn,                 Clk_MakeAppJsFile);
-    SetupButton( "HasAppJs_Docs_Btn",                 ref HasAppJs_Docs_Btn,                 Clk_HasAppJs_Docs);
-    SetupButton( "GotoAppJsFile_Btn",                 ref GotoAppJsFile_Btn,                 Clk_GotoAppJsFile);
-    SetupButton( "GotoAppJsFolder_Btn",               ref GotoAppJsFolder_Btn,               Clk_GotoAppJsFolder);
+    SetupVisElem("HasAppJs_Status_Img",  ref statusImage);
+    SetupLabel(  "HasAppJs_Message_Lbl", ref messageLabel);
+    SetupButton( "SetAppName_Btn",       ref SetAppName_Btn,      Clk_SetAppName);
+    SetupButton( "MakeAppJsFile_Btn",    ref MakeAppJsFile_Btn,   Clk_MakeAppJsFile);
+    SetupButton( "HasAppJs_Docs_Btn",    ref HasAppJs_Docs_Btn,   Clk_HasAppJs_Docs);
+    SetupButton( "GotoAppJsFile_Btn",    ref GotoAppJsFile_Btn,   Clk_GotoAppJsFile);
+    SetupButton( "GotoAppJsFolder_Btn",  ref GotoAppJsFolder_Btn, Clk_GotoAppJsFolder);
   }
 
   override public void InitText() {
@@ -75,6 +75,7 @@ public class SI_HasAppJs: StatusItem {
       };
     }
   }
+
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
     string fromDir = CqFile.StarterTemplateFolder().longPath;
@@ -84,8 +85,9 @@ public class SI_HasAppJs: StatusItem {
     Check(); // recheck (this SI_HasAppJs)
     edWin.CheckAllStatusForReady();
   }
+
   private void Clk_HasAppJs_Docs() {// HAS APP JS  ------------- Click
-    Logger.MethodHeader();
+    Logger.MethodHeaderAndOpenUrl();
   }
 
   private void Clk_GotoAppJsFolder() {// HAS APP JS  ------------- Click
@@ -97,4 +99,5 @@ public class SI_HasAppJs: StatusItem {
     Logger.MethodHeader();
     CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
+
 }

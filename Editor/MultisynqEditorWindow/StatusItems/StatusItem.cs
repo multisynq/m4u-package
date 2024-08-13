@@ -43,6 +43,7 @@ public abstract class StatusItem {
     allStatusItems.Clear();
     allButtons.Clear();
   }
+
   public static void ShowVEs(params VisualElement[] ves) {
     foreach (var ve in ves) SetVEViz(true, ve);
   }
@@ -60,11 +61,13 @@ public abstract class StatusItem {
       si.statusSet.SuccessToReady();
     }
   }
+
   static public void AllStatusSetsToBlank() {
     foreach (var si in allStatusItems) {
       si.statusSet.blank.Set();
     }
   }
+
   static public  void HideMostButtons() {
     string[] whitelisted = {
       "CheckIfReady_Btn",
@@ -108,10 +111,12 @@ public abstract class StatusItem {
     MultisynqBuildAssistantEW.Instance.ShowNotification(new GUIContent(msg), seconds);
     Debug.Log(msg.Replace("\n", " "));
   }
+
   static public void NotifyAndLogError(string msg, float seconds = 4) {
     MultisynqBuildAssistantEW.Instance.ShowNotification(new GUIContent(msg), seconds);
     Debug.LogError(msg.Replace("\n", " "));
   }
+
   static public void NotifyAndLogWarning(string msg, float seconds = 4) {
     MultisynqBuildAssistantEW.Instance.ShowNotification(new GUIContent(msg), seconds);
     Debug.LogWarning(msg.Replace("\n", " "));

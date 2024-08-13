@@ -8,6 +8,7 @@ public class SI_Settings: StatusItem {
   Button SettingsCreate_Btn;
   Button GotoNodePath_Btn;
   Button GotoApiKey_Btn;
+  Button Docs_Btn;
 
   public SI_Settings(MultisynqBuildAssistantEW parent = null) : base(parent){}
 
@@ -18,6 +19,7 @@ public class SI_Settings: StatusItem {
     SetupButton( "SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
     SetupButton( "GotoNodePath_Btn",     ref GotoNodePath_Btn,   null);
     SetupButton( "GotoApiKey_Btn",       ref GotoApiKey_Btn,     null);
+    SetupButton( "Settings_Docs_Btn",    ref Docs_Btn,           Clk_Settings_Docs);
   }
   override public void InitText() {
     StatusSetMgr.settings = new StatusSet( messageLabel, statusImage,
@@ -78,6 +80,10 @@ public class SI_Settings: StatusItem {
       ProjectWindowUtil.ShowCreatedAsset(cqStgs); // Also show selection in Project pane
       EditorGUIUtility.PingObject(cqStgs);        // highlight in yellow
     }
+  }
+
+  private void Clk_Settings_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
   }
 
 }

@@ -6,17 +6,20 @@ public class SI_Bridge: StatusItem {
 
   Button GotoBridgeGob_Btn;
   Button CreateBridgeGob_Btn;
+  Button Docs_Btn;
 
-    public SI_Bridge(MultisynqBuildAssistantEW parent = null) : base(parent)
-    {
-    }
-
-    override public void InitUI() {
-    SetupVisElem("HaveBridge_Status_Img",             ref statusImage);
-    SetupLabel(  "HaveBridge_Message_Lbl",            ref messageLabel);
-    SetupButton( "GotoBridgeGob_Btn",                 ref GotoBridgeGob_Btn,                 Clk_GotoBridgeGob);
-    SetupButton( "CreateBridgeGob_Btn",               ref CreateBridgeGob_Btn,               Clk_CreateBridgeGob);
+  public SI_Bridge(MultisynqBuildAssistantEW parent = null) : base(parent) {
+    
   }
+
+  override public void InitUI() {
+    SetupVisElem("HaveBridge_Status_Img",  ref statusImage);
+    SetupLabel(  "HaveBridge_Message_Lbl", ref messageLabel);
+    SetupButton( "GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,   Clk_GotoBridgeGob);
+    SetupButton( "CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
+    SetupButton( "HaveBridge_Docs_Btn",    ref Docs_Btn,            Clk_Bridge_Docs);
+  }
+
   override public void InitText() {
     StatusSetMgr.bridge = new StatusSet( messageLabel, statusImage,
       // (info, warning, error, success)
@@ -28,6 +31,7 @@ public class SI_Bridge: StatusItem {
     );
     statusSet = StatusSetMgr.bridge;
   }
+
   override public bool Check() { // BRIDGE
     var bridge = Object.FindObjectOfType<CroquetBridge>();
     bool fountIt = (bridge != null);
@@ -36,7 +40,7 @@ public class SI_Bridge: StatusItem {
     SetVEViz(!fountIt, CreateBridgeGob_Btn);
     return fountIt;
   }
-  
+
   //-- Clicks - BRIDGE --------------------------------
 
   private void Clk_GotoBridgeGob() { // BRIDGE  ------------- Click
@@ -76,4 +80,9 @@ public class SI_Bridge: StatusItem {
     edWin.siSystems.Check(); // Check_HasCqSystems();
     edWin.CheckAllStatusForReady();
   }
+
+  private void Clk_Bridge_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
+  }
+
 }

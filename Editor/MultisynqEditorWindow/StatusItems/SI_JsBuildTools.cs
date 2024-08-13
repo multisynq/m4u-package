@@ -6,6 +6,7 @@ public class SI_JsBuildTools: StatusItem {
 
   Button CopyJSBuildTools_Btn;
   Button GotoJSBuildToolsFolder_Btn;
+  Button Docs_Btn;
 
   public SI_JsBuildTools(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
@@ -14,6 +15,7 @@ public class SI_JsBuildTools: StatusItem {
     SetupLabel(  "JSBuildTools_Message_Lbl",   ref messageLabel);
     SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
     SetupButton( "GotoJSBuildToolsFolder_Btn", ref GotoJSBuildToolsFolder_Btn, Clk_GotoJSBuildToolsFolder);
+    SetupButton( "JSBuildTools_Docs_Btn",      ref Docs_Btn,                   Clk_JsBuildTools_Docs);
   }
 
   override public void InitText() {
@@ -63,6 +65,10 @@ public class SI_JsBuildTools: StatusItem {
     } else {
       NotifyAndLogError("Could not find\nCroquetJS folder");
     }
+  }
+
+  private void Clk_JsBuildTools_Docs() {
+    Logger.MethodHeaderAndOpenUrl();
   }
 
 }

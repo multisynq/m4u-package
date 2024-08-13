@@ -8,8 +8,8 @@ public class SI_ApiKey: StatusItem {
   Button GotoApiKey_Btn;
   Button ApiKey_Docs_Btn;
 
-    public SI_ApiKey(MultisynqBuildAssistantEW parent = null) : base(parent)
-    {
+    public SI_ApiKey(MultisynqBuildAssistantEW parent = null) : base(parent) {
+      
     }
 
     override public void InitUI() {
@@ -37,16 +37,19 @@ public class SI_ApiKey: StatusItem {
   //-- Clicks - API KEY --------------------------------
 
   private void Clk_SignUpApi() { // API KEY  ------------- Click
+    Logger.MethodHeader();
     edWin.siSettings.GotoSettings();
     Application.OpenURL("https://croquet.io/account/");
   }
 
   private void Clk_EnterApiKey() {  // API KEY  ------------- Click
+    Logger.MethodHeader();
     edWin.siSettings.GotoSettings();
     Notify("Selected in Project.\nSee Inspector.");
   }
 
   private void Clk_ApiKey_Docs() {
+    Logger.MethodHeader();
     Application.OpenURL("https://croquet.io/account/");
     // Application.OpenURL("https://multisynq.io/docs/unity/");
   }
@@ -62,8 +65,6 @@ public class SI_ApiKey: StatusItem {
     StatusSetMgr.apiKey.SetIsGood(apiKeyIsGood);
     return apiKeyIsGood;
   }
-  
-
 
 }
 

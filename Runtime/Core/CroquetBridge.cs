@@ -838,7 +838,7 @@ public class CroquetBridge : MonoBehaviour
         }
         else if (bridgeState == "waitingForConnection")
         {
-            Debug.Log($"is clientSock null?: {clientSock == null}");
+            Debug.Log($"bridgeState==waitingForConnection | WebSocket is {( (clientSock == null)? "awaiting OnOpen()" : "<color=#44ff44>OPEN!</color>" )}");
             if (!INTEROP_BRIDGE && clientSock == null) return; // not ready yet
 
             // configure which logs are forwarded

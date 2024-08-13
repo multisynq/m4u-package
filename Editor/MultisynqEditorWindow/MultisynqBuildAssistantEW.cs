@@ -63,7 +63,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //-- Clicks - CHECK READINESS --------------------------------
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
-    Logger.Header("Check If Ready =] ");
+    Logger.Header("Checking If Ready ・‿・");
     CheckAllStatusForReady();
   }
 
