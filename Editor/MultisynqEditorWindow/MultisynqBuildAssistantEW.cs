@@ -79,8 +79,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= siBridgeHasSettings.Check();
     allRdy &= siJsBuildTools.Check();
     allRdy &= siHasAppJs.Check();
-    allRdy &= siJbtVersionMatch.Check();
     allRdy &= siJsBuild.Check();
+    allRdy &= siJbtVersionMatch.Check();
     allRdy &= siBuiltOutput.Check();
     siNode.NodePathsToDropdownAndCheck();
 

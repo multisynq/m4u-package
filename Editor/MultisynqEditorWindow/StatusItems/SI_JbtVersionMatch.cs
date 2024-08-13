@@ -7,15 +7,15 @@ public class SI_JbtVersionMatch: StatusItem {
 
 
   Button ReinstallTools_Btn;
-  Button OpenBuildPanel_Btn;
+  // Button OpenBuildPanel_Btn;
 
     public SI_JbtVersionMatch(MultisynqBuildAssistantEW parent = null) : base(parent) {}
 
   override public void InitUI() {
-    SetupVisElem("JbtVersionMatch_Img",               ref statusImage);
-    SetupLabel(  "JbtVersionMatch_Message_Lbl",       ref messageLabel);
-    SetupButton( "ReinstallTools_Btn",                ref ReinstallTools_Btn,                Clk_ReinstallTools);
-    SetupButton( "OpenBuildPanel_Btn",                ref OpenBuildPanel_Btn,                Clk_OpenEditorBuildPanel);
+    SetupVisElem("JbtVersionMatch_Img",         ref statusImage);
+    SetupLabel(  "JbtVersionMatch_Message_Lbl", ref messageLabel);
+    SetupButton( "BuildJsNow2_Btn",             ref ReinstallTools_Btn, Clk_BuildJsNow);
+    // SetupButton( "OpenBuildPanel_Btn",       ref OpenBuildPanel_Btn, Clk_OpenEditorBuildPanel);
   }
   override public void InitText() {
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
@@ -43,10 +43,10 @@ public class SI_JbtVersionMatch: StatusItem {
     if (allMatch) {
       Debug.Log("JSTools for Editor & Build match!!!");
     } else {
-      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge) );
+      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge, "Build", "Editor"));
       ShowVEs(ReinstallTools_Btn);
     }
-    ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
+    // ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
     return allMatch;
   }
 
@@ -58,9 +58,9 @@ public class SI_JbtVersionMatch: StatusItem {
       return;
     }
   }
-  void Clk_ReinstallTools() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
-    CroquetMenu.InstallJSTools();
-    Check(); // recheck (this _JbtToolsVersionMatch)
+  void Clk_BuildJsNow() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
+    edWin.siJsBuild.Clk_Build_JsNow();
+    Check();
     edWin.CheckAllStatusForReady();
   }
 }

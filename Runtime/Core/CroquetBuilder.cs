@@ -1084,6 +1084,9 @@ Then select Assets/Settings/CroquetSettings.asset in Unity Editor & set the 'Pat
 
     public static void CopyDirectory(string sourceDir, string destinationDir, bool template = false)
     {
+        var ftSource = new FolderThing(sourceDir);
+        var ftDest = new FolderThing(destinationDir);
+        if (template) Debug.Log($"Copying '{ftSource.shortPath}' to '{ftDest.shortPath}'");
         if (!Directory.Exists(destinationDir))
         {
             Directory.CreateDirectory(destinationDir);
