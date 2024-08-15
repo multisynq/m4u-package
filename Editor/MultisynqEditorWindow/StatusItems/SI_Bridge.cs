@@ -61,7 +61,7 @@ public class SI_Bridge: StatusItem {
       string msg = "CroquetBridge already exists in scene";
       Notify(msg); Debug.LogError(msg);
     } else {
-      var cbGob = new GameObject("CroquetBridge");
+      var cbGob = new GameObject("Croquet");
       var cb = cbGob.AddComponent<CroquetBridge>();
       cbGob.AddComponent<CroquetRunner>();
       cbGob.AddComponent<CroquetEntitySystem>();
