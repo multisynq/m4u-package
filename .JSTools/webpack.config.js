@@ -1,3 +1,4 @@
+/* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const RemovePlugin = require('remove-files-webpack-plugin');
@@ -21,6 +22,7 @@ module.exports = env => {
         // infrastructureLogging: {
         //     level: 'verbose',
         // },
+        devtool: 'source-map',
         entry: () => {
             // if this is a node build, look for index-node.js in the app directory
             if (env.buildTarget === 'node') {
