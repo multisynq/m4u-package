@@ -208,7 +208,7 @@ public class CroquetEntitySystem : CroquetSystem
         }
         else
         {
-            Debug.Log($"No addressable assets are tagged '{sceneName}'");
+            Debug.Log($"No addressable assets are labeled '{sceneName}'");
             addressablesReady = true;
         }
     }
@@ -259,6 +259,7 @@ public class CroquetEntitySystem : CroquetSystem
 
     void MakeObject(string[] args)
     {
+        Debug.Log($"Making object {args[0]}");
         ObjectSpec spec = JsonUtility.FromJson<ObjectSpec>(args[0]);
         // Debug.Log($"making object {spec.cH}");
 
