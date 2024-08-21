@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -20,7 +22,7 @@ static public class Logger {
     if (s2 == null) s2 = wave3r;
     if (c1 == null) c1 = blue;
     if (c2 == null) c2 = lightBlue;
-    Debug.Log($"<color={c1}>{s1} [ <color={c2}>{message}</color> ] {s2}</color>{suffix}");
+    UnityEngine.Debug.Log($"<color={c1}>{s1} [ <color={c2}>{message}</color> ] {s2}</color>{suffix}");
   }
 
   static public void MethodHeader() {
@@ -32,17 +34,31 @@ static public class Logger {
     Header(GetClassAndMethod(), spacer, spacer, null, null, "\n   " + url);
     Application.OpenURL(url);
   }
+  
+  static public StackFrame GetStackFrame(int depth = 2, string withoutSubstringInMethod = null) {
+    StackTrace stackTrace = new StackTrace();
+    var frame = stackTrace.GetFrame(depth);
+    int maxDepth = stackTrace.FrameCount;
+    if (withoutSubstringInMethod != null) {
+      while (frame.GetMethod().Name.Contains(withoutSubstringInMethod) && depth < maxDepth) {
+        frame = stackTrace.GetFrame(depth++);
+      }
+    }
+    return frame;
+  }
+
+  static public MethodBase GetMethod(int depth = 2) {
+    StackFrame stackFrame = GetStackFrame(depth);
+    return stackFrame.GetMethod();
+  }
 
   static public string GetMethodName(int depth = 2) {
-    System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
-    System.Diagnostics.StackFrame stackFrame = stackTrace.GetFrame(depth);
-    System.Reflection.MethodBase methodBase = stackFrame.GetMethod();
+    MethodBase methodBase = GetMethod();
     return methodBase.Name;
   }
+
   static public string GetClassAndMethod(int depth = 2) {
-    System.Diagnostics.StackTrace stackTrace = new System.Diagnostics.StackTrace();
-    System.Diagnostics.StackFrame stackFrame = stackTrace.GetFrame(depth);
-    System.Reflection.MethodBase methodBase = stackFrame.GetMethod();
+    MethodBase methodBase = GetMethod();
     return $"{methodBase.ReflectedType.Name}.{methodBase.Name}";
   }
 }
