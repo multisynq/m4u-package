@@ -411,7 +411,7 @@ public class CroquetBuilder
         if (File.Exists(buildRecordPath)) File.Delete(buildRecordPath);
     }
 
-    public static void StartBuild(bool startWatcher)
+    public static void StartBuild(bool startWatcher, string overrideTarget = null)
     {
         // invoked from
         // * Croquet menu "Build JS Now" option, with startWatcher=false
@@ -446,6 +446,8 @@ public class CroquetBuilder
             // building for webgl, whatever the hosting platform
             target = "webgl"; // our webpack config knows how to handle this
         #endif //# # # # # # # # # # # # # # # # # # # # # # #
+
+        if (overrideTarget != null) target = overrideTarget;
 
         switch (Application.platform)
         {
@@ -706,8 +708,11 @@ public class CroquetBuilder
         {
             try
             {
-                StartBuild(false); // false => no watcher
-                Debug.Log($"JS build for {appName} started (Without watcher)");
+                // if platform is webGL and we just hit Play, we need to build for native webview
+                bool foolishlyHitPlayWithoutWebviewBuild =  (target == "webgl" && EditorApplication.isPlayingOrWillChangePlaymode);
+                string targetForBuild = foolishlyHitPlayWithoutWebviewBuild ? "webview" : target;
+                StartBuild(false, targetForBuild); // false => no watcher
+                Debug.Log($"JS build for appName:'{appName}' started (Without watcher) using target:'{targetForBuild}'");
                 return CheckJSBuildState(appName, target);
             }
             catch (Exception e)

@@ -241,7 +241,7 @@ public class CroquetBridge : MonoBehaviour
         {
             Instance = this;
 
-            INTEROP_BRIDGE = Application.platform == RuntimePlatform.WebGLPlayer;
+            INTEROP_BRIDGE = Application.platform == RuntimePlatform.WebGLPlayer && (!Application.isEditor);
             if (!INTEROP_BRIDGE) Debug.Log($"Not running in WebGL INTEROP_BRIDGE={INTEROP_BRIDGE}");
 
             Application.runInBackground = true;

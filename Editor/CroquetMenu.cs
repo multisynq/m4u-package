@@ -12,6 +12,8 @@ using Debug = UnityEngine.Debug;
 [InitializeOnLoad]
 public static class SceneAndPlayWatcher
 {
+    static PlayModeStateChange lastState = PlayModeStateChange.EnteredEditMode;
+
     // register event handlers when the class is initialized
     static SceneAndPlayWatcher()
     {
@@ -31,19 +33,20 @@ public static class SceneAndPlayWatcher
 
     private static void HandlePlayModeState(PlayModeStateChange state)
     {
+        lastState = state;
         // PlayModeStateChange.ExitingEditMode (i.e., before entering Play) - if needed - is handled above in the constructor
         if (state == PlayModeStateChange.EnteredEditMode) CroquetBuilder.EnteredEditMode();
         // about to play
-        if (state == PlayModeStateChange.ExitingEditMode) { // About to enter Play
+        // if (state == PlayModeStateChange.ExitingEditMode) { // About to enter Play
             // check if the platform is webgl
-            bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
-            if (isWebGL) { // UnPlay and show a dialog
-                EditorApplication.isPlaying = false;
-                string msg = "To Play in WebGL, you must build the app first.\n\nUse Croquet => Build JS Now to build the app.";
-                EditorUtility.DisplayDialog("Croquet", msg, "OK");
-                EditorApplication.ExecuteMenuItem("File/Build Settings..."); // open the build settings window
-            }
-        }
+            // bool isWebGL = EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+            // if (isWebGL) { // UnPlay and show a dialog
+            //     EditorApplication.isPlaying = false;
+            //     string msg = "To Play in WebGL, you must build the app first.\n\nUse Croquet => Build JS Now to build the app.";
+            //     EditorUtility.DisplayDialog("Croquet", msg, "OK");
+            //     EditorApplication.ExecuteMenuItem("File/Build Settings..."); // open the build settings window
+            // }
+        // }
     }
 
     private static void HandleSceneChange(Scene current, Scene next)

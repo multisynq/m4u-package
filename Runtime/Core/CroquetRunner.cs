@@ -146,7 +146,6 @@ public class CroquetRunner : MonoBehaviour
         Debug.Log($"CroquetRunner.StartCqConnection(): Running on non-Windows platform useNodeJS={useNodeJS} && debugUsingExternalSession={debugUsingExternalSession}");
         if (!useNodeJS && !debugUsingExternalSession)
         {
-            Debug.Log("CroquetRunner.StartCqConnection(): Using WebViewObject");
             // cases (a), (h)
             #if UNITY_WEBGL
                 Debug.Log("CroquetRunner.StartCqConnection(): Using WebViewObject_WebGLTolerant");
