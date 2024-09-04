@@ -101,7 +101,7 @@ public class CroquetBridge : MonoBehaviour
     // sending to JS through interop or through socket, as appropriate
     public void SendMessageToJavaScript(string message)
     {
-        if (message != "tick") Debug.Log($"SendMessageToJavaScript: {message}");
+        // if (message != "tick") Debug.Log($"SendMessageToJavaScript: {message}");
         if (INTEROP_BRIDGE)
         {
             if (!message.Contains("tick")) Debug.Log($"sending to JS: {message}");
@@ -1265,7 +1265,7 @@ public class CroquetBridge : MonoBehaviour
             croquetSubscriptions[topic] = new List<(GameObject, Action<string>)>();
             if (Instance != null && Instance.unitySceneState == "running")
             {
-                Instance.SendToCroquet("registerForEventTopic", topic);
+                Instance.SendToCroquet("registerForEventTopic", topic); // subscribe to this topic
             }
         }
         croquetSubscriptions[topic].Add((null, handler));
