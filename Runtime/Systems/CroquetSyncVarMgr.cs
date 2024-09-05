@@ -5,15 +5,17 @@ using System.Linq.Expressions;
 using UnityEngine;
 using System.Linq;
 
-    public class SyncedBehaviour : MonoBehaviour {
-      public int netId = 0;
-      // at editor time, set a value if it is zero
-      void OnValidate() {
-        if (netId == 0) {
-          netId = GetInstanceID();
-        }
-      }
+//========== ||||||||||||||| =============
+public class SyncedBehaviour : MonoBehaviour {
+  public int netId = 0;
+  // at editor time, set a value if it is zero
+  void OnValidate() {
+    // Debug.Log($"netId={netId}    GetInstanceID()={GetInstanceID()}");
+    if (netId == 0) {
+      netId = GetInstanceID();
     }
+  }
+}
 
 #region Attribute
 //========== |||||||||||||||| ============
@@ -31,16 +33,17 @@ public class SyncVarAttribute : Attribute {
   public string OnChangedCallback { get; set; } // Name of the method to call on the var's class when the value changes
 }
 #endregion
+
 //========== ||||||||||||||||| ====================================
 public class CroquetSyncVarMgr : MonoBehaviour {
-  #region Vars
+  #region Fields
     private Dictionary<string, SyncVarInfo> syncVars;
     private SyncVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
     static string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
   #endregion
 
-  #region Classes
+  #region SubClasses
     // ------------------- ||||||||||| ---
     private abstract class SyncVarInfo {
       public readonly string varId;
@@ -98,8 +101,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
     //-- ||||| ---
     void Start() { // CroquetSynchVarMgr.Start()
 
-      Croquet.Subscribe("SynchVarMgr", "setValue", ReceiveAsMsg);
-      // Croquet.Subscribe(null, "setValue", ReceiveAsMsg);
+      Croquet.Subscribe("CroquetSyncVarMgr", "set2", ReceiveAsMsg);
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
@@ -150,21 +152,6 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       }
     } // end Start()
 
-    // - |||||||||||||||| -------------------------------------------------------
-    void SendMsgIfChanged(SyncVarInfo syncVar) {
-      if ((Time.time - syncVar.LastSyncTime) < syncVar.attribute.updateInterval) {// Skip sending if the update interval has not passed for this var
-        return;
-      } else syncVar.LastSyncTime = Time.time; // Restart the timer until we can send again
-
-      object currentValue = syncVar.Getter();
-      bool   changedVal   = !currentValue.Equals(syncVar.LastValue);
-
-      if (changedVal || syncVar.attribute.updateEveryInterval) { // might send every interval, but usually only when changed
-        SendAsMsg( syncVar.varIdx, syncVar.varId, currentValue, syncVar.varType);
-        syncVar.LastValue = currentValue;
-        syncVar.onChangedCallback?.Invoke(currentValue);
-      }
-    }
     // - |||||| -------------------------------------------------------
     void Update() {
       for (int i = 0; i < syncVarsArr.Length; i++) {
@@ -241,13 +228,28 @@ public class CroquetSyncVarMgr : MonoBehaviour {
     }
   #endregion
   #region Messaging
-    // -------- |||||||||| ---
+    // - |||||||||||||||| -------------------------------------------------------
+    void SendMsgIfChanged(SyncVarInfo syncVar) {
+      if ((Time.time - syncVar.LastSyncTime) < syncVar.attribute.updateInterval) {// Skip sending if the update interval has not passed for this var
+        return;
+      } else syncVar.LastSyncTime = Time.time; // Restart the timer until we can send again
+
+      object currentValue = syncVar.Getter();
+      bool   changedVal   = !currentValue.Equals(syncVar.LastValue);
+
+      if (changedVal || syncVar.attribute.updateEveryInterval) { // might send every interval, but usually only when changed
+        SendAsMsg( syncVar.varIdx, syncVar.varId, currentValue, syncVar.varType);
+        syncVar.LastValue = currentValue;
+        syncVar.onChangedCallback?.Invoke(currentValue);
+      }
+    }
+
+    // --------- ||||||||| ---
     private void SendAsMsg(int varIdx, string varId, object value, Type varType) {
       string serializedValue = SerializeValue(value, varType);
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
-      Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color> message for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color> msg:'<color=cyan>{msg}</color>'");
-      Croquet.Publish("SynchVarMgr", "setValue", msg);
-      // Croquet.Publish(null, "setValue", msg);
+      Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
+      Croquet.Publish("CroquetSyncVarMgr", "set1", msg);
     }
 
     // ------------------------- |||||||| ---
@@ -275,7 +277,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       var arrLookupFailed = (syncVar == null);
       if (arrLookupFailed) syncVar = FindSyncVarByDict(varId); // Array find failed, try to find by dictionary
       if (syncVar == null) { // Still null, not found!! Error.
-        Debug.LogError($"{svLogPrefix} {logPrefix} message for <color=#ff4444>UNKNOWN</color> {logIds} {logMsg}");
+        Debug.LogError($"{svLogPrefix} {logMsg} {logPrefix} message for <color=#ff4444>UNKNOWN</color> {logIds}");
         return;
       }
       // Parse, then set the value (if it changed)
@@ -284,7 +286,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       object hadVal = syncVar.Getter();
       bool valIsSame = hadVal.Equals(deserializedValue); // TODO: replace with blockLoopySend logic
       if (valIsSame) {
-        Debug.Log($"{svLogPrefix} {logPrefix} Skipping SET. <color=yellow>Unchanged</color> value. {logIds} '<color=yellow>{hadVal}</color>' == {logMsgVal} {logMsg} blockLoopySend:{syncVar.blockLoopySend}");
+        Debug.Log($"{svLogPrefix} {logPrefix} {logMsg} Skipping SET. '<color=yellow>{hadVal}</color>' == {logMsgVal} <color=yellow>Unchanged</color> value. {logIds} blockLoopySend:{syncVar.blockLoopySend}");
         return;
       }
       syncVar.blockLoopySend = true;     // Make sure we Skip sending the value we just received
@@ -294,8 +296,8 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       syncVar.onChangedCallback?.Invoke(deserializedValue);
 
       Debug.Log( (arrLookupFailed) // Report how we found the syncVar
-        ?  $"{svLogPrefix} {logPrefix} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} {logMsg} value='{logMsgVal}'"
-        :  $"{svLogPrefix} {logPrefix} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} {logMsg} value='{logMsgVal}'"
+        ?  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} value='{logMsgVal}'"
+        :  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} value='{logMsgVal}'"
       );
 
     } // end ReceiveAsMsg()
