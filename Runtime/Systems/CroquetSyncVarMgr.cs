@@ -3,6 +3,18 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq.Expressions;
 using UnityEngine;
+using System.Linq;
+
+    public class SyncedBehaviour : MonoBehaviour {
+      public int netId = 0;
+      // at editor time, set a value if it is zero
+      void OnValidate() {
+        if (netId == 0) {
+          netId = GetInstanceID();
+        }
+      }
+    }
+
 #region Attribute
 //========== |||||||||||||||| ============
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
@@ -14,8 +26,8 @@ public class SyncVarAttribute : Attribute {
   // [SyncVar(MinSyncInterval = 0.5f)] // Minimum time between syncs in seconds
   // [SyncVar(CustomName = "myVar", OnChangedCallback = "MyMethod", MinSyncInterval = 0.5f)] // any combo of options
   public string CustomName { get; set; }
-  public float MinSyncInterval { get; set; } = 0.1f; // Minimum time between syncs in seconds
-  public bool OnlyWhenChanged { get; set; } = true; // Normally only sync when the value has changed
+  public float updateInterval { get; set; } = 0.1f; // Minimum time between syncs in seconds
+  public bool updateEveryInterval { get; set; } = false; // Normally only sync when the value has changed
   public string OnChangedCallback { get; set; } // Name of the method to call on the var's class when the value changes
 }
 #endregion
@@ -25,19 +37,20 @@ public class CroquetSyncVarMgr : MonoBehaviour {
     private Dictionary<string, SyncVarInfo> syncVars;
     private SyncVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
+    static string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
   #endregion
 
   #region Classes
     // ------------------- ||||||||||| ---
     private abstract class SyncVarInfo {
-      public readonly string VarId;
-      public readonly int VarIdx;
+      public readonly string varId;
+      public readonly int varIdx;
       public readonly Func<object> Getter;
       public readonly Action<object> Setter;
-      public readonly MonoBehaviour MonoBehaviour;
-      public readonly Type VarType;
-      public readonly SyncVarAttribute Attribute;
-      public readonly Action<object> OnChangedCallback;
+      public readonly Action<object> onChangedCallback;
+      public readonly SyncedBehaviour syncedBehaviour;
+      public readonly Type varType;
+      public readonly SyncVarAttribute attribute;
       public bool blockLoopySend = false;
 
       public object LastValue { get; set; }
@@ -45,15 +58,15 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       public float LastSyncTime { get; set; }
 
       protected SyncVarInfo(string varId, int varIdx, Func<object> getter, Action<object> setter,
-                            MonoBehaviour monoBehaviour, Type varType, SyncVarAttribute attribute,
+                            SyncedBehaviour monoBehaviour, Type varType, SyncVarAttribute attribute,
                             object initialValue, Action<object> onChangedCallback) {
-        VarId = varId; VarIdx = varIdx;
+        this.varId = varId; this.varIdx = varIdx;
         Getter = getter; Setter = setter;
-        MonoBehaviour = monoBehaviour;
-        VarType = varType; Attribute = attribute;
+        syncedBehaviour = monoBehaviour;
+        this.varType = varType; this.attribute = attribute;
         LastValue = initialValue; ConfirmedInArr = false;
         LastSyncTime = 0f;
-        OnChangedCallback = onChangedCallback;
+        this.onChangedCallback = onChangedCallback;
       }
     }
 
@@ -62,7 +75,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       public readonly FieldInfo FieldInfo;
 
       public SyncFieldInfo(string fieldId, int fieldIdx, Func<object> getter, Action<object> setter,
-                            MonoBehaviour monoBehaviour, FieldInfo fieldInfo, SyncVarAttribute attribute,
+                            SyncedBehaviour monoBehaviour, FieldInfo fieldInfo, SyncVarAttribute attribute,
                             object initialValue, Action<object> onChangedCallback)
           : base(fieldId, fieldIdx, getter, setter, monoBehaviour, fieldInfo.FieldType, attribute, initialValue, onChangedCallback) {
         FieldInfo = fieldInfo;
@@ -74,7 +87,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       public readonly PropertyInfo PropInfo;
 
       public SyncPropInfo(string propId, int propIdx, Func<object> getter, Action<object> setter,
-                          MonoBehaviour monoBehaviour, PropertyInfo propInfo, SyncVarAttribute attribute,
+                          SyncedBehaviour monoBehaviour, PropertyInfo propInfo, SyncVarAttribute attribute,
                           object initialValue, Action<object> onChangedCallback)
           : base(propId, propIdx, getter, setter, monoBehaviour, propInfo.PropertyType, attribute, initialValue, onChangedCallback) {
         PropInfo = propInfo;
@@ -83,24 +96,38 @@ public class CroquetSyncVarMgr : MonoBehaviour {
   #endregion
   #region Start/Update
     //-- ||||| ---
-    void Start() { // CroquetSynchVarSystem.Start()
+    void Start() { // CroquetSynchVarMgr.Start()
 
-      Croquet.Subscribe("SynchVarSystem", "setValue", ReceiveAsMsg);
+      Croquet.Subscribe("SynchVarMgr", "setValue", ReceiveAsMsg);
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
 
       int varIdx = 0;
-      foreach (MonoBehaviour mb in FindObjectsOfType<MonoBehaviour>()) {
-        var type = mb.GetType();
-        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+      #if UNITY_EDITOR
+        foreach (MonoBehaviour mb in FindObjectsOfType<MonoBehaviour>()) {
+          // check for SyncVar attribute on fields of non-SyncedBehaviours
+          var fields = mb.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+          var properties = mb.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+          // give errors for SyncVar attributes on non-SyncedBehaviours
+          foreach (var field in fields) {
+            var attribute = field.GetCustomAttribute<SyncVarAttribute>();
+            if (attribute != null && !(mb is SyncedBehaviour)) {
+              Debug.LogError($"{svLogPrefix} {mb.GetType().Name}.<color=white>{field.Name}</color>  The <color=yellow>class {mb.GetType().Name}</color> <color=red>MUST</color> extend <color=white>class SyncedBehaviour</color>, not MonoBehaviour");
+            }
+          }
+        }
+      #endif
+      foreach (SyncedBehaviour syncBeh in FindObjectsOfType<SyncedBehaviour>()) {
+        var type       = syncBeh.GetType();
+        var fields     = type.GetFields(    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
         foreach (var field in fields) {
           var attribute = field.GetCustomAttribute<SyncVarAttribute>();
           if (attribute != null) {
-            var syncFieldInfo = CreateSyncFieldInfo(mb, field, attribute, varIdx++);
-            syncVars.Add(syncFieldInfo.VarId, syncFieldInfo);
+            var syncFieldInfo = CreateSyncFieldInfo(syncBeh, field, attribute, varIdx++);
+            syncVars.Add(syncFieldInfo.varId, syncFieldInfo);
             syncVarsList.Add(syncFieldInfo);
           }
         }
@@ -108,8 +135,8 @@ public class CroquetSyncVarMgr : MonoBehaviour {
         foreach (var prop in properties) {
           var attribute = prop.GetCustomAttribute<SyncVarAttribute>();
           if (attribute != null) {
-            var syncPropInfo = CreateSyncPropInfo(mb, prop, attribute, varIdx++);
-            syncVars.Add(syncPropInfo.VarId, syncPropInfo);
+            var syncPropInfo = CreateSyncPropInfo(syncBeh, prop, attribute, varIdx++);
+            syncVars.Add(syncPropInfo.varId, syncPropInfo);
             syncVarsList.Add(syncPropInfo);
           }
         }
@@ -118,72 +145,73 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       syncVarsArr = syncVarsList.ToArray();
 
       foreach (var syncVar in syncVars) {
-        Debug.Log($"[SyncVar] Found {syncVar.Key}, value is {syncVar.Value.Getter()}");
+        Debug.Log($"{svLogPrefix} Found <color=white>{syncVar.Key}</color>, value is <color=yellow>{syncVar.Value.Getter()}</color>");
       }
     } // end Start()
 
+    // - |||||||||||||||| -------------------------------------------------------
+    void SendMsgIfChanged(SyncVarInfo syncVar) {
+      if ((Time.time - syncVar.LastSyncTime) < syncVar.attribute.updateInterval) {// Skip sending if the update interval has not passed for this var
+        return;
+      } else syncVar.LastSyncTime = Time.time; // Restart the timer until we can send again
+
+      object currentValue = syncVar.Getter();
+      bool   changedVal   = !currentValue.Equals(syncVar.LastValue);
+
+      if (changedVal || syncVar.attribute.updateEveryInterval) { // might send every interval, but usually only when changed
+        SendAsMsg( syncVar.varIdx, syncVar.varId, currentValue, syncVar.varType);
+        syncVar.LastValue = currentValue;
+        syncVar.onChangedCallback?.Invoke(currentValue);
+      }
+    }
     // - |||||| -------------------------------------------------------
     void Update() {
-      float currentTime = Time.time;
       for (int i = 0; i < syncVarsArr.Length; i++) {
-        var syncVar = syncVarsArr[i];
-        if (currentTime - syncVar.LastSyncTime < syncVar.Attribute.MinSyncInterval)
-          continue;
-        syncVar.LastSyncTime = currentTime;
-        object currentValue = syncVar.Getter();
-        Debug.Log($"Checking syncVar {syncVar.VarId} (index {syncVar.VarIdx}) CanCheckEquals:{!syncVar.Attribute.OnlyWhenChanged} currVal:{currentValue} lastVal:{syncVar.LastValue}");
-        if (!syncVar.Attribute.OnlyWhenChanged || !Equals(currentValue, syncVar.LastValue)) {
-          if (!syncVar.blockLoopySend) { // Skip sending the value we just received
-            SendAsMsg( syncVar.VarIdx, syncVar.VarId, currentValue, syncVar.VarType);
-            syncVar.blockLoopySend = false;
-          }
-          syncVar.LastValue = currentValue;
-          syncVar.OnChangedCallback?.Invoke(currentValue);
-        }
+        SendMsgIfChanged( syncVarsArr[i] );
       }
     }
   #endregion
   #region Factories
     // ------------------ ||||||||||||||||||| ---
-    private SyncFieldInfo CreateSyncFieldInfo(MonoBehaviour mb, FieldInfo field, SyncVarAttribute attribute, int fieldIdx) {
+    private SyncFieldInfo CreateSyncFieldInfo(SyncedBehaviour syncBeh, FieldInfo field, SyncVarAttribute attribute, int fieldIdx) {
       string fieldId = (attribute.CustomName != null) 
-        ? GenerateVarId(mb, attribute.CustomName) 
-        : GenerateVarId(mb, field.Name);
-      Action<object> onChangedCallback = CreateOnChangedCallback(mb, attribute.OnChangedCallback);
+        ? GenerateVarId(syncBeh, attribute.CustomName) 
+        : GenerateVarId(syncBeh, field.Name);
+      Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
       return new SyncFieldInfo(
           fieldId, fieldIdx,
-          CreateGetter(field, mb), CreateSetter(field, mb),
-          mb, field, attribute,
-          field.GetValue(mb),
+          CreateGetter(field, syncBeh), CreateSetter(field, syncBeh),
+          syncBeh, field, attribute,
+          field.GetValue(syncBeh),
           onChangedCallback
       );
     }
     // ----------------- |||||||||||||||||| ---
-    private SyncPropInfo CreateSyncPropInfo(MonoBehaviour mb, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
+    private SyncPropInfo CreateSyncPropInfo(SyncedBehaviour syncBeh, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
       string propId = (attribute.CustomName != null) 
-        ? GenerateVarId(mb, attribute.CustomName) 
-        : GenerateVarId(mb, prop.Name);
-      Action<object> onChangedCallback = CreateOnChangedCallback(mb, attribute.OnChangedCallback);
+        ? GenerateVarId(syncBeh, attribute.CustomName) 
+        : GenerateVarId(syncBeh, prop.Name);
+      Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
       return new SyncPropInfo(
           propId, propIdx,
-          CreateGetter(prop, mb), CreateSetter(prop, mb),
-          mb, prop, attribute,
-          prop.GetValue(mb),
+          CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh),
+          syncBeh, prop, attribute,
+          prop.GetValue(syncBeh),
           onChangedCallback
       );
     }
     // ------------------- ||||||||||||||||||||||| ---
-    private Action<object> CreateOnChangedCallback(MonoBehaviour mb, string methodName) {
+    private Action<object> CreateOnChangedCallback(SyncedBehaviour syncBeh, string methodName) {
       if (string.IsNullOrEmpty(methodName))
         return null;
 
-      var method = mb.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+      var method = syncBeh.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
       if (method == null) {
-        Debug.LogWarning($"[SyncVar] OnChanged method '{methodName}' not found in {mb.GetType().Name}");
+        Debug.LogWarning($"{svLogPrefix} OnChanged method <color=yellow>'{methodName}'</color> not found in <color=yellow>{syncBeh.GetType().Name}</color>");
         return null;
       }
 
-      return (value) => method.Invoke(mb, new[] { value });
+      return (value) => method.Invoke(syncBeh, new[] { value });
     }
     // ----------------- |||||||||||| ---
     private Func<object> CreateGetter(MemberInfo member, object target) {
@@ -207,63 +235,92 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       return lambda.Compile();
     }
     // ----------- ||||||||||||| ---
-    private string GenerateVarId(MonoBehaviour mb, string varName) {
-      return $"{mb.GetInstanceID()}_{varName}";
+    private string GenerateVarId(SyncedBehaviour syncBeh, string varName) {
+      return $"{syncBeh.netId}_{varName}";
     }
   #endregion
   #region Messaging
     // -------- |||||||||| ---
     private void SendAsMsg(int varIdx, string varId, object value, Type varType) {
       string serializedValue = SerializeValue(value, varType);
-      Debug.Log($"[SyncVar] Sending message for var {varId} (index {varIdx}): {serializedValue}");
-      // NetworkManager.Send(new Message(varIdx, varId, serializedValue));
-      Croquet.Publish("SynchVarSystem", "setValue", $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}");
+      var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
+      Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color> message for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color> msg:'<color=cyan>{msg}</color>'");
+      Croquet.Publish("SynchVarMgr", "setValue", msg);
     }
-    // -------- |||||||||||| ---
-    public void ReceiveAsMsg(string msg) {
-      int varIdx; string varId; string serializedValue;
+
+    // ------------------------- |||||||| ---
+    public (int, string, string) ParseMsg(string msg) {
       var parts = msg.Split(msgSeparator);
       if (parts.Length != 3) {
-        Debug.LogError($"[SyncVar] Invalid message format: {msg}");
+        Debug.LogError($"{svLogPrefix} Invalid message format: '<color=#ff4444>{msg}</color>'");
+        return (-1, "", "");
+      }
+      int varIdx = int.Parse(parts[0]);
+      string varId = parts[1];
+      string serializedValue = string.Join(msgSeparator.ToString(), parts.Skip(2).ToArray());// join the rest of the message back together with the separator
+      return (varIdx, varId, serializedValue);
+    }
+
+    // -------- |||||||||||| ---
+    public void ReceiveAsMsg(string msg) {
+      var logPrefix = $"<color=#ff22ff>RECEIVED</color> ";
+      var logMsg = $"msg:'<color=cyan>{msg}</color>'";
+      var (varIdx, varId, serializedValue) = ParseMsg(msg);
+      var logIds = $"varId=<color=white>{varId}</color> varIdx=<color=cyan>{varIdx}</color>";
+
+      // Find the syncVar fast by varIdx, or slower by varId if that fails
+      var syncVar = FindSyncVarByArr(varIdx, varId);
+      var arrLookupFailed = (syncVar == null);
+      if (arrLookupFailed) syncVar = FindSyncVarByDict(varId); // Array find failed, try to find by dictionary
+      if (syncVar == null) { // Still null, not found!! Error.
+        Debug.LogError($"{svLogPrefix} {logPrefix} message for <color=#ff4444>UNKNOWN</color> {logIds} {logMsg}");
         return;
       }
-      varIdx = int.Parse(parts[0]);
-      varId = parts[1];
-      serializedValue = parts[2];
+      // Parse, then set the value (if it changed)
+      object deserializedValue = DeserializeValue(serializedValue, syncVar.varType);
+      string logMsgVal = $"'<color=yellow>{deserializedValue}</color>'";
+      object hadVal = syncVar.Getter();
+      bool valIsSame = hadVal.Equals(deserializedValue); // TODO: replace with blockLoopySend logic
+      if (valIsSame) {
+        Debug.Log($"{svLogPrefix} Skipping SET. <color=yellow>Unchanged</color> value. {logIds} '<color=yellow>{hadVal}</color>' == {logMsgVal} {logMsg} blockLoopySend:{syncVar.blockLoopySend}");
+        return;
+      }
+      syncVar.blockLoopySend = true;     // Make sure we Skip sending the value we just received
+      syncVar.Setter(deserializedValue); // Set the value using the fancy, speedy Lambda Setter
+      syncVar.blockLoopySend = false;
+      syncVar.LastValue = deserializedValue;
+      syncVar.onChangedCallback?.Invoke(deserializedValue);
+
+      Debug.Log( (arrLookupFailed) // Report how we found the syncVar
+        ?  $"{svLogPrefix} <color=#ff22ff>RECEIVED</color> <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} {logMsg} value='{logMsgVal}'"
+        :  $"{svLogPrefix} <color=#ff22ff>RECEIVED</color> <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} {logMsg} value='{logMsgVal}'"
+      );
+
+    } // end ReceiveAsMsg()
+    // ---------------- ||||||||||||||||| ---
+    private SyncVarInfo FindSyncVarByDict( string varId ) {
+      if (syncVars.TryGetValue(varId, out var syncVar)) {
+        return syncVar;
+      } else {
+        Debug.LogError($"{svLogPrefix} Var ID not found in dictionary: <color=white>{varId}</color>");
+        return null;
+      }
+    }
+    // ---------------- |||||||||||||||| ---
+    private SyncVarInfo FindSyncVarByArr( int varIdx, string varId ) {
       if (varIdx >= 0 && varIdx < syncVarsArr.Length) {
         var syncVar = syncVarsArr[varIdx];
-        if (!syncVar.ConfirmedInArr && syncVar.VarId != varId) {
-          Debug.LogError($"[SyncVar] Var ID mismatch at index {varIdx}. Expected {syncVar.VarId}, got {varId}");
-          return;
+        if (!syncVar.ConfirmedInArr && syncVar.varId != varId) {
+          Debug.LogError($"{svLogPrefix} Var ID mismatch at varIdx:<color=cyan>{varIdx}</color>. Expected <color=white>{syncVar.varId}</color>, got <color=#ff4444>{varId}</color>");
+          return null;
         } else {
           syncVar.ConfirmedInArr = true;
-          Debug.Log($"[SyncVar] Confirmed varId:{varId} matches entry at syncVarsArr[varIdx:{varIdx}]");
+          Debug.Log($"{svLogPrefix} <color=green>✔️</color>Confirmed syncVars[varId:'<color=white>{varId}</color>'] matches entry at syncVarsArr[varIdx:<color=cyan>{varIdx}</color>]");
+          return syncVar;
         }
-
-        object deserializedValue = DeserializeValue(serializedValue, syncVar.VarType);
-
-        syncVar.Setter(deserializedValue);
-        syncVar.blockLoopySend = true;
-
-        syncVar.LastValue = deserializedValue;
-        syncVar.OnChangedCallback?.Invoke(deserializedValue);
-        Debug.Log($"[SyncVar] <color=#33FF33>Received</color> and applied value for var {varId} (index {varIdx}): <color=yellow>{deserializedValue}</color>");
       }
-      else if (syncVars.TryGetValue(varId, out var dictSyncVar)) {
-        Debug.LogWarning($"[SyncVar] Var index {varIdx} out of range, falling back to dictionary lookup for {varId}");
-        object deserializedValue = DeserializeValue(serializedValue, dictSyncVar.VarType);
-
-        dictSyncVar.Setter(deserializedValue);
-        dictSyncVar.blockLoopySend = true;
-
-        dictSyncVar.LastValue = deserializedValue;
-        dictSyncVar.OnChangedCallback?.Invoke(deserializedValue);
-        Debug.Log($"[SyncVar] <color=#33FF33>Received</color> and applied value for var {varId} <color=#ff8800>(dictionary fallback): {deserializedValue}</color=#ff8800>");
-      }
-      else {
-        Debug.LogError($"[SyncVar] Received message for unknown var: {varId} (index {varIdx})");
-      }
-    } // end ReceiveAsMsg()
+      return null;
+    }
   #endregion
   #region Serialization
     // ----------- |||||||||||||| ---
