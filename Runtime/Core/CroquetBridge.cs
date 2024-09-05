@@ -746,6 +746,7 @@ public class CroquetBridge : MonoBehaviour
         }
 
         string joinedMsgs = String.Join('\x02', messageContents.ToArray());
+        // Debug.Log($"==== [4] SendDeferredMessages: {joinedMsgs.Replace("\x03", "|").Replace("\x01", "|").Replace("\x02", "  |  ")}");
         SendMessageToJavaScript(joinedMsgs);
 
         deferredMessages.Clear();
