@@ -99,6 +99,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
     void Start() { // CroquetSynchVarMgr.Start()
 
       Croquet.Subscribe("SynchVarMgr", "setValue", ReceiveAsMsg);
+      // Croquet.Subscribe(null, "setValue", ReceiveAsMsg);
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
@@ -246,6 +247,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color> message for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color> msg:'<color=cyan>{msg}</color>'");
       Croquet.Publish("SynchVarMgr", "setValue", msg);
+      // Croquet.Publish(null, "setValue", msg);
     }
 
     // ------------------------- |||||||| ---
@@ -282,7 +284,7 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       object hadVal = syncVar.Getter();
       bool valIsSame = hadVal.Equals(deserializedValue); // TODO: replace with blockLoopySend logic
       if (valIsSame) {
-        Debug.Log($"{svLogPrefix} Skipping SET. <color=yellow>Unchanged</color> value. {logIds} '<color=yellow>{hadVal}</color>' == {logMsgVal} {logMsg} blockLoopySend:{syncVar.blockLoopySend}");
+        Debug.Log($"{svLogPrefix} {logPrefix} Skipping SET. <color=yellow>Unchanged</color> value. {logIds} '<color=yellow>{hadVal}</color>' == {logMsgVal} {logMsg} blockLoopySend:{syncVar.blockLoopySend}");
         return;
       }
       syncVar.blockLoopySend = true;     // Make sure we Skip sending the value we just received
@@ -292,8 +294,8 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       syncVar.onChangedCallback?.Invoke(deserializedValue);
 
       Debug.Log( (arrLookupFailed) // Report how we found the syncVar
-        ?  $"{svLogPrefix} <color=#ff22ff>RECEIVED</color> <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} {logMsg} value='{logMsgVal}'"
-        :  $"{svLogPrefix} <color=#ff22ff>RECEIVED</color> <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} {logMsg} value='{logMsgVal}'"
+        ?  $"{svLogPrefix} {logPrefix} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} {logMsg} value='{logMsgVal}'"
+        :  $"{svLogPrefix} {logPrefix} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} {logMsg} value='{logMsgVal}'"
       );
 
     } // end ReceiveAsMsg()
