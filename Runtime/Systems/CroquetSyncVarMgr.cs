@@ -18,9 +18,10 @@ public class SyncedBehaviour : MonoBehaviour {
 }
 
 #region Attribute
-//========== |||||||||||||||| ============
+//========== |||||||||||||||| ================
+//========| [SyncVar] | ====================== C# Attribute
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class SyncVarAttribute : Attribute { 
+public class SyncVarAttribute : Attribute { // C# Attribute
   // Usage options: 
   // [SyncVar] 
   // [SyncVar(CustomName = "shrtNm")] // Custom name for the variable, useful for shortening to reduce message size
@@ -33,14 +34,35 @@ public class SyncVarAttribute : Attribute {
   public string OnChangedCallback { get; set; } // Name of the method to call on the var's class when the value changes
 }
 #endregion
-
 //========== ||||||||||||||||| ====================================
-public class CroquetSyncVarMgr : MonoBehaviour {
+public class CroquetSyncVarMgr : JsCodeInjectingMonoBehavior {
   #region Fields
     private Dictionary<string, SyncVarInfo> syncVars;
     private SyncVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
     static string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
+  #endregion
+
+  #region JavaScript
+  override public void InjectJsCode() {
+    string classCode = @"
+    class SyncVarActor extends Actor {
+      get gamePawnType() { return '' }
+      init(options) {
+        super.init(options)
+        this.subscribe('SyncVar', 'set1', this.syncVarChange)
+      }
+      syncVarChange(msg) {
+        this.publish('SyncVar', 'set2', msg)
+      }
+    }
+    SyncVarActor.register('SyncVarActor')";
+    string initCode = "this.syncer = SyncVarActor.create({});";
+    Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} {classCode.Trim()} {initCode}");
+
+    // InjectCode(classCode, initCode)
+    JsCodeInjectingMgr.I.InjectCode(classCode, initCode);
+  }
   #endregion
 
   #region SubClasses
@@ -101,7 +123,9 @@ public class CroquetSyncVarMgr : MonoBehaviour {
     //-- ||||| ---
     void Start() { // CroquetSynchVarMgr.Start()
 
-      Croquet.Subscribe("CroquetSyncVarMgr", "set2", ReceiveAsMsg);
+      Croquet.Subscribe("SyncVar", "set2", ReceiveAsMsg);
+
+      JsCodeInjectingMgr.I.InjectAllJsCode();
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
@@ -244,12 +268,12 @@ public class CroquetSyncVarMgr : MonoBehaviour {
       }
     }
 
-    // --------- ||||||||| ---
-    private void SendAsMsg(int varIdx, string varId, object value, Type varType) {
+    // - ||||||||| ---
+    void SendAsMsg(int varIdx, string varId, object value, Type varType) {
       string serializedValue = SerializeValue(value, varType);
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
-      Croquet.Publish("CroquetSyncVarMgr", "set1", msg);
+      Croquet.Publish("SyncVar", "set1", msg);
     }
 
     // ------------------------- |||||||| ---
