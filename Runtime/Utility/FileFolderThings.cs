@@ -141,7 +141,11 @@ public class FileThing : PathyThing {
     }
     return doesExist;
   }
-  public bool WriteAllText(string txt) {
+  public bool WriteAllText(string txt, bool ensureFolders = false) {
+    if (ensureFolders) {
+      string folder = Path.GetDirectoryName(longPath);
+      Directory.CreateDirectory(folder);
+    }
     File.WriteAllText(longPath, txt);
     return Exists();
   }

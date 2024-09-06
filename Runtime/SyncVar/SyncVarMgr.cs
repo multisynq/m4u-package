@@ -5,17 +5,6 @@ using System.Linq.Expressions;
 using UnityEngine;
 using System.Linq;
 
-//========== ||||||||||||||| =============
-public class SyncedBehaviour : MonoBehaviour {
-  public int netId = 0;
-  // at editor time, set a value if it is zero
-  void OnValidate() {
-    // Debug.Log($"netId={netId}    GetInstanceID()={GetInstanceID()}");
-    if (netId == 0) {
-      netId = GetInstanceID();
-    }
-  }
-}
 
 #region Attribute
 //========== |||||||||||||||| ================
@@ -34,8 +23,9 @@ public class SyncVarAttribute : Attribute { // C# Attribute
   public string OnChangedCallback { get; set; } // Name of the method to call on the var's class when the value changes
 }
 #endregion
-//========== ||||||||||||||||| ====================================
-public class CroquetSyncVarMgr : JsCodeInjectingMonoBehavior {
+
+//========== |||||||||| ====================================
+public class SyncVarMgr : JsCodeInjectingMonoBehavior {
   #region Fields
     private Dictionary<string, SyncVarInfo> syncVars;
     private SyncVarInfo[]                   syncVarsArr;
@@ -45,6 +35,7 @@ public class CroquetSyncVarMgr : JsCodeInjectingMonoBehavior {
 
   #region JavaScript
   override public void InjectJsCode() {
+    string fName = "Proxies/SyncVarActor.js";
     string classCode = @"
     class SyncVarActor extends Actor {
       get gamePawnType() { return '' }
@@ -57,11 +48,10 @@ public class CroquetSyncVarMgr : JsCodeInjectingMonoBehavior {
       }
     }
     SyncVarActor.register('SyncVarActor')";
-    string initCode = "this.syncer = SyncVarActor.create({});";
-    Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} {classCode.Trim()} {initCode}");
-
-    // InjectCode(classCode, initCode)
-    JsCodeInjectingMgr.I.InjectCode(classCode, initCode);
+    string initCode = "this.syncer = SyncVarActor.create({});\n";
+    Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} '{fName}' '{initCode}' {classCode.Trim()}");
+    
+    JsCodeInjectingMgr.I.InjectCode(fName, classCode, initCode);
   }
   #endregion
 
