@@ -31,7 +31,10 @@ public abstract class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBe
         if (hub == null) {
           hub = new GameObject();
           hub.name = "_Singletons";
-          GameObject.DontDestroyOnLoad(hub);
+          // if not in editor, don't destroy on load
+          if (!Application.isEditor) {
+            DontDestroyOnLoad(hub);
+          }
         }
         // create the singleton on _Singletons
         s_Instance = hub.AddComponent<T>();
