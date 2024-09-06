@@ -36,22 +36,41 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
   #region JavaScript
   override public void InjectJsCode() {
     string fName = "Proxies/SyncVarActor.js";
-    string classCode = @"
-    class SyncVarActor extends Actor {
-      get gamePawnType() { return '' }
-      init(options) {
-        super.init(options)
-        this.subscribe('SyncVar', 'set1', this.syncVarChange)
+    string modelClassCode = @"
+      import { Actor } from '@croquet/worldcore-kernel';
+
+      class SyncVarActor extends Actor {
+        get gamePawnType() { return '' }
+        init(options) {
+          super.init(options)
+          this.subscribe('SyncVar', 'set1', this.syncVarChange)
+        }
+        syncVarChange(msg) {
+          this.publish('SyncVar', 'set2', msg)
+        }
       }
-      syncVarChange(msg) {
-        this.publish('SyncVar', 'set2', msg)
+      SyncVarActor.register('SyncVarActor')";
+
+    string initCode = "this.syncer = SyncVarActor.create({});\n";
+    string modelImports = "import { Actor } from \"@croquet/worldcore-kernel\";";
+    string rootModelClass = @"
+    export class MyModelRoot extends GameModelRoot {
+      init(options) {
+        super.init(options);
+        this.syncer = SyncVarActor.create({});
       }
     }
-    SyncVarActor.register('SyncVarActor')";
-    string initCode = "this.syncer = SyncVarActor.create({});\n";
-    Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} '{fName}' '{initCode}' {classCode.Trim()}");
-    
-    JsCodeInjectingMgr.I.InjectCode(fName, classCode, initCode);
+    MyModelRoot.register('MyModelRoot');";
+    string fullIndexJs = $@"
+      import {{ StartSession, GameViewRoot }} from ""@croquet/unity-bridge"";
+      {modelClassCode}
+      {rootModelClass}
+      StartSession(MyModelRoot, GameViewRoot);";
+    if (!CqFile.AppIndexJs().Exists()) CqFile.AppIndexJs().WriteAllText(fullIndexJs); // check if index.js is there, if not, make one.
+    else {
+      Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} '{fName}' '{initCode}' {modelClassCode.Trim()}");
+      JsCodeInjectingMgr.I.InjectCode(fName, modelClassCode, initCode);
+    }
   }
   #endregion
 
