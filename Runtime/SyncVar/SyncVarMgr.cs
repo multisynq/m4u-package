@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Linq.Expressions;
 using UnityEngine;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 
 #region Attribute
@@ -27,55 +28,67 @@ public class SyncVarAttribute : Attribute { // C# Attribute
 //========== |||||||||| ====================================
 public class SyncVarMgr : JsCodeInjectingMonoBehavior {
   #region Fields
-    private Dictionary<string, SyncVarInfo> syncVars;
-    private SyncVarInfo[]                   syncVarsArr;
+    [SerializeField] private Dictionary<string, SyncVarInfo> syncVars;
+    [SerializeField] private SyncVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
     static string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
   #endregion
+/*
 
-  #region JavaScript
-  override public void InjectJsCode() {
-    string fName = "Proxies/SyncVarActor.js";
-    string modelClassCode = @"
-      import { Actor } from '@croquet/worldcore-kernel';
+      import { StartSession, GameViewRoot } from "@croquet/unity-bridge";      
+      import { SyncVarActor } from './Proxies/SyncVarActor';
 
-      class SyncVarActor extends Actor {
-        get gamePawnType() { return '' }
-        init(options) {
-          super.init(options)
-          this.subscribe('SyncVar', 'set1', this.syncVarChange)
-        }
-        syncVarChange(msg) {
-          this.publish('SyncVar', 'set2', msg)
-        }
-      }
-      SyncVarActor.register('SyncVarActor')";
-
-    string initCode = "this.syncer = SyncVarActor.create({});\n";
-    string modelImports = "import { Actor } from \"@croquet/worldcore-kernel\";";
-    string rootModelClass = @"
     export class MyModelRoot extends GameModelRoot {
       init(options) {
         super.init(options);
         this.syncer = SyncVarActor.create({});
       }
     }
-    MyModelRoot.register('MyModelRoot');";
-    string fullIndexJs = $@"
-      import {{ StartSession, GameViewRoot }} from ""@croquet/unity-bridge"";
-      {modelClassCode}
-      {rootModelClass}
-      StartSession(MyModelRoot, GameViewRoot);";
-    if (!CqFile.AppIndexJs().Exists()) CqFile.AppIndexJs().WriteAllText(fullIndexJs); // check if index.js is there, if not, make one.
-    else {
-      Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} '{fName}' '{initCode}' {modelClassCode.Trim()}");
-      JsCodeInjectingMgr.I.InjectCode(fName, modelClassCode, initCode);
+    MyModelRoot.register('MyModelRoot');
+      StartSession(MyModelRoot, GameViewRoot);
+*/
+  #region JavaScript
+  override public void InjectJsCode() {
+    string fName = "plugins/SyncVarActor.js";
+    string modelClassCode = @"
+import { Actor } from '@croquet/worldcore-kernel';
+
+export class SyncVarActor extends Actor {
+  get gamePawnType() { return '' }
+  init(options) {
+    super.init(options)
+    this.subscribe('SyncVar', 'set1', this.syncVarChange)
+  }
+  syncVarChange(msg) {
+    this.publish('SyncVar', 'set2', msg)
+  }
+}
+SyncVarActor.register('SyncVarActor')";
+    string proxyImport   = "import { SyncVarActor } from './plugins/SyncVarActor';";
+    string modelInitCode = "this.syncer = SyncVarActor.create({});\n";
+
+    // Always write the model class code
+    var modelClassPath = CqFile.AppFolder().DeeperFile("proxies/SyncVarActor.js");
+    if (modelClassPath.Exists()) {
+      Debug.Log($"{svLogPrefix} '{modelClassPath.shortPath}' already present");
+    } else {
+      Debug.Log($"{svLogPrefix} Writing new file '{modelClassPath.shortPath}'");
+      modelClassPath.WriteAllText(modelClassCode, true); // true = create needed folders
     }
+
+    if (CqFile.AppIndexJs().Exists()) { // check if index.js is there, if not, make one.
+      Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} '{fName}' '{modelInitCode.Trim()}' {modelClassCode.Trim()}");
+      JsCodeInjectingMgr.I.InjectCode(fName, modelClassCode, modelInitCode);
+    } else { // if index.js is there, inject the code
+      string indexJs = JsCodeInjectingMgr.I.FullIndexJs(proxyImport, modelInitCode);
+      CqFile.AppIndexJs().WriteAllText(indexJs, true);
+    }
+
   }
   #endregion
-
   #region SubClasses
     // ------------------- ||||||||||| ---
+    [Serializable]
     private abstract class SyncVarInfo {
       public readonly string varId;
       public readonly int varIdx;
@@ -134,7 +147,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
 
       Croquet.Subscribe("SyncVar", "set2", ReceiveAsMsg);
 
-      JsCodeInjectingMgr.I.InjectAllJsCode();
+      // JsCodeInjectingMgr.I.InjectAllJsCode();
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
@@ -329,8 +342,8 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       syncVar.onChangedCallback?.Invoke(deserializedValue);
 
       Debug.Log( (arrLookupFailed) // Report how we found the syncVar
-        ?  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} value='{logMsgVal}'"
-        :  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} value='{logMsgVal}'"
+        ?  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} value={logMsgVal}"
+        :  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} value={logMsgVal}"
       );
 
     } // end ReceiveAsMsg()

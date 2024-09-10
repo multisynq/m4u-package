@@ -20,6 +20,23 @@ public class JsCodeInjectingMgr : MonoBehaviourSingleton<JsCodeInjectingMgr> {
     }
   }
 
+  public string FullIndexJs( string proxyImport, string modelInitCode) {
+    return $@"
+      import {{ StartSession, GameViewRoot }} from '@croquet/unity-bridge';
+      import {{ GameModelRoot }} from '@croquet/game-models';      
+      {proxyImport}
+
+      export class MyModelRoot extends GameModelRoot {{
+        init(options) {{
+          super.init(options);
+          {modelInitCode}
+        }}
+      }}
+      MyModelRoot.register('MyModelRoot');
+
+      StartSession(MyModelRoot, GameViewRoot);";
+  }
+
   public void InjectCode(string fileNm, string classCode, string initCode) {
     
     CqFile.AppFolder().DeeperFile(fileNm).WriteAllText(classCode, true); // true = create needed folders
@@ -87,10 +104,10 @@ public class JsCodeInjectingMgr : MonoBehaviourSingleton<JsCodeInjectingMgr> {
       CodeBlock? initMethod = modelParser.FindMethodInClass("init", modelClassName, "GameModelRoot");
 
       if (initMethod == null) {
-        throw new Exception($"Could not find init method in class {modelClassName}");
+        throw new Exception($"Could not find init() method in class {modelClassName} extends GameModelRoot");
       }
-
-      Debug.Log("Found init method");
+      string codeBlock = modelContent.Substring(initMethod.Start, initMethod.End - initMethod.Start);
+      Debug.Log($"Found init()... {codeBlock.Trim()}");
 
       // (6) Insert the initCode into the init() method
       string codeToInsert = "    this.syncer = SyncVarActor.create({});\n";
