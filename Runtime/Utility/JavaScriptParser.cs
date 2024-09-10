@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -26,14 +27,16 @@ public class Parser {
   }
 
   public string Consume(params string[] patterns) {
-      foreach (var pattern in patterns) {
-          var match = Regex.Match(input.Substring(position), $"^{pattern}");
-          if (match.Success) {
-              position += match.Length;
-              return match.Value;
-          }
+    foreach (var pattern in patterns) {
+      UnityEngine.Debug.Log($"B4:/{pattern}/ {input.Substring(position, 40)}...");
+      var match = Regex.Match(input.Substring(position), $"^{pattern}");
+      if (match.Success) {
+        position += match.Length;
+        UnityEngine.Debug.Log($"__:/{pattern}/ val='{match.Value}' {input.Substring(position, 40)}...");
+        return match.Value;
       }
-      throw new Exception($"Expected one of '{string.Join("', '", patterns)}' at position {position}, found '{input.Substring(position, Math.Min(10, input.Length - position))}...'");
+    }
+    throw new Exception($"Expected one of '{string.Join("', '", patterns)}' at position {position}, found '{input.Substring(position, Math.Min(10, input.Length - position))}...'");
   }
 
   public void Skip(string pattern) => Consume(pattern);

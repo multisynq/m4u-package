@@ -473,6 +473,7 @@ public class CroquetBuilder
         // 3. build target: 'node' or 'webview' or 'webgl'
         // 4. (iff starting a watcher) path to a temporary file to be used for output
         arguments += $"{nodeExecPath} {appName} {target} ";
+        Debug.Log($"<color=yellow>Building JS:</color> {executable} {arguments}");
         if (startWatcher)
         {
             logFile = Path.GetTempFileName();
@@ -480,7 +481,7 @@ public class CroquetBuilder
         }
         else
         {
-            Debug.Log($"building {appName} for {target}");
+            Debug.Log($"building {appName} for {target} to StreamingAssets/{appName}");
         }
 
         Process builderProcess = new Process();
