@@ -6,7 +6,7 @@ public class SyncedBehaviour : MonoBehaviour {
   public int netId = 0;
   
   #if UNITY_EDITOR
-    // At editor time, set a new nedId  ONLY IF  it is zero and unititialized
+    // At editor time, set a new netId  ONLY IF  it is zero and unititialized
     void OnValidate() {
       if (netId == 0) {
         netId = GenerateNewId(GetInstanceID());
