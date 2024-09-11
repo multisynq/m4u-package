@@ -1,73 +1,72 @@
 using UnityEngine;
+public abstract class SingletonMB<T> : SingletonMB<T, MonoBehaviour> where T : SingletonMB<T>
+{
+}
 
+public abstract class SingletonMB<T, TBase> : MonoBehaviour where T : SingletonMB<T, TBase> where TBase : MonoBehaviour
+{
+    private static T _instance;
+    private static readonly object _lock = new object();
+    private static bool _applicationIsQuitting = false;
 
-public abstract class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSingleton<T> {
-  protected static T s_Instance = null;
+    public static T Instance
+    {
+        get
+        {
+            if (_applicationIsQuitting)
+            {
+                Debug.LogWarning($"[Singleton] Instance '{typeof(T)}' already destroyed on application quit. Won't create again - returning null.");
+                return null;
+            }
 
-  protected static bool s_ShuttingDown = false;
-	
-	public static T Instance {
-    get {
-      CreateInstance();
-      return s_Instance;
-    }
-  }
-	public static T I {
-    get { return Instance; }
-  }
-	
-	public static void CreateInstance() {
-		if (s_ShuttingDown) {
-			return;
-		}
-		
-    if (s_Instance == null) {
-      // first try to find T anywhere in scene
-      s_Instance = GameObject.FindObjectOfType<T>();
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = (T)FindObjectOfType(typeof(T));
 
-      if (s_Instance == null) {
-        // find the singleton hub
-        GameObject hub = GameObject.Find("_Singletons");
-        if (hub == null) {
-          hub = new GameObject();
-          hub.name = "_Singletons";
-          // if not in editor, don't destroy on load
-          if (!Application.isEditor) {
-            DontDestroyOnLoad(hub);
-          }
+                    if (FindObjectsOfType(typeof(T)).Length > 1)
+                    {
+                        Debug.LogError($"[Singleton] Something went really wrong - there should never be more than 1 singleton! Reopening the scene might fix it.");
+                        return _instance;
+                    }
+
+                    if (_instance == null)
+                    {
+                        GameObject singleton = new GameObject();
+                        _instance = singleton.AddComponent<T>();
+                        singleton.name = $"(singleton) {typeof(T)}";
+
+                        DontDestroyOnLoad(singleton);
+
+                        Debug.Log($"[Singleton] An instance of {typeof(T)} is needed in the scene, so '{singleton}' was created with DontDestroyOnLoad.");
+                    }
+                    else
+                    {
+                        Debug.Log($"[Singleton] Using instance already created: {_instance.gameObject.name}");
+                    }
+                }
+
+                return _instance;
+            }
         }
-        // create the singleton on _Singletons
-        s_Instance = hub.AddComponent<T>();
-      }
     }
-	}
-	
-	public static void DestroyInstance() {
-		if (s_Instance == null) {
-			return;
-		}
-		s_Instance = null;
-		UnityEngine.Object.Destroy(s_Instance);
-	}
-	
-  public static bool InstanceExists
-  {
-    get { return s_Instance != null; }
-  }
 
-  protected virtual void Awake() {
-    if (s_Instance == null) {
-      s_Instance = this as T;
+    protected virtual void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = (T)this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else if (_instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
-  }
-	
-	protected void OnDestroy() {
-		if (this == s_Instance) {
-			s_Instance = null;
-		}
-	}
 
-  protected void OnApplicationQuit() {
-    s_ShuttingDown = true;
-  }
+    protected virtual void OnApplicationQuit()
+    {
+        _applicationIsQuitting = true;
+    }
 }

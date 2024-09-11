@@ -31,6 +31,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     [SerializeField] private SyncVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
     static public string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
+    static bool dbg = true;
     #endregion
 
     #region JavaScript
@@ -55,7 +56,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       ".LessIndent();
     }
     override public void OnInjectJsPluginCode() {
-      Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
+      if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
       base.OnInjectJsPluginCode();
     }
   #endregion
@@ -185,7 +186,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       syncVarsArr = syncVarsList.ToArray();
 
       foreach (var syncVar in syncVars) {
-        Debug.Log($"{svLogPrefix} Found <color=white>{syncVar.Key}</color>, value is <color=yellow>{syncVar.Value.Getter()}</color>");
+        if (dbg)  Debug.Log($"{svLogPrefix} Found <color=white>{syncVar.Key}</color>, value is <color=yellow>{syncVar.Value.Getter()}</color>");
       }
     } // end Start()
 
@@ -283,7 +284,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     void SendAsMsg(int varIdx, string varId, object value, Type varType) {
       string serializedValue = SerializeValue(value, varType);
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
-      Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
+      if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
       Croquet.Publish("SyncVar", "set1", msg);
     }
 
@@ -321,7 +322,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       object hadVal = syncVar.Getter();
       bool valIsSame = hadVal.Equals(deserializedValue); // TODO: replace with blockLoopySend logic
       if (valIsSame) {
-        Debug.Log($"{svLogPrefix} {logPrefix} {logMsg} Skipping SET. '<color=yellow>{hadVal}</color>' == {logMsgVal} <color=yellow>Unchanged</color> value. {logIds} blockLoopySend:{syncVar.blockLoopySend}");
+        if (dbg)  Debug.Log($"{svLogPrefix} {logPrefix} {logMsg} Skipping SET. '<color=yellow>{hadVal}</color>' == {logMsgVal} <color=yellow>Unchanged</color> value. {logIds} blockLoopySend:{syncVar.blockLoopySend}");
         return;
       }
       syncVar.blockLoopySend = true;     // Make sure we Skip sending the value we just received
@@ -330,7 +331,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       syncVar.LastValue = deserializedValue;
       syncVar.onChangedCallback?.Invoke(deserializedValue);
 
-      Debug.Log( (arrLookupFailed) // Report how we found the syncVar
+      if (dbg)  Debug.Log( (arrLookupFailed) // Report how we found the syncVar
         ?  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} value={logMsgVal}"
         :  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} value={logMsgVal}"
       );
@@ -354,7 +355,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
           return null;
         } else {
           syncVar.ConfirmedInArr = true;
-          Debug.Log($"{svLogPrefix} <color=green>✔️</color>Confirmed syncVars[varId:'<color=white>{varId}</color>'] matches entry at syncVarsArr[varIdx:<color=cyan>{varIdx}</color>]");
+          if (dbg)  Debug.Log($"{svLogPrefix} <color=green>✔️</color>Confirmed syncVars[varId:'<color=white>{varId}</color>'] matches entry at syncVarsArr[varIdx:<color=cyan>{varIdx}</color>]");
           return syncVar;
         }
       }
