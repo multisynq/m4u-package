@@ -1,7 +1,23 @@
 using UnityEngine;
 
 abstract public class JsCodeInjectingMonoBehavior : MonoBehaviour {
-  abstract public void InjectJsCode();
+  // TODO: make #if UNITY_EDITOR throughout code injection
+  static public string logPrefix = "[<color=yellow>Js</color><color=cyan>CodeInject</color>]";
+  abstract public string JsPluginFileName();
+  abstract public string JsPluginCode();
+
+  virtual public void OnInjectJsPluginCode() {
+    Debug.Log($"{logPrefix} <color=white>BASE</color>   virtual public void OnInjectJsPluginCode()");
+
+    var modelClassPath = CqFile.AppFolder().DeeperFile(JsPluginFileName());
+    // if (modelClassPath.Exists()) {
+    //   Debug.LogWarning($"{svLogPrefix} '{modelClassPath.shortPath}' already present at '{modelClassPath.longPath}'");
+    // } else {
+      Debug.Log($"{logPrefix} Writing new file '{modelClassPath.shortPath}'");
+      string jsCode = JsPluginCode().LessIndent();
+      modelClassPath.WriteAllText(jsCode, true); // true = create needed folders
+    // }
+  }
 }
 
 public class JsCodeInjectingMgr : MonoBehaviourSingleton<JsCodeInjectingMgr> {
@@ -9,9 +25,9 @@ public class JsCodeInjectingMgr : MonoBehaviourSingleton<JsCodeInjectingMgr> {
   // string myAppIndexJsFile;
   static public string logPrefix = "[<color=yellow>Js</color><color=cyan>CodeInject</color>]";
 
-  public void InjectAllJsCode() {
+  public void InjectAllJsPluginCode() {
     foreach (var jci in FindObjectsOfType<JsCodeInjectingMonoBehavior>()) {
-      jci.InjectJsCode();
+      jci.OnInjectJsPluginCode();
     }
   }
 
