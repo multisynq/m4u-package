@@ -33,55 +33,31 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     static char msgSeparator = '|';
     static string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
   #endregion
-/*
 
-      import { StartSession, GameViewRoot } from "@croquet/unity-bridge";      
-      import { SyncVarActor } from './Proxies/SyncVarActor';
-
-    export class MyModelRoot extends GameModelRoot {
-      init(options) {
-        super.init(options);
-        this.syncer = SyncVarActor.create({});
-      }
-    }
-    MyModelRoot.register('MyModelRoot');
-      StartSession(MyModelRoot, GameViewRoot);
-*/
   #region JavaScript
   override public void InjectJsCode() {
-    string fName = "plugins/SyncVarActor.js";
+    string jsFilePath = "plugins/SyncVarMgrModel.js";
+    var modelClassPath = CqFile.AppFolder().DeeperFile(jsFilePath);
     string modelClassCode = @"
-import { Actor } from '@croquet/worldcore-kernel';
+      import { Model } from '@croquet/croquet';
 
-export class SyncVarActor extends Actor {
-  get gamePawnType() { return '' }
-  init(options) {
-    super.init(options)
-    this.subscribe('SyncVar', 'set1', this.syncVarChange)
-  }
-  syncVarChange(msg) {
-    this.publish('SyncVar', 'set2', msg)
-  }
-}
-SyncVarActor.register('SyncVarActor')";
-    string proxyImport   = "import { SyncVarActor } from './plugins/SyncVarActor';";
-    string modelInitCode = "this.syncer = SyncVarActor.create({});\n";
-
-    // Always write the model class code
-    var modelClassPath = CqFile.AppFolder().DeeperFile("proxies/SyncVarActor.js");
+      export class SyncVarMgrModel extends Model {
+        get gamePawnType() { return '' }
+        init(options) {
+          super.init(options)
+          this.subscribe('SyncVar', 'set1', this.syncVarChange)
+          console.log('### <color=magenta>SyncVarMgrModel.init() <<<<<<<<<<<<<<<<<<<<< </color>')
+        }
+        syncVarChange(msg) {
+          this.publish('SyncVar', 'set2', msg)
+        }
+      }
+      SyncVarMgrModel.register('SyncVarMgrModel')".LessIndent();
     if (modelClassPath.Exists()) {
-      Debug.Log($"{svLogPrefix} '{modelClassPath.shortPath}' already present");
+      Debug.LogWarning($"{svLogPrefix} '{modelClassPath.shortPath}' already present at '{modelClassPath.longPath}'");
     } else {
       Debug.Log($"{svLogPrefix} Writing new file '{modelClassPath.shortPath}'");
       modelClassPath.WriteAllText(modelClassCode, true); // true = create needed folders
-    }
-
-    if (CqFile.AppIndexJs().Exists()) { // check if index.js is there, if not, make one.
-      Debug.Log($"{svLogPrefix} {JsCodeInjectingMgr.logPrefix} '{fName}' '{modelInitCode.Trim()}' {modelClassCode.Trim()}");
-      JsCodeInjectingMgr.I.InjectCode(fName, modelClassCode, modelInitCode);
-    } else { // if index.js is there, inject the code
-      string indexJs = JsCodeInjectingMgr.I.FullIndexJs(proxyImport, modelInitCode);
-      CqFile.AppIndexJs().WriteAllText(indexJs, true);
     }
 
   }
@@ -104,16 +80,20 @@ SyncVarActor.register('SyncVarActor')";
       public bool ConfirmedInArr { get; set; }
       public float LastSyncTime { get; set; }
 
-      protected SyncVarInfo(string varId, int varIdx, Func<object> getter, Action<object> setter,
-                            SyncedBehaviour monoBehaviour, Type varType, SyncVarAttribute attribute,
-                            object initialValue, Action<object> onChangedCallback) {
+      protected SyncVarInfo( // constructor
+        string varId, int varIdx,      
+        Func<object> getter, Action<object> setter,
+        SyncedBehaviour monoBehaviour, Type varType, 
+        SyncVarAttribute attribute, object initialValue, 
+        Action<object> onChangedCallback
+      ) {
         this.varId = varId; this.varIdx = varIdx;
         Getter = getter; Setter = setter;
-        syncedBehaviour = monoBehaviour;
-        this.varType = varType; this.attribute = attribute;
-        LastValue = initialValue; ConfirmedInArr = false;
-        LastSyncTime = 0f;
+        syncedBehaviour = monoBehaviour; this.varType = varType; 
+        this.attribute = attribute; LastValue = initialValue; 
         this.onChangedCallback = onChangedCallback;
+        ConfirmedInArr = false;
+        LastSyncTime = 0f;
       }
     }
 
@@ -121,10 +101,18 @@ SyncVarActor.register('SyncVarActor')";
     private class SyncFieldInfo : SyncVarInfo {
       public readonly FieldInfo FieldInfo;
 
-      public SyncFieldInfo(string fieldId, int fieldIdx, Func<object> getter, Action<object> setter,
-                            SyncedBehaviour monoBehaviour, FieldInfo fieldInfo, SyncVarAttribute attribute,
-                            object initialValue, Action<object> onChangedCallback)
-          : base(fieldId, fieldIdx, getter, setter, monoBehaviour, fieldInfo.FieldType, attribute, initialValue, onChangedCallback) {
+      public      SyncFieldInfo( // constructor
+        string fieldId, int fieldIdx, 
+        Func<object> getter, Action<object> setter,
+        SyncedBehaviour monoBehaviour, FieldInfo fieldInfo, 
+        SyncVarAttribute attribute, object initialValue, 
+        Action<object> onChangedCallback
+      ) : base(
+        fieldId, fieldIdx, getter, setter, 
+        monoBehaviour, fieldInfo.FieldType, 
+        attribute, initialValue, 
+        onChangedCallback
+      ) {
         FieldInfo = fieldInfo;
       }
     }
@@ -133,10 +121,18 @@ SyncVarActor.register('SyncVarActor')";
     private class SyncPropInfo : SyncVarInfo {
       public readonly PropertyInfo PropInfo;
 
-      public SyncPropInfo(string propId, int propIdx, Func<object> getter, Action<object> setter,
-                          SyncedBehaviour monoBehaviour, PropertyInfo propInfo, SyncVarAttribute attribute,
-                          object initialValue, Action<object> onChangedCallback)
-          : base(propId, propIdx, getter, setter, monoBehaviour, propInfo.PropertyType, attribute, initialValue, onChangedCallback) {
+      public      SyncPropInfo( // constructor
+        string propId, int propIdx, 
+        Func<object> getter, Action<object> setter,
+        SyncedBehaviour monoBehaviour, PropertyInfo propInfo, 
+        SyncVarAttribute attribute, object initialValue, 
+        Action<object> onChangedCallback
+      ) : base(
+        propId, propIdx, getter, setter, 
+        monoBehaviour, propInfo.PropertyType, 
+        attribute, initialValue, 
+        onChangedCallback
+      ) {
         PropInfo = propInfo;
       }
     }
@@ -145,9 +141,7 @@ SyncVarActor.register('SyncVarActor')";
     //-- ||||| ---
     void Start() { // CroquetSynchVarMgr.Start()
 
-      Croquet.Subscribe("SyncVar", "set2", ReceiveAsMsg);
-
-      // JsCodeInjectingMgr.I.InjectAllJsCode();
+      Croquet.Subscribe("SyncVar", "set2", ReceiveAsMsg); // <<<< Croquet!! <<<<
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
@@ -172,7 +166,7 @@ SyncVarActor.register('SyncVarActor')";
         var fields     = type.GetFields(    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-        foreach (var field in fields) {
+        foreach (var field in fields) { // for fields with [SyncVar] attribute
           var attribute = field.GetCustomAttribute<SyncVarAttribute>();
           if (attribute != null) {
             var syncFieldInfo = CreateSyncFieldInfo(syncBeh, field, attribute, varIdx++);
@@ -181,7 +175,7 @@ SyncVarActor.register('SyncVarActor')";
           }
         }
 
-        foreach (var prop in properties) {
+        foreach (var prop in properties) { // for properties with [SyncVar] attribute
           var attribute = prop.GetCustomAttribute<SyncVarAttribute>();
           if (attribute != null) {
             var syncPropInfo = CreateSyncPropInfo(syncBeh, prop, attribute, varIdx++);
@@ -222,9 +216,7 @@ SyncVarActor.register('SyncVarActor')";
     }
     // ----------------- |||||||||||||||||| ---
     private SyncPropInfo CreateSyncPropInfo(SyncedBehaviour syncBeh, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
-      string propId = (attribute.CustomName != null) 
-        ? GenerateVarId(syncBeh, attribute.CustomName) 
-        : GenerateVarId(syncBeh, prop.Name);
+      string propId = GenerateVarId(syncBeh, attribute.CustomName ?? prop.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
       return new SyncPropInfo(
           propId, propIdx,
