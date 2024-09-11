@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Linq.Expressions;
 using UnityEngine;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 
 #region Attribute
@@ -31,38 +30,34 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     [SerializeField] private Dictionary<string, SyncVarInfo> syncVars;
     [SerializeField] private SyncVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
-    static string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
-  #endregion
+    static public string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
+    #endregion
 
-  #region JavaScript
-  override public void InjectJsCode() {
-    string jsFilePath = "plugins/SyncVarMgrModel.js";
-    var modelClassPath = CqFile.AppFolder().DeeperFile(jsFilePath);
-    string modelClassCode = @"
-      import { Model } from '@croquet/croquet';
-      
-      export class SyncVarMgrModel extends Model {
-        get gamePawnType() { return '' }
-        init(options) {
-          super.init(options)
-          this.subscribe('SyncVar', 'set1', this.syncVarChange)
-          console.log('### <color=magenta>SyncVarMgrModel.init() <<<<<<<<<<<<<<<<<<<<< </color>')
+    #region JavaScript
+    override public string JsPluginFileName() { return "plugins/SyncVarMgrModel.js"; }
+    override public string JsPluginCode() {
+      return @"
+        import { Model } from '@croquet/croquet';
+        
+        export class SyncVarMgrModel extends Model {
+          get gamePawnType() { return '' }
+          init(options) {
+            super.init(options)
+            this.subscribe('SyncVar', 'set1', this.syncVarChange)
+            console.log('### <color=magenta>SyncVarMgrModel.init() <<<<<<<<<<<<<<<<<<<<< </color>')
+          }
+          syncVarChange(msg) {
+            console.log(`<color=blue>[SyncVar]</color> <color=yellow>JS</color> CroquetModel <color=magenta>SyncVarMgrModel.syncVarChange()</color> msg = <color=white>${JSON.stringify(msg)}</color>`)
+            this.publish('SyncVar', 'set2', msg)
+          }
         }
-        syncVarChange(msg) {
-          console.log(`<color=blue>[SyncVar]</color> <color=yellow>JS</color> CroquetModel <color=magenta>SyncVarMgrModel.syncVarChange()</color> msg = <color=white>${JSON.stringify(msg)}</color>`)
-          this.publish('SyncVar', 'set2', msg)
-        }
-      }
-      SyncVarMgrModel.register('SyncVarMgrModel')
-".LessIndent();
-    // if (modelClassPath.Exists()) {
-    //   Debug.LogWarning($"{svLogPrefix} '{modelClassPath.shortPath}' already present at '{modelClassPath.longPath}'");
-    // } else {
-      Debug.Log($"{svLogPrefix} Writing new file '{modelClassPath.shortPath}'");
-      modelClassPath.WriteAllText(modelClassCode, true); // true = create needed folders
-    // }
-
-  }
+        SyncVarMgrModel.register('SyncVarMgrModel')
+      ".LessIndent();
+    }
+    override public void OnInjectJsPluginCode() {
+      Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
+      base.OnInjectJsPluginCode();
+    }
   #endregion
   #region SubClasses
     // ------------------- ||||||||||| ---
