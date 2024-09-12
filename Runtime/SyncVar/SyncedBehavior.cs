@@ -1,9 +1,37 @@
+using System;
 using System.Linq;
 using UnityEngine;
+
 //========== ||||||||||||||| =============
 public class SyncedBehaviour : MonoBehaviour {
 
   public int netId = 0;
+
+  public void CallSyncCommand(Action method, params object[] parameters) {
+      string methodName = method.Method.Name;
+      SyncCommandMgr.I.PublishCommandCall(this, methodName, parameters);
+  }
+
+  public void CallSyncCommand<T>(Action<T> method, T parameter) {
+      string methodName = method.Method.Name;
+      SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { parameter });
+  }
+
+  // Add more overloads for different number of parameters as needed
+  public void CallSyncCommand<T1, T2>(Action<T1, T2> method, T1 param1, T2 param2) {
+      string methodName = method.Method.Name;
+      SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { param1, param2 });
+  }
+
+  public void CallSyncCommand<T1, T2, T3>(Action<T1, T2, T3> method, T1 param1, T2 param2, T3 param3) {
+      string methodName = method.Method.Name;
+      SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { param1, param2, param3 });
+  }
+
+  public void CallSyncCommand<T1, T2, T3, T4>(Action<T1, T2, T3, T4> method, T1 param1, T2 param2, T3 param3, T4 param4) {
+      string methodName = method.Method.Name;
+      SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { param1, param2, param3, param4 });
+  }
   
   #if UNITY_EDITOR
     // At editor time, set a new netId  ONLY IF  it is zero and unititialized
