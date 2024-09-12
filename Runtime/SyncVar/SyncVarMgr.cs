@@ -147,8 +147,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       int varIdx = 0;
       #if UNITY_EDITOR
         foreach (MonoBehaviour mb in FindObjectsOfType<MonoBehaviour>()) {
-          // skip inactives
-          if (!mb.enabled) continue;
+          if (!mb.enabled) continue; // skip inactives
           // check for SyncVar attribute on fields of non-SyncedBehaviours
           var fields = mb.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
           var properties = mb.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -162,6 +161,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
         }
       #endif
       foreach (SyncedBehaviour syncBeh in FindObjectsOfType<SyncedBehaviour>()) {
+        if (!syncBeh.enabled) continue; // skip inactives
         var type       = syncBeh.GetType();
         var fields     = type.GetFields(    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
