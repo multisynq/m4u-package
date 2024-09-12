@@ -107,8 +107,8 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
     return $"{syncBeh.netId}_{commandName}";
   }
 
-  public void PublishCommandCall(SyncedBehaviour sb, string commandId, params object[] parameters) {
-    string cmdWithNetId = $"{sb.netId}_{commandId}";
+  public void PublishCommandCall(SyncedBehaviour syncBeh, string commandId, params object[] parameters) {
+    string cmdWithNetId = $"{syncBeh.netId}_{commandId}";
     string serializedParams = string.Join(msgSeparator.ToString(), parameters.Select(p => SerializeValue(p)));
     var msg = $"{syncCommands[cmdWithNetId].commandIdx}{msgSeparator}{cmdWithNetId}{msgSeparator}{serializedParams}";
     Debug.Log($"{scLogPrefix} <color=#ff22ff>Publish</color> msg:'<color=cyan>{msg}</color>'");
