@@ -2,25 +2,35 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+public enum RpcTarget { Others, All };
+
 //========== ||||||||||||||| =============
 public class SyncedBehaviour : MonoBehaviour {
 
   public int netId = 0;
 
+  public void CallSyncCommand(string methodName, params object[] parameters) {
+    SyncCommandMgr.I.PublishCommandCall(this, methodName, parameters);
+  }
+
+  public void RPC(string methodName, RpcTarget target, params object[] parameters) {
+    CallSyncCommand(methodName, parameters);
+  }
+
   public void CallSyncCommand(Action method, params object[] parameters) {
-      string methodName = method.Method.Name;
-      SyncCommandMgr.I.PublishCommandCall(this, methodName, parameters);
+    string methodName = method.Method.Name;
+    SyncCommandMgr.I.PublishCommandCall(this, methodName, parameters);
   }
 
   public void CallSyncCommand<T>(Action<T> method, T parameter) {
-      string methodName = method.Method.Name;
-      SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { parameter });
+    string methodName = method.Method.Name;
+    SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { parameter });
   }
 
   // Add more overloads for different number of parameters as needed
   public void CallSyncCommand<T1, T2>(Action<T1, T2> method, T1 param1, T2 param2) {
-      string methodName = method.Method.Name;
-      SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { param1, param2 });
+    string methodName = method.Method.Name;
+    SyncCommandMgr.I.PublishCommandCall(this, methodName, new object[] { param1, param2 });
   }
 
   public void CallSyncCommand<T1, T2, T3>(Action<T1, T2, T3> method, T1 param1, T2 param2, T3 param3) {
