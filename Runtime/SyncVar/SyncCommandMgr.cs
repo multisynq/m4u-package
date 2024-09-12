@@ -9,6 +9,9 @@ using System.ComponentModel;
 public class SyncCommandAttribute : Attribute {
   public string CustomName { get; set; }
 }
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+public class SyncRPCAttribute : SyncCommandAttribute {
+}
 
 public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
 // JsCodeInjectingMonoBehavior {
@@ -82,7 +85,7 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
       var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
       foreach (var method in methods) {
-        var attribute = method.GetCustomAttribute<SyncCommandAttribute>();
+        var attribute = method.GetCustomAttribute<SyncCommandAttribute>() ?? method.GetCustomAttribute<SyncRPCAttribute>();
         if (attribute != null) {
           var syncCommandInfo = CreateSyncCommandInfo(syncBeh, method, attribute, commandIdx++);
           syncCommands.Add(syncCommandInfo.commandId, syncCommandInfo);
@@ -107,7 +110,13 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
     return $"{syncBeh.netId}_{commandName}";
   }
 
-  public void PublishCommandCall(SyncedBehaviour syncBeh, string commandId, params object[] parameters) {
+  public void PublishSyncCommandCall(SyncedBehaviour syncBeh, RpcTarget tgt, string commandId, params object[] parameters) {
+    // TODO: Implement the actual logic to send the command only other clients or all clients
+    // if (tgt == RpcTarget.Others) {
+    // else if (tgt == RpcTarget.All) {
+    PublishSyncCommandCall(syncBeh, commandId, parameters);
+  }
+  public void PublishSyncCommandCall(SyncedBehaviour syncBeh, string commandId, params object[] parameters) {
     string cmdWithNetId = $"{syncBeh.netId}_{commandId}";
     string serializedParams = string.Join(msgSeparator.ToString(), parameters.Select(p => SerializeValue(p)));
     var msg = $"{syncCommands[cmdWithNetId].commandIdx}{msgSeparator}{cmdWithNetId}{msgSeparator}{serializedParams}";
