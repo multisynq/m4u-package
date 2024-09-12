@@ -202,7 +202,7 @@ public class CroquetRunner : MonoBehaviour
 
             //webViewObject.SetMargins(-5, -5, Screen.width - 8, Screen.height - 8);
             //webViewObject.SetMargins(5, 5, (int)(Screen.width * 0.6f), (int)(Screen.height * 0.6f));
-            webViewObject.SetMargins(Screen.width - 50, Screen.height - 50, -100, -100);
+            webViewObject.SetMargins(Screen.width - 3, Screen.height - 3, -100, -100);
             webViewObject.SetVisibility(showWebview);
 
             // webViewObject.SetTextZoom(100);  // android only. cf. https://stackoverflow.com/questions/21647641/android-webview-set-font-size-system-default/47017410#47017410
