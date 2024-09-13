@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
-using System.ComponentModel;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class SyncCommandAttribute : Attribute {
@@ -14,7 +13,7 @@ public class SyncRPCAttribute : SyncCommandAttribute {
 }
 
 //========== |||||||||||||| =====================================================
-public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
+public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
   #region Fields
     private Dictionary<string, SyncCommandInfo> syncCommands;
     private SyncCommandInfo[] syncCommandsArr;
@@ -23,8 +22,8 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
   #endregion
 
   #region Singleton
-    private static SyncCommandMgr _Instance;
-    public static SyncCommandMgr I { 
+    private static SyncCommand_Mgr _Instance = null;
+    public static SyncCommand_Mgr I { 
       get { 
         _Instance = Singletoner.EnsureInst(_Instance);
         return _Instance;
@@ -34,7 +33,7 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
   #endregion
 
   #region JavaScript
-    public override string JsPluginFileName() { return "plugins/SyncCommandMgrModel.js"; }
+    public override string JsPluginFileName() { return "plugins/SyncCommand_Mgr_Model.js"; }
 
     public override string JsPluginCode() {
       return @"
@@ -56,7 +55,7 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
     }
 
     public override void InjectJsPluginCode() {
-      Debug.Log($"{logPrefix} override public void OnInjectJsPluginCode()");
+      Debug.Log($"{logPrefix} override public void InjectJsPluginCode()");
       base.InjectJsPluginCode();
     }
   #endregion

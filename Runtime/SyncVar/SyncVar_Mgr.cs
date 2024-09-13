@@ -26,7 +26,7 @@ using System.Linq;
 #endregion
 
 //========== |||||||||| ====================================
-public class SyncVarMgr : JsCodeInjectingMonoBehavior {
+public class SyncVar_Mgr : JsCodeInjecting_MonoBehavior {
 
   #region Fields
     [SerializeField] private Dictionary<string, SyncVarInfo> syncVars;
@@ -38,19 +38,19 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
 
   #region Singleton
     //---------------------- | -------------------------
-    public static SyncVarMgr I { // Usage:   SyncVarMgr.I.JsPluginFileName();
+    public static SyncVar_Mgr I { // Usage:   SyncVarMgr.I.JsPluginFileName();
       get { 
         _Instance = Singletoner.EnsureInst(_Instance);
         return _Instance;
       }
       private set { _Instance = value; }
     }
-    private static SyncVarMgr _Instance;
+    private static SyncVar_Mgr _Instance;
   #endregion
 
   #region JavaScript
     //-------------------- |||||||||||||||| -------------------------
-    override public string JsPluginFileName() { return "plugins/SyncVarMgrModel.js"; }
+    override public string JsPluginFileName() { return "plugins/SyncVar_Mgr_Model.js"; }
     override public string JsPluginCode() {
       return @"
         import { Model } from '@croquet/croquet';
