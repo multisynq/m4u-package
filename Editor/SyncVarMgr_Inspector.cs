@@ -1,18 +1,18 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(SyncVarMgr))]
+[CustomEditor(typeof(SyncVar_Mgr))]
 public class CroquetSyncVarMgrEditor : Editor {
 
   public override void OnInspectorGUI() {
     DrawDefaultInspector();
-    SyncVarMgr manager = (SyncVarMgr)target;
+    SyncVar_Mgr manager = (SyncVar_Mgr)target;
     if (GUILayout.Button("Inject Code")) {
       InjectCode(manager);
     }
   }
 
-  private void InjectCode(SyncVarMgr manager) {
+  private void InjectCode(SyncVar_Mgr manager) {
     manager.InjectJsPluginCode();
   }
 }

@@ -25,6 +25,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   public SI_JsBuild           siJsBuild;
   public SI_JbtVersionMatch   siJbtVersionMatch;
   public SI_BuiltOutput       siBuiltOutput;
+  public SI_JsPlugins         siJsPlugins;
 
   //====== EditowWindow Init (auto-called when Shown) ==================================
   public void CreateGUI() {
@@ -54,7 +55,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     siHasAppJs          = new SI_HasAppJs(this);
     siJsBuild           = new SI_JsBuild(this);
     siJbtVersionMatch   = new SI_JbtVersionMatch(this);
-    siBuiltOutput       = new SI_BuiltOutput(this);    
+    siBuiltOutput       = new SI_BuiltOutput(this);  
+    siJsPlugins         = new SI_JsPlugins(this);  
 
     StatusItem.HideMostButtons();
   }
@@ -82,6 +84,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     allRdy &= siJsBuild.Check();
     allRdy &= siJbtVersionMatch.Check();
     allRdy &= siBuiltOutput.Check();
+    allRdy &= siJsPlugins.Check();
     siNode.NodePathsToDropdownAndCheck();
 
     siReadyTotal.AllAreReady(allRdy);

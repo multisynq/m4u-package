@@ -163,6 +163,17 @@
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
+                    <ui:VisualElement name="JsPlugins_Lay" style="width: 100%; height: 100%; flex-direction: row; display: flex;">
+                        <ui:VisualElement name="JsPlugins_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JsPlugins_Lay" style="margin-left: 5px;">
+                            <ui:Label text="JS-C# Proxy Plugins" display-tooltip-when-elided="true" name="JsPlugins_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
+                            <ui:VisualElement name="JsPlugins_Btn_Lay" style="flex-direction: row; margin-left: 0;">
+                                <ui:Button text="Add Needed &lt;color=yellow&gt;JS&lt;/color&gt; Plugin Files" display-tooltip-when-elided="true" name="AddJsPlugins_Btn" />
+                                <ui:Button text="Goto &lt;color=yellow&gt;JS&lt;/color&gt; Plugins Folder" display-tooltip-when-elided="true" name="GotoJsPlugins_Btn" style="display: flex;" />
+                                <ui:Button text="Docs" display-tooltip-when-elided="true" name="JsPlugins_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:Foldout>
             <ui:Foldout text="About" name="About_Foldout" value="true" style="width: 100%; height: 265px; margin-top: 25px;">
