@@ -13,6 +13,6 @@ public class CroquetSyncVarMgrEditor : Editor {
   }
 
   private void InjectCode(SyncVarMgr manager) {
-    manager.OnInjectJsPluginCode();
+    manager.InjectJsPluginCode();
   }
 }

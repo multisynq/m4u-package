@@ -13,6 +13,6 @@ public class SyncCommandMgrEditor : Editor {
   }
 
   private void InjectCode(SyncCommandMgr manager) {
-    manager.OnInjectJsPluginCode();
+    manager.InjectJsPluginCode();
   }
 }
