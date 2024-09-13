@@ -7,25 +7,27 @@ using System.Linq;
 
 
 #region Attribute
-//========== |||||||||||||||| ================
-//========| [SyncVar] | ====================== C# Attribute
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public class SyncVarAttribute : Attribute { // C# Attribute
-  // Usage options: 
-  // [SyncVar] 
-  // [SyncVar(CustomName = "shrtNm")] // Custom name for the variable, useful for shortening to reduce message size
-  // [SyncVar(OnChangedCallback = "MethodNameOfClassWithTheVar")] // Method to call when the value changes
-  // [SyncVar(MinSyncInterval = 0.5f)] // Minimum time between syncs in seconds
-  // [SyncVar(CustomName = "myVar", OnChangedCallback = "MyMethod", MinSyncInterval = 0.5f)] // any combo of options
-  public string CustomName { get; set; }
-  public float updateInterval { get; set; } = 0.1f; // Minimum time between syncs in seconds
-  public bool updateEveryInterval { get; set; } = false; // Normally only sync when the value has changed
-  public string OnChangedCallback { get; set; } // Name of the method to call on the var's class when the value changes
-}
+  //========== |||||||||||||||| ================
+  //========| [SyncVar] | ======================
+  [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+  public class SyncVarAttribute : Attribute { // C# Attribute
+    // Usage options: 
+    // [SyncVar] 
+    // [SyncVar(CustomName = "shrtNm")]
+    // [SyncVar(OnChangedCallback = "MethodNameOfClassWithTheVar")] // Method to call when the value changes
+    // [SyncVar(MinSyncInterval = 0.5f)] // Minimum time between syncs in seconds
+    // [SyncVar(CustomName = "myVar", OnChangedCallback = "MyMethod", MinSyncInterval = 0.5f)] // any combo of options
+    // [SyncVar(updateEveryInterval = true)] // Forces update every interval, even if value hasn't changed
+    public string CustomName          { get; set; } // Custom name for the variable, useful for shortening to reduce message size
+    public float  updateInterval      { get; set; } = 0.1f; // Minimum time between syncs in seconds
+    public bool   updateEveryInterval { get; set; } = false; //   true: Force update every interval, even if value hasn't changed.   false: Only sync when the value has changed.
+    public string OnChangedCallback   { get; set; } // Name of the method to call on the var's class when the value changes
+  }
 #endregion
 
 //========== |||||||||| ====================================
 public class SyncVarMgr : JsCodeInjectingMonoBehavior {
+
   #region Fields
     [SerializeField] private Dictionary<string, SyncVarInfo> syncVars;
     [SerializeField] private SyncVarInfo[]                   syncVarsArr;
@@ -33,15 +35,21 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     static public string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
     static bool dbg = true;
   #endregion
-  private static SyncVarMgr _Instance;
-  public static SyncVarMgr I { 
-    get { 
-      _Instance = Singletoner.EnsureInst(_Instance);
-      return _Instance;
+
+  #region Singleton
+    //---------------------- | -------------------------
+    public static SyncVarMgr I { // Usage:   SyncVarMgr.I.JsPluginFileName();
+      get { 
+        _Instance = Singletoner.EnsureInst(_Instance);
+        return _Instance;
+      }
+      private set { _Instance = value; }
     }
-    private set { _Instance = value; }
-  }
+    private static SyncVarMgr _Instance;
+  #endregion
+
   #region JavaScript
+    //-------------------- |||||||||||||||| -------------------------
     override public string JsPluginFileName() { return "plugins/SyncVarMgrModel.js"; }
     override public string JsPluginCode() {
       return @"
@@ -62,13 +70,15 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
         SyncVarMgrModel.register('SyncVarMgrModel')
       ".LessIndent();
     }
-    override public void OnInjectJsPluginCode() {
+    //------------------ |||||||||||||||||| -------------------------
+    override public void InjectJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
       if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
-      base.OnInjectJsPluginCode();
+      base.InjectJsPluginCode();
     }
   #endregion
+
   #region SubClasses
-    // ------------------- ||||||||||| ---
+    //==================== ||||||||||| ===
     [Serializable]
     private abstract class SyncVarInfo {
       public readonly string varId;
@@ -102,7 +112,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       }
     }
 
-    // ---------- ||||||||||||| ---
+    //=========== ||||||||||||| ===
     private class SyncFieldInfo : SyncVarInfo {
       public readonly FieldInfo FieldInfo;
 
@@ -122,7 +132,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       }
     }
 
-    // ---------- |||||||||||| ---
+    //=========== |||||||||||| ===
     private class SyncPropInfo : SyncVarInfo {
       public readonly PropertyInfo PropInfo;
 
@@ -142,16 +152,20 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       }
     }
   #endregion
-  #region Start/Update
-    //-- ||||| ---
-    void Start() { // CroquetSynchVarMgr.Start()
 
-      Croquet.Subscribe("SyncVar", "set2", ReceiveAsMsg); // <<<< Croquet!! <<<<
+  #region Start/Update
+    //------------------ ||||| ------------------------------------------
+    override public void Start() { // CroquetSynchVarMgr.Start()
+      base.Start();
+
+      Croquet.Subscribe("SyncVar", "set2", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
 
       int varIdx = 0;
+      // Check for SyncVar attribute on fields of non-SyncedBehaviours
+      // There should be none, so we give errors if we find any
       #if UNITY_EDITOR
         foreach (MonoBehaviour mb in FindObjectsOfType<MonoBehaviour>()) {
           if (!mb.enabled) continue; // skip inactives
@@ -167,6 +181,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
           }
         }
       #endif
+      // Find SyncVar attribute on fields of SyncedBehaviours and add them to the syncVars dictionary
       foreach (SyncedBehaviour syncBeh in FindObjectsOfType<SyncedBehaviour>()) {
         if (!syncBeh.enabled) continue; // skip inactives
         var type       = syncBeh.GetType();
@@ -181,7 +196,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
             syncVarsList.Add(syncFieldInfo);
           }
         }
-
+        // Find SyncVar attribute on properties of SyncedBehaviours and add them to the syncVars dictionary
         foreach (var prop in properties) { // for properties with [SyncVar] attribute
           var attribute = prop.GetCustomAttribute<SyncVarAttribute>();
           if (attribute != null) {
@@ -200,14 +215,15 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     } // end Start()
 
     // - |||||| -------------------------------------------------------
-    void Update() {
+    void Update() { // TODO: Remove this once we get CreateSetter() callbacks perfected
       for (int i = 0; i < syncVarsArr.Length; i++) {
         SendMsgIfChanged( syncVarsArr[i] );
       }
     }
   #endregion
+
   #region Factories
-    // ------------------ ||||||||||||||||||| ---
+    //------------------- ||||||||||||||||||| -----------------------
     private SyncFieldInfo CreateSyncFieldInfo(SyncedBehaviour syncBeh, FieldInfo field, SyncVarAttribute attribute, int fieldIdx) {
       string fieldId = (attribute.CustomName != null) 
         ? GenerateVarId(syncBeh, attribute.CustomName) 
@@ -221,19 +237,19 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
           onChangedCallback
       );
     }
-    // ----------------- |||||||||||||||||| ---
+    //------------------ |||||||||||||||||| -----------------------
     private SyncPropInfo CreateSyncPropInfo(SyncedBehaviour syncBeh, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
       string propId = GenerateVarId(syncBeh, attribute.CustomName ?? prop.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
       return new SyncPropInfo(
           propId, propIdx,
-          CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh),
+          CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh), // TODO: pass in propId & propIdx so we can make a callback handler and remove Update checking for changes
           syncBeh, prop, attribute,
           prop.GetValue(syncBeh),
           onChangedCallback
       );
     }
-    // ------------------- ||||||||||||||||||||||| ---
+    //-------------------- ||||||||||||||||||||||| -----------------------
     private Action<object> CreateOnChangedCallback(SyncedBehaviour syncBeh, string methodName) {
       if (string.IsNullOrEmpty(methodName))
         return null;
@@ -246,7 +262,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
 
       return (value) => method.Invoke(syncBeh, new[] { value });
     }
-    // ----------------- |||||||||||| ---
+    //------------------ |||||||||||| -------------------------------------------
     private Func<object> CreateGetter(MemberInfo member, object target) {
       var targetExpression = Expression.Constant(target);
       var memberExpression = member is PropertyInfo prop
@@ -256,7 +272,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       var lambda = Expression.Lambda<Func<object>>(convertExpression);
       return lambda.Compile();
     }
-    // ------------------- |||||||||||| ---
+    //-------------------- |||||||||||| -------------------------------------------
     private Action<object> CreateSetter(MemberInfo member, object target) {
       var targetExpression = Expression.Constant(target);
       var valueParam = Expression.Parameter(typeof(object), "value");
@@ -267,37 +283,40 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       var lambda = Expression.Lambda<Action<object>>(assignExpression, valueParam);
       return lambda.Compile();
     }
-    // ----------- ||||||||||||| ---
+    //------------ ||||||||||||| -------------------------------------------
     private string GenerateVarId(SyncedBehaviour syncBeh, string varName) {
       return $"{syncBeh.netId}_{varName}";
     }
   #endregion
+
   #region Messaging
-    // - |||||||||||||||| -------------------------------------------------------
+    //-- |||||||||||||||| -------------------------------------------------------
     void SendMsgIfChanged(SyncVarInfo syncVar) {
       if ((Time.time - syncVar.LastSyncTime) < syncVar.attribute.updateInterval) {// Skip sending if the update interval has not passed for this var
         return;
       } else syncVar.LastSyncTime = Time.time; // Restart the timer until we can send again
 
-      object currentValue = syncVar.Getter();
-      bool   changedVal   = !currentValue.Equals(syncVar.LastValue);
+      object currentValue  = syncVar.Getter();
+      bool   valHasChanged = !currentValue.Equals(syncVar.LastValue);
 
-      if (changedVal || syncVar.attribute.updateEveryInterval) { // might send every interval, but usually only when changed
+      if (valHasChanged || syncVar.attribute.updateEveryInterval) { // might send every interval, but usually only when changed
         SendAsMsg( syncVar.varIdx, syncVar.varId, currentValue, syncVar.varType);
         syncVar.LastValue = currentValue;
         syncVar.onChangedCallback?.Invoke(currentValue);
       }
     }
 
-    // - ||||||||| ---
+    //-- ||||||||| -------------------------------------------------------
     void SendAsMsg(int varIdx, string varId, object value, Type varType) {
       string serializedValue = SerializeValue(value, varType);
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
-      Croquet.Publish("SyncVar", "set1", msg);
+
+      Croquet.Publish("SyncVar", "set1", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+
     }
 
-    // ------------------------- |||||||| ---
+    //-------------------------- |||||||| --------------------------
     public (int, string, string) ParseMsg(string msg) {
       var parts = msg.Split(msgSeparator);
       if (parts.Length != 3) {
@@ -310,7 +329,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       return (varIdx, varId, serializedValue);
     }
 
-    // -------- |||||||||||| ---
+    //--------- |||||||||||| --------------------------
     public void ReceiveAsMsg(string msg) {
       var logPrefix = $"<color=#ff22ff>RECEIVED</color> ";
       var logMsg = $"msg:'<color=cyan>{msg}</color>'";
@@ -346,7 +365,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
       );
 
     } // end ReceiveAsMsg()
-    // ---------------- ||||||||||||||||| ---
+    //----------------- ||||||||||||||||| --------------------------
     private SyncVarInfo FindSyncVarByDict( string varId ) {
       if (syncVars.TryGetValue(varId, out var syncVar)) {
         return syncVar;
@@ -355,7 +374,7 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
         return null;
       }
     }
-    // ---------------- |||||||||||||||| ---
+    //----------------- |||||||||||||||| --------------------------
     private SyncVarInfo FindSyncVarByArr( int varIdx, string varId ) {
       if (varIdx >= 0 && varIdx < syncVarsArr.Length) {
         var syncVar = syncVarsArr[varIdx];
@@ -372,13 +391,13 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     }
   #endregion
   #region Serialization
-    // ----------- |||||||||||||| ---
+    //------------ |||||||||||||| --------------------------
     private string SerializeValue(object value, Type type) {
       // Placeholder for actual serialization logic
       return value.ToString();
     }
 
-    // ----------- |||||||||||||||| ---
+    //------------ |||||||||||||||| --------------------------
     private object DeserializeValue(string serializedValue, Type type) {
       // Placeholder for actual deserialization logic
       return Convert.ChangeType(serializedValue, type);

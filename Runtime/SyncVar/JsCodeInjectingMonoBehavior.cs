@@ -1,38 +1,108 @@
 using UnityEngine;
 
+#if UNITY_EDITOR
+  using System.Text.RegularExpressions;
+  using System.Collections.Generic;
+  using System.Linq;
+  using UnityEditor;
+#endif
+
+//=================== ||||||||||||||||||||||||||| =========================
 abstract public class JsCodeInjectingMonoBehavior : MonoBehaviour {
-  // TODO: make #if UNITY_EDITOR throughout code injection
-  static public string logPrefix = "[<color=yellow>Js</color><color=cyan>CodeInject</color>]";
-  abstract public string JsPluginFileName();
-  abstract public string JsPluginCode();
+
+  static public string logPrefix = "[ <color=yellow>Js</color><color=cyan>CodeInject</color> ]";
   static bool dbg = true;
 
-  virtual public void OnInjectJsPluginCode() {
-    if (dbg)  Debug.Log($"{logPrefix} <color=white>BASE</color>   virtual public void OnInjectJsPluginCode()");
+  abstract public string JsPluginFileName();
+  abstract public string JsPluginCode();
 
-    var modelClassPath = CqFile.AppFolder().DeeperFile(JsPluginFileName());
-    // if (modelClassPath.Exists()) {
-    //   Debug.LogWarning($"{svLogPrefix} '{modelClassPath.shortPath}' already present at '{modelClassPath.longPath}'");
-    // } else {
-      if (dbg)  Debug.Log($"{logPrefix} Writing new file '{modelClassPath.shortPath}'");
-      string jsCode = JsPluginCode().LessIndent();
-      modelClassPath.WriteAllText(jsCode, true); // true = create needed folders
-    // }
+  #if UNITY_EDITOR
+    static public Dictionary<System.Type, string[]> codeMatchPatternsByJsInjectorsNeeded = new() {
+      { typeof(SyncVarMgr), new[] { @"\[SyncVar\]" } },
+      { typeof(SyncCommandMgr), new[] { @"\[SyncCommand\]", @"\[SyncRPC\]" } }
+      // Add more patterns here as needed
+    };
+  #endif
+  #if !UNITY_EDITOR
+    virtual public void InjectJsPluginCode() { }
+  #endif
+
+  //----------------- ||||| ----------------------------------------
+  virtual public void Start() {
+    #if UNITY_EDITOR
+      CheckIfMyJsCodeIsPresent();
+    #endif
   }
-}
 
-public class JsCodeInjectingMgr : SingletonMB<JsCodeInjectingMgr> {
+  #if UNITY_EDITOR
 
-  // string myAppIndexJsFile;
-  static public string logPrefix = "[<color=yellow>Js</color><color=cyan>CodeInject</color>]";
+    //----------------- |||||||||||||||||| ----------------------------------------
+    virtual public void InjectJsPluginCode() { // you can override this to do more complex stuff, but it's base is a good default
+      if (dbg)  Debug.Log($"{logPrefix} <color=white>BASE</color>   virtual public void OnInjectJsPluginCode()");
 
-  public void InjectAllJsPluginCode() {
-    foreach (var jci in FindObjectsOfType<JsCodeInjectingMonoBehavior>()) {
-      jci.OnInjectJsPluginCode();
+      var modelClassPath = CqFile.AppFolder().DeeperFile(JsPluginFileName());
+      if (modelClassPath.Exists()) {
+        Debug.Log($"{logPrefix} '{modelClassPath.shortPath}' already present at '{modelClassPath.longPath}'");
+      } else {
+        if (dbg)  Debug.LogWarning($"{logPrefix} Needed JS code added. Writing new file '{modelClassPath.shortPath}'");
+        string jsCode = JsPluginCode().LessIndent();
+        modelClassPath.WriteAllText(jsCode, true); // true = create needed folders
+      }
     }
-  }
 
-  public void InjectCode(string fileNm, string classCode) { 
-    CqFile.AppFolder().DeeperFile(fileNm).WriteAllText(classCode, true); // true = create needed folders
-  }
+    //--------- |||||||||||||||||||||||| ----------------------------------------
+    public void CheckIfMyJsCodeIsPresent() {
+      var modelClassPath = CqFile.AppFolder().DeeperFile(JsPluginFileName());
+      if (modelClassPath.Exists()) {
+        Debug.Log($"{logPrefix} '{JsPluginFileName()}' already present at '{modelClassPath.longPath}'");
+      } else {
+        modelClassPath.SelectAndPing();
+        Debug.LogError($"   v");
+        Debug.LogError($"   v");
+        Debug.LogError($"   v");
+        Debug.LogError($"MISSING JS FILE {JsPluginFileName()} for {this.GetType().Name}.cs");
+        Debug.LogError($"   ^");
+        Debug.LogError($"   ^");
+        Debug.LogError($"   ^");
+        EditorApplication.isPlaying = false;
+      }
+    }
+    //---------------- |||||||||||||||||||| ----------------------------------------
+    static public void DoAllNeededJsInjects() {
+      foreach (var jsInjector in FindNeededJsInjects()) {
+        jsInjector.InjectJsPluginCode();
+      }
+    }
+    //----------------------------------------- ||||||||||||||||||| ----------------------------------------
+    static public JsCodeInjectingMonoBehavior[] FindNeededJsInjects() {
+      List<JsCodeInjectingMonoBehavior> neededJsInjects = new();
+
+      // Find all SyncedBehaviour subclasses in the scene
+      var syncedBehaviours = GameObject.FindObjectsOfType<SyncedBehaviour>(true);
+
+      foreach (var behaviour in syncedBehaviours) {
+        var behaviourType = behaviour.GetType();
+        var script = MonoScript.FromMonoBehaviour(behaviour);
+        if (script != null) {
+          string scriptPath = AssetDatabase.GetAssetPath(script);
+          string scriptContent = System.IO.File.ReadAllText(scriptPath);
+
+          foreach (var entry in codeMatchPatternsByJsInjectorsNeeded) {
+            var jsInjectorType = entry.Key;
+            var patterns = entry.Value;
+
+            if (patterns.Any(pattern => Regex.IsMatch(scriptContent, pattern))) {
+              var jsInjector = (JsCodeInjectingMonoBehavior)GameObject.FindObjectOfType(jsInjectorType);
+              if (jsInjector != null && !neededJsInjects.Contains(jsInjector)) {
+                neededJsInjects.Add(jsInjector);
+              }
+            }
+          }
+        }
+      }
+      // Joined report
+      Debug.Log($"{logPrefix} Found <color=cyan>{neededJsInjects.Count}</color> JsInjectors needed in scene: [ {string.Join(", ", neededJsInjects.Select(jci => jci.GetType().Name))} ]");
+      return neededJsInjects.ToArray();
+    }
+  #endif
 }
