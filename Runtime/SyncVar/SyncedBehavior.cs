@@ -15,7 +15,14 @@ public class SyncedBehaviour : MonoBehaviour {
   public void RPC(string mn, RpcTarget tgt, params object[] ps) { 
     SyncCommandMgr.I.PublishSyncCommandCall(this, tgt, mn, ps); 
   }
-  // Action method
+  // Action method. No parameters
+  public void CallSyncCommand(Action method) {
+    SyncCommandMgr.I.PublishSyncCommandCall(this, method.Method.Name);
+  }
+  public void RPC(Action m, RpcTarget tgt) { 
+    SyncCommandMgr.I.PublishSyncCommandCall(this, tgt, m.Method.Name); 
+  }
+  // Action method. Single array of parameters.
   public void CallSyncCommand(Action method, params object[] parameters) {
     SyncCommandMgr.I.PublishSyncCommandCall(this, method.Method.Name, parameters);
   }
