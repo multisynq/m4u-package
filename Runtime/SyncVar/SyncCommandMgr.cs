@@ -114,12 +114,13 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
     // TODO: Implement the actual logic to send the command only other clients or all clients
     // if (tgt == RpcTarget.Others) {
     // else if (tgt == RpcTarget.All) {
-    PublishSyncCommandCall(syncBeh, commandId, parameters);
+    if (parameters.Length == 0) { PublishSyncCommandCall(syncBeh, commandId); }
+    else { PublishSyncCommandCall(syncBeh, commandId, parameters); }
   }
   public void PublishSyncCommandCall(SyncedBehaviour syncBeh, string commandId, params object[] parameters) {
     string cmdWithNetId = $"{syncBeh.netId}_{commandId}";
-    string serializedParams = string.Join(msgSeparator.ToString(), parameters.Select(p => SerializeValue(p)));
-    var msg = $"{syncCommands[cmdWithNetId].commandIdx}{msgSeparator}{cmdWithNetId}{msgSeparator}{serializedParams}";
+    string serializedParams = (parameters.Length == 0) ? "" : msgSeparator+string.Join(msgSeparator.ToString(), parameters.Select(p => SerializeValue(p)));
+    var msg = $"{syncCommands[cmdWithNetId].commandIdx}{msgSeparator}{cmdWithNetId}{serializedParams}";
     Debug.Log($"{scLogPrefix} <color=#ff22ff>Publish</color> msg:'<color=cyan>{msg}</color>'");
     Croquet.Publish("SyncCommand", "execute1", msg);
   }
@@ -128,14 +129,16 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
     var logPrefix = $"<color=#ff22ff>RECEIVED</color> ";
     var logMsg = $"msg:'<color=cyan>{msg}</color>'";
     var parts = msg.Split(msgSeparator);
-    if (parts.Length < 3) {
+    if (parts.Length < 2) {
       Debug.LogError($"{scLogPrefix} Invalid message format: '<color=#ff4444>{msg}</color>'");
       return;
     }
 
     int commandIdx = int.Parse(parts[0]);
     string commandId = parts[1];
-    var parameters = parts.Skip(2).Select(p => DeserializeValue(p)).ToArray();
+    var parameters = (parts.Length == 2) 
+      ? null
+      : parts.Skip(2).Select(p => DeserializeValue(p)).ToArray();
 
     var logIds = $"commandId=<color=white>{commandId}</color> commandIdx=<color=cyan>{commandIdx}</color>";
 
@@ -146,7 +149,6 @@ public class SyncCommandMgr : JsCodeInjectingMonoBehavior {
       Debug.LogError($"{scLogPrefix} {logMsg} {logPrefix} message for <color=#ff4444>UNKNOWN</color> {logIds}");
       return;
     }
-
     syncCommand.MethodInfo.Invoke(syncCommand.syncedBehaviour, parameters);
 
     Debug.Log(arrLookupFailed
