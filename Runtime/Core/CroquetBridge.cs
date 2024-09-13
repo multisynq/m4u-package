@@ -679,13 +679,13 @@ public class CroquetBridge : MonoBehaviour
 
     public void SendToCroquet(params string[] strings)
     {
-        Debug.Log($"==== [3.1] SendToCroquet: {string.Join(',', strings)}" + $" | croquetSessionState: {croquetSessionState}");
+        // Debug.Log($"==== [3.1] SendToCroquet: {string.Join(',', strings)}" + $" | croquetSessionState: {croquetSessionState}");
         if (croquetSessionState != "running")
         {
             Debug.LogWarning($"attempt to send when Croquet session is not running: {string.Join(',', strings)}");
             return;
         }
-        Debug.Log($"==== [3.2] SendToCroquet: {string.Join(',', strings)}");
+        // Debug.Log($"==== [3.2] SendToCroquet: {string.Join(',', strings)}");
         deferredMessages.Add(("", PackCroquetMessage(strings)));
     }
 

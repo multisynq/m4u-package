@@ -32,9 +32,16 @@ public class SyncVarMgr : JsCodeInjectingMonoBehavior {
     static char msgSeparator = '|';
     static public string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
     static bool dbg = true;
-    #endregion
-
-    #region JavaScript
+  #endregion
+  private static SyncVarMgr _Instance;
+  public static SyncVarMgr I { 
+    get { 
+      _Instance = Singletoner.EnsureInst(_Instance);
+      return _Instance;
+    }
+    private set { _Instance = value; }
+  }
+  #region JavaScript
     override public string JsPluginFileName() { return "plugins/SyncVarMgrModel.js"; }
     override public string JsPluginCode() {
       return @"
