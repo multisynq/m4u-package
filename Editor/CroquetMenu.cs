@@ -83,7 +83,7 @@ public class CroquetMenu
     [MenuItem(BuildNowItem, false, 100)]
     public static async void BuildNow()
     {
-        Debug.Log("Building JS...");
+        Debug.Log("<color=yellow>----------------   Building JS...  ----------------</color>");
         bool success = await CroquetBuilder.EnsureJSToolsAvailable();
         if (!success) return;
 
