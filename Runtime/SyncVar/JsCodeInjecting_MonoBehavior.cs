@@ -100,17 +100,22 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
       var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
       return modelClassPath.Exists();
     }
+    //========== |||||||||||||| ====================
     public class JsPluginReport {
       public HashSet<System.Type> neededTs            = new();
       public HashSet<System.Type> missingSceneInstancesOfTs  = new();
       public HashSet<System.Type> haveSceneInstancesOfTs  = new();
-      public HashSet<System.Type> tsWhereJsFilesExist = new();
+      public HashSet<System.Type> tsThatAreReady = new();
       public HashSet<System.Type> tsMissingSomePart = new();
+      public HashSet<string> filesThatNeedPlugins = new();
+      public HashSet<string> filesThatAreReady    = new();
+      public HashSet<string> filesMissingPlugins  = new();
       public string needTxt;
-      public string needOnesTxt;
+      public string neededOnesTxt;
       public string haveInstOnesTxt;
       public string haveJsFileOnesTxt;
       public string missingPartOnesTxt;
+
     }
     //------------------------- |||||||||||||||||||||||| ----------------------------------------
     static public JsPluginReport AnalyzeAllJsPlugins() {
@@ -129,17 +134,19 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
       // 0. For each SyncedBehavior
       foreach (var behaviour in FindObjectsOfType<SyncedBehaviour>(false)){ // false means we skip inactives
         // 1. Read the SyncedBehavior script file
-        MonoScript script = MonoScript.FromMonoBehaviour(behaviour);
-        if (script.text == null) {
+        MonoScript sbScript = MonoScript.FromMonoBehaviour(behaviour);
+        string sbPath = AssetDatabase.GetAssetPath(sbScript);
+        if (sbScript.text == null) {
           Debug.LogError($"{logPrefix} FindMissingJsPluginTypes() found a SyncedBehaviour with no script: {behaviour.name}");
           continue;
         }
         // 2. Check if it contains a pattern with a needed JsInjector
         foreach (var jsInjectorType in codeMatchPatternsByJsInjectorsNeeded.Keys) {
           foreach (var pattern in codeMatchPatternsByJsInjectorsNeeded[jsInjectorType]) {
-            if (Regex.IsMatch(script.text, pattern)) {
+            if (Regex.IsMatch(sbScript.text, pattern)) {
               // 3. If it does, add the JsInjector to the neededInjectors list
               rpt.neededTs.Add(jsInjectorType);
+              rpt.filesThatNeedPlugins.Add(sbPath);
               // 4. Check if the class has an instance in the scene
               var jsInjectorInstance = (JsCodeInjecting_MonoBehavior)Object.FindObjectOfType(jsInjectorType);
               // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance. 
@@ -154,14 +161,16 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
               // 7. Check if the file exists
               var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
               if (modelClassPath.Exists()) {
-                rpt.tsWhereJsFilesExist.Add(jsInjectorInstance.GetType());
+                rpt.tsThatAreReady.Add(jsInjectorInstance.GetType());
+                rpt.filesThatAreReady.Add(sbPath);
               }
               
             }
           }
         }
       }
-      rpt.tsMissingSomePart = rpt.neededTs.Except(rpt.tsWhereJsFilesExist).ToHashSet();
+      rpt.tsMissingSomePart   = rpt.neededTs.Except(rpt.tsThatAreReady).ToHashSet();
+      rpt.filesMissingPlugins = rpt.filesThatNeedPlugins.Except(rpt.filesThatAreReady).ToHashSet();
       // lambda for report text from List
       var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
         return "[ " + string.Join(", ", types.Select(x => $"%ye%{x.Name}%gy%")) + " ]";
@@ -171,15 +180,48 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
         return $"Count:%cy%{A.Count}%gy% of %cy%{B.Count}%gy%";
       });
       string rptMissings = rptList(rpt.missingSceneInstancesOfTs);
-      string rptAOKs     = rptList(rpt.tsWhereJsFilesExist);
+      string rptAOKs     = rptList(rpt.tsThatAreReady);
       string rptNeededs  = rptList(rpt.neededTs);
       string rptHaves    = rptList(rpt.haveSceneInstancesOfTs);
-      rpt.needOnesTxt        = $"{logPrefix} %cy%{rpt.neededTs.Count}%gy% needed JsInjectors: {rptNeededs}".TagColors();
-      rpt.haveInstOnesTxt    = $"{logPrefix} {countOfCount(rpt.haveSceneInstancesOfTs, rpt.neededTs)} JsInjectors %gre%have%gy% an instance in scene: {rptHaves}".TagColors();
-      rpt.haveJsFileOnesTxt  = $"{logPrefix} {countOfCount(rpt.tsWhereJsFilesExist,    rpt.neededTs)} JsInjectors %gre%have%gy% instance & a js file: {rptAOKs}".TagColors();
-      rpt.missingPartOnesTxt = $"{logPrefix} {countOfCount(rpt.tsMissingSomePart,      rpt.neededTs)} JsInjectors are %red%MISSING%gy% a part: {rptList(rpt.tsMissingSomePart)}".TagColors();
-
+      rpt.neededOnesTxt          = $"{logPrefix} %cy%{rpt.neededTs.Count}%gy% needed JsInjectors: {rptNeededs}".TagColors();
+      rpt.haveInstOnesTxt        = $"{logPrefix} {countOfCount(rpt.haveSceneInstancesOfTs, rpt.neededTs)} JsInjectors %gre%have%gy% an instance in scene: {rptHaves}".TagColors();
+      rpt.haveJsFileOnesTxt      = $"{logPrefix} {countOfCount(rpt.tsThatAreReady,         rpt.neededTs)} JsInjectors are %gre%ready%gy% to go: {rptAOKs}".TagColors();
+      rpt.missingPartOnesTxt     = $"{logPrefix} {countOfCount(rpt.tsMissingSomePart,      rpt.neededTs)} JsInjectors are %red%MISSING%gy% a part: {rptList(rpt.tsMissingSomePart)}".TagColors();
       return rpt;
+    }
+    //---------------- ||||||||||||||||| ----------------------------------------
+    public static bool LogJsPluginReport(JsPluginReport pluginRpt) {
+      // lambda function for report text from List
+      var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
+        return "[ " + string.Join(", ", types.Select(x => $"<color=yellow>{x.Name}</color>")) + " ]";
+      });
+
+      var fldr = $"<color=#ff55ff>Assets/CroquetJS/{CqFile.GetAppNameForOpenScene()}/plugins/</color>";
+      int missingCnt = pluginRpt.tsMissingSomePart.Count;
+      int neededCnt = pluginRpt.neededTs.Count;
+      bool amMissingPlugins = pluginRpt.tsMissingSomePart.Count > 0;
+      if (amMissingPlugins) {
+        Debug.Log(pluginRpt.neededOnesTxt);
+        Debug.Log(pluginRpt.haveInstOnesTxt);
+        Debug.Log(pluginRpt.haveJsFileOnesTxt);
+        // for each missing file, log the file
+        foreach (var missingFile in pluginRpt.filesMissingPlugins) {
+          Debug.Log($"|    Missing its Js Plugin: <color=#ff7777>{missingFile}</color>");
+        }
+        // for all ready files, log the file
+        foreach (var readyFile in pluginRpt.filesThatAreReady) {
+          Debug.Log($"|    Js Plugin is ready for: <color=#55ff55>{readyFile}</color>");
+        }
+        // Debug.Log(pluginRpt.missingPartOnesTxt);
+        Debug.Log($"| <color=#ff5555>MISSING</color>  <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(pluginRpt.tsMissingSomePart)} in {fldr}");
+        Debug.Log($"|    To Add Missing JS Plugin Files, in Menu:");
+        Debug.Log($"|    <color=white>Croquet > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
+      }
+      else {
+        Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(pluginRpt.neededTs)}");
+      }
+
+      return amMissingPlugins;
     }
   #endif
 }

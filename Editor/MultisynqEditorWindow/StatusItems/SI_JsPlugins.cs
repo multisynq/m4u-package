@@ -63,34 +63,18 @@ public class SI_JsPlugins: StatusItem {
     Application.OpenURL("https://multisynq.io/docs/unity/");
   }
 
-  override public bool Check() { // API KEY
-    var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
-    //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
-    // lambda function for report from list of types
-    var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
-      return "[ " + string.Join(", ", types.Select(x => $"<color=yellow>{x.Name}</color>")) + " ]";
-    });
-
-    var fldr = $"<color=#ff55ff>Assets/CroquetJS/{CqFile.GetAppNameForOpenScene()}/plugins/</color>";
-    int missingCnt = pluginRpt.tsMissingSomePart.Count;
-    int neededCnt = pluginRpt.neededTs.Count;
-    bool amMissingPlugins = pluginRpt.tsMissingSomePart.Count > 0;
-    if (amMissingPlugins) {
-      Debug.Log(pluginRpt.needOnesTxt);
-      Debug.Log(pluginRpt.haveInstOnesTxt);
-      Debug.Log(pluginRpt.haveJsFileOnesTxt);
-      // Debug.Log(pluginRpt.missingPartOnesTxt);
-      Debug.Log($"| Missing <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(pluginRpt.tsMissingSomePart)} in {fldr}");
-      Debug.Log($"|    To Add Missing JS Plugin Files, in Menu:");
-      Debug.Log($"|    <color=white>Croquet > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
-    } else {
-      Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(pluginRpt.neededTs)}");
+  override public bool Check()
+    { // API KEY
+        var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
+        //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
+        // lambda function for report from list of types
+        bool amMissingPlugins = JsCodeInjecting_MonoBehavior.LogJsPluginReport(pluginRpt);
+        StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
+        SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
+        ShowVEs(GotoJsPlugins_Btn);
+        return amMissingPlugins;
     }
-    StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
-    SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
-    ShowVEs(GotoJsPlugins_Btn);
-    return amMissingPlugins;
-  }
+
 
 }
 

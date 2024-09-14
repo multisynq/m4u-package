@@ -484,6 +484,17 @@ public class CroquetBuilder
             Debug.Log($"building {appName} for {target} to StreamingAssets/{appName}");
         }
 
+        // Check that the Js Pulgins are all present
+        var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
+        // bail if any are missing
+        if (pluginRpt.tsMissingSomePart.Count > 0)
+        {
+            JsCodeInjecting_MonoBehavior.LogJsPluginReport(pluginRpt);
+            Debug.Log("<color=#ff7777>  --- BUILD HALT --- </color>");
+            Debug.LogError("HALT: Cannot build JS because some JS plugins are missing. See guidance in logs above.");
+            return;
+        }
+
         Process builderProcess = new Process();
         if (!startWatcher) oneTimeBuildProcess = builderProcess;
         builderProcess.StartInfo.UseShellExecute = false;
