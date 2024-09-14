@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -38,7 +40,10 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_AddJsPlugins_Btn() { // JS PLUGINS  ------------- Click
     Logger.MethodHeader();
-    JsCodeInjecting_MonoBehavior.DoAllNeededJsInjects();
+    JsCodeInjecting_MonoBehavior.InjectMissingJsPlugins();
+    // Update Asset DB
+    AssetDatabase.Refresh();
+    
     CqFile.AppFolder().DeeperFolder("plugins").SelectAndPing();
     edWin.CheckAllStatusForReady();
     Notify("Files Added.\nSelected on Project pane.");
@@ -46,7 +51,10 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_GotoJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader();
-    edWin.siSettings.GotoSettings();
+    // CqFile.AppFolder().DeeperFolder("plugins").EnsureExists().SelectAndPing();
+    var plFldr = CqFile.AppFolder().DeeperFolder("plugins");
+    if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
+    else                            plFldr.SelectAndPing();
     Notify("Selected in Project.\nSee Inspector.");
   }
 
@@ -56,19 +64,31 @@ public class SI_JsPlugins: StatusItem {
   }
 
   override public bool Check() { // API KEY
-    var neededJsInjects = JsCodeInjecting_MonoBehavior.FindMissingJsPluginTypes();
-    string report = string.Join(", ", neededJsInjects.Select(x => x.Name));
+    var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
+    //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
+    // lambda function for report from list of types
+    var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
+      return "[ " + string.Join(", ", types.Select(x => $"<color=yellow>{x.Name}</color>")) + " ]";
+    });
+
     var fldr = $"<color=#ff55ff>Assets/CroquetJS/{CqFile.GetAppNameForOpenScene()}/plugins/</color>";
-    if (neededJsInjects.Length > 0) {
-      Debug.Log($"| Missing <color=cyan>{neededJsInjects.Length}</color> JS Plugins: [ <color=white>{report}</color> ] in {fldr}");
+    int missingCnt = pluginRpt.tsMissingSomePart.Count;
+    int neededCnt = pluginRpt.neededTs.Count;
+    bool amMissingPlugins = pluginRpt.tsMissingSomePart.Count > 0;
+    if (amMissingPlugins) {
+      Debug.Log(pluginRpt.needOnesTxt);
+      Debug.Log(pluginRpt.haveInstOnesTxt);
+      Debug.Log(pluginRpt.haveJsFileOnesTxt);
+      // Debug.Log(pluginRpt.missingPartOnesTxt);
+      Debug.Log($"| Missing <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(pluginRpt.tsMissingSomePart)} in {fldr}");
       Debug.Log($"|    To Add Missing JS Plugin Files, in Menu:");
       Debug.Log($"|    <color=white>Croquet > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
     } else {
-      Debug.Log($"All needed JS Plugins found in {fldr}");
+      Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(pluginRpt.neededTs)}");
     }
-    bool amMissingPlugins = neededJsInjects.Length > 0;
     StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
     SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
+    ShowVEs(GotoJsPlugins_Btn);
     return amMissingPlugins;
   }
 
