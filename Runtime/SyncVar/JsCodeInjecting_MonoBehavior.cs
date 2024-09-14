@@ -146,7 +146,8 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
             if (Regex.IsMatch(sbScript.text, pattern)) {
               // 3. If it does, add the JsInjector to the neededInjectors list
               rpt.neededTs.Add(jsInjectorType);
-              rpt.filesThatNeedPlugins.Add(sbPath);
+              string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsInjectorType}</color> for: <color=white>{(pattern.Replace("\\",""))}</color>";
+              rpt.filesThatNeedPlugins.Add(sbPathAndPattern);
               // 4. Check if the class has an instance in the scene
               var jsInjectorInstance = (JsCodeInjecting_MonoBehavior)Object.FindObjectOfType(jsInjectorType);
               // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance. 
@@ -162,7 +163,7 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
               var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
               if (modelClassPath.Exists()) {
                 rpt.tsThatAreReady.Add(jsInjectorInstance.GetType());
-                rpt.filesThatAreReady.Add(sbPath);
+                rpt.filesThatAreReady.Add(sbPathAndPattern);
               }
               
             }
