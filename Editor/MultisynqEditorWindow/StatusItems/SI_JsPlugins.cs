@@ -10,9 +10,7 @@ public class SI_JsPlugins: StatusItem {
   Button GotoJsPlugins_Btn;
   Button JsPlugins_Docs_Btn;
 
-  public SI_JsPlugins(MultisynqBuildAssistantEW parent = null) : base(parent) {
-    
-  }
+  public SI_JsPlugins(MultisynqBuildAssistantEW parent = null) : base(parent) { }
 
   override public void InitUI() {
     SetupVisElem("JsPlugins_Status_Img",  ref statusImage);
@@ -63,17 +61,16 @@ public class SI_JsPlugins: StatusItem {
     Application.OpenURL("https://multisynq.io/docs/unity/");
   }
 
-  override public bool Check()
-    { // API KEY
-        var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
-        //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
-        // lambda function for report from list of types
-        bool amMissingPlugins = JsCodeInjecting_MonoBehavior.LogJsPluginReport(pluginRpt);
-        StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
-        SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
-        ShowVEs(GotoJsPlugins_Btn);
-        return amMissingPlugins;
-    }
+  override public bool Check() { // JS PLUGINS
+    var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
+    //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
+    // lambda function for report from list of types
+    bool amMissingPlugins = JsCodeInjecting_MonoBehavior.LogJsPluginReport(pluginRpt);
+    StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
+    SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
+    ShowVEs(GotoJsPlugins_Btn);
+    return amMissingPlugins;
+  }
 
 
 }
