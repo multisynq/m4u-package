@@ -102,6 +102,15 @@ public class FolderThing : PathyThing {
     }
     return new FolderThing(newPath);
   }
+  public FolderThing EnsureExists() {
+    if (!Directory.Exists(longPath)) {
+      Directory.CreateDirectory(longPath);
+      #if UNITY_EDITOR
+        AssetDatabase.Refresh();
+      #endif
+    }
+    return this;
+  }
   // file in this folder
   public FileThing DeeperFile(params string[] file) {
     // return new FileThing(Path.Combine(longPath, file));
@@ -119,7 +128,14 @@ public class FolderThing : PathyThing {
       Debug.LogWarning("FolderThing: no files in folder");
       return null;
     }
-    return new FileThing(files[0]);
+    // skip files that start with .
+    for (int i = 0; i < files.Length; i++) {
+      var justFileNamePart = Path.GetFileName(files[i]);
+      if (justFileNamePart.StartsWith(".")) continue;
+      if (justFileNamePart.EndsWith(".meta")) continue;
+      return new FileThing(files[i]);
+    }
+    return null;
   }
 }
 //========== ||||||||| ====================
@@ -144,7 +160,13 @@ public class FileThing : PathyThing {
   public bool WriteAllText(string txt, bool ensureFolders = false) {
     if (ensureFolders) {
       string folder = Path.GetDirectoryName(longPath);
-      Directory.CreateDirectory(folder);
+      // check if folder exists
+      if (!Directory.Exists(folder)) {
+        Directory.CreateDirectory(folder);
+        #if UNITY_EDITOR
+          AssetDatabase.Refresh();
+        #endif
+      }
     }
     File.WriteAllText(longPath, txt);
     return Exists();

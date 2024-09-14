@@ -69,13 +69,12 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
         EditorApplication.isPlaying = false;
       }
     }
-    //---------------- |||||||||||||||||||| ----------------------------------------
-    static public void DoAllNeededJsInjects() {
-      foreach (var jsInjectorType in FindMissingJsPluginTypes()) {
-        // jsInjector.InjectJsPluginCode();
-        var jsInjectorInstance = (JsCodeInjecting_MonoBehavior)Object.FindObjectOfType(jsInjectorType, false);
-        Debug.Log($"{logPrefix} EnsuringInstance for {jsInjectorType.Name}");
-        jsInjectorInstance = Singletoner.EnsureInstByType(jsInjectorType) as JsCodeInjecting_MonoBehavior;
+    //---------------- |||||||||||||||||||||| ----------------------------------------
+    static public void InjectMissingJsPlugins() {
+      foreach (var missingJsPluginType in AnalyzeAllJsPlugins().tsMissingSomePart) {
+        Debug.Log($"{logPrefix} EnsuringInstance for {missingJsPluginType.Name}");
+        var jsInjectorInstance = Singletoner.EnsureInstByType(missingJsPluginType) as JsCodeInjecting_MonoBehavior;
+        Debug.Log($"{logPrefix} Injecting JsPluginCode for {missingJsPluginType.Name}");
         jsInjectorInstance.InjectJsPluginCode();
       }
     }
@@ -101,14 +100,22 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
       var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
       return modelClassPath.Exists();
     }
+    public class JsPluginReport {
+      public HashSet<System.Type> neededTs            = new();
+      public HashSet<System.Type> missingSceneInstancesOfTs  = new();
+      public HashSet<System.Type> haveSceneInstancesOfTs  = new();
+      public HashSet<System.Type> tsWhereJsFilesExist = new();
+      public HashSet<System.Type> tsMissingSomePart = new();
+      public string needTxt;
+      public string needOnesTxt;
+      public string haveInstOnesTxt;
+      public string haveJsFileOnesTxt;
+      public string missingPartOnesTxt;
+    }
     //------------------------- |||||||||||||||||||||||| ----------------------------------------
-    static public System.Type[] FindMissingJsPluginTypes() {
+    static public JsPluginReport AnalyzeAllJsPlugins() {
 
-      HashSet<System.Type> neededTs            = new();
-      HashSet<System.Type> missingSceneInstancesOfTs  = new();
-      HashSet<System.Type> haveSceneInstancesOfTs  = new();
-      HashSet<System.Type> tsWhereJsFilesExist = new();
-      // List<System.Type> missingInjectors  = new();
+      JsPluginReport rpt = new();
 
       // 0. For each SyncedBehavior
       // 1. Read the script file
@@ -132,32 +139,29 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
           foreach (var pattern in codeMatchPatternsByJsInjectorsNeeded[jsInjectorType]) {
             if (Regex.IsMatch(script.text, pattern)) {
               // 3. If it does, add the JsInjector to the neededInjectors list
-              neededTs.Add(jsInjectorType);
+              rpt.neededTs.Add(jsInjectorType);
               // 4. Check if the class has an instance in the scene
               var jsInjectorInstance = (JsCodeInjecting_MonoBehavior)Object.FindObjectOfType(jsInjectorType);
               // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance. 
               // Also continue if it is disabled
               if (jsInjectorInstance == null || !jsInjectorInstance.enabled) {
-                missingSceneInstancesOfTs.Add(jsInjectorType);
+                rpt.missingSceneInstancesOfTs.Add(jsInjectorType);
                 continue;
               }
-              haveSceneInstancesOfTs.Add(jsInjectorType);
+              rpt.haveSceneInstancesOfTs.Add(jsInjectorType);
               // 6. Call JsPluginFileName() method for this class
               string jsPluginFileName = jsInjectorInstance.JsPluginFileName();
               // 7. Check if the file exists
               var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
               if (modelClassPath.Exists()) {
-                tsWhereJsFilesExist.Add(jsInjectorInstance.GetType());
+                rpt.tsWhereJsFilesExist.Add(jsInjectorInstance.GetType());
               }
               
             }
           }
         }
       }
-      var tsMissingSomePart = neededTs.Except(tsWhereJsFilesExist).ToHashSet();
-      if (tsMissingSomePart.Count == 0) {
-        return new System.Type[0]; // no missing injectors, return empty array
-      }
+      rpt.tsMissingSomePart = rpt.neededTs.Except(rpt.tsWhereJsFilesExist).ToHashSet();
       // lambda for report text from List
       var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
         return "[ " + string.Join(", ", types.Select(x => $"%ye%{x.Name}%gy%")) + " ]";
@@ -166,15 +170,16 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
       var countOfCount = new System.Func<HashSet<System.Type>, HashSet<System.Type>, string>((A, B) => {
         return $"Count:%cy%{A.Count}%gy% of %cy%{B.Count}%gy%";
       });
-      string rptMissings = rptList(missingSceneInstancesOfTs);
-      string rptAOKs     = rptList(tsWhereJsFilesExist);
-      string rptNeededs  = rptList(neededTs);
-      string rptHaves    = rptList(haveSceneInstancesOfTs);
-      Debug.Log($"{logPrefix} %cy%{neededTs.Count}%gy% needed JsInjectors: {rptNeededs}".TagColors());
-      Debug.Log($"{logPrefix} {countOfCount(haveSceneInstancesOfTs, neededTs)} JsInjectors %gre%have%gy% an instance in scene: {rptHaves}".TagColors());
-      Debug.Log($"{logPrefix} {countOfCount(tsWhereJsFilesExist, neededTs)} JsInjectors %gre%have%gy% instance & a js file: {rptAOKs}".TagColors());
-      Debug.Log($"{logPrefix} {countOfCount(tsMissingSomePart, neededTs)} JsInjectors are %red%MISSING%gy% a part: {rptList(tsMissingSomePart)}".TagColors());
-      return tsMissingSomePart.ToArray();
+      string rptMissings = rptList(rpt.missingSceneInstancesOfTs);
+      string rptAOKs     = rptList(rpt.tsWhereJsFilesExist);
+      string rptNeededs  = rptList(rpt.neededTs);
+      string rptHaves    = rptList(rpt.haveSceneInstancesOfTs);
+      rpt.needOnesTxt        = $"{logPrefix} %cy%{rpt.neededTs.Count}%gy% needed JsInjectors: {rptNeededs}".TagColors();
+      rpt.haveInstOnesTxt    = $"{logPrefix} {countOfCount(rpt.haveSceneInstancesOfTs, rpt.neededTs)} JsInjectors %gre%have%gy% an instance in scene: {rptHaves}".TagColors();
+      rpt.haveJsFileOnesTxt  = $"{logPrefix} {countOfCount(rpt.tsWhereJsFilesExist,    rpt.neededTs)} JsInjectors %gre%have%gy% instance & a js file: {rptAOKs}".TagColors();
+      rpt.missingPartOnesTxt = $"{logPrefix} {countOfCount(rpt.tsMissingSomePart,      rpt.neededTs)} JsInjectors are %red%MISSING%gy% a part: {rptList(rpt.tsMissingSomePart)}".TagColors();
+
+      return rpt;
     }
   #endif
 }
