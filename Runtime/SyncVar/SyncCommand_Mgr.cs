@@ -12,29 +12,18 @@ public class SyncCommandAttribute : Attribute {
 public class SyncRPCAttribute : SyncCommandAttribute {
 }
 
-//========== |||||||||||||| =====================================================
-public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
+//========== ||||||||||||||| ======================================================= ||||||||||||||| ============
+public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class SyncCommand_Mgr <<<<<<<<<<<<
   #region Fields
     private Dictionary<string, SyncCommandInfo> syncCommands;
     private SyncCommandInfo[] syncCommandsArr;
     private static char msgSeparator = '|';
     private static string scLogPrefix = "<color=#7777FF>[SyncCommand]</color> ";
-  #endregion
-
-  #region Singleton
-    private static SyncCommand_Mgr _Instance = null;
-    public static SyncCommand_Mgr I { 
-      get { 
-        _Instance = Singletoner.EnsureInst(_Instance);
-        return _Instance;
-      }
-      private set { _Instance = value; }
-    }
+    static bool dbg = true;
   #endregion
 
   #region JavaScript
     public override string JsPluginFileName() { return "plugins/SyncCommand_Mgr_Model.js"; }
-
     public override string JsPluginCode() {
       return @"
         import { Model } from '@croquet/croquet';
@@ -54,30 +43,10 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
       ".LessIndent();
     }
 
-    public override void InjectJsPluginCode() {
-      Debug.Log($"{logPrefix} override public void InjectJsPluginCode()");
+    //------------------ |||||||||||||||||| -------------------------
+    override public void InjectJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
+      if (dbg)  Debug.Log($"{logPrefix} override public void OnInjectJsPluginCode()");
       base.InjectJsPluginCode();
-    }
-  #endregion
-
-  #region Internal Classes
-    //========== ||||||||||||||| ===================
-    public class SyncCommandInfo {
-      public readonly string commandId;
-      public readonly int commandIdx;
-      public readonly MethodInfo MethodInfo;
-      public readonly SyncedBehaviour syncedBehaviour;
-      public readonly SyncCommandAttribute attribute;
-      public bool ConfirmedInArr { get; set; }
-
-      public SyncCommandInfo(string commandId, int commandIdx, MethodInfo methodInfo, SyncedBehaviour syncedBehaviour, SyncCommandAttribute attribute) {
-        this.commandId = commandId;
-        this.commandIdx = commandIdx;
-        MethodInfo = methodInfo;
-        this.syncedBehaviour = syncedBehaviour;
-        this.attribute = attribute;
-        ConfirmedInArr = false;
-      }
     }
   #endregion
 
@@ -88,10 +57,15 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
 
       Croquet.Subscribe("SyncCommand", "execute2", ReceiveAsMsg); // <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
 
+      #if UNITY_EDITOR
+        AttributeHelper.CheckForBadAttrParents<SyncedBehaviour, SyncCommandAttribute>();
+        AttributeHelper.CheckForBadAttrParents<SyncedBehaviour, SyncRPCAttribute>();
+      #endif
+
       syncCommands = new Dictionary<string, SyncCommandInfo>();
       List<SyncCommandInfo> syncCommandsList = new List<SyncCommandInfo>();
 
-      int commandIdx = 0;
+      int commandIdx = 0; // Index for the syncCommandsArr array for the fast lookup system
       foreach (SyncedBehaviour syncBeh in FindObjectsOfType<SyncedBehaviour>()) {
         var type = syncBeh.GetType();
         var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -108,10 +82,18 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
 
       syncCommandsArr = syncCommandsList.ToArray();
 
-      foreach (var syncCommand in syncCommands) {
-        Debug.Log($"{scLogPrefix} Found <color=white>{syncCommand.Key}</color>");
+      if (dbg) {
+        foreach (var syncCommand in syncCommands) {
+          Debug.Log($"{scLogPrefix} Found <color=white>{syncCommand.Key}</color>");
+        }
       }
     }
+    #if UNITY_EDITOR
+      // - ||||| -------------------------------------------------------
+      void OnGUI() {
+        AttributeHelper.OnGUI_FailMessage();
+      }
+    #endif
   #endregion
   #region Messaging
     //--------- |||||||||||||||||||||| ----------------------------------------
@@ -128,7 +110,7 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
       string cmdWithNetId = $"{syncBeh.netId}_{commandId}";
       string serializedParams = (parameters.Length == 0) ? "" : msgSeparator+string.Join(msgSeparator.ToString(), parameters.Select(p => SerializeValue(p)));
       var msg = $"{syncCommands[cmdWithNetId].commandIdx}{msgSeparator}{cmdWithNetId}{serializedParams}";
-      Debug.Log($"{scLogPrefix} <color=#ff22ff>Publish</color> msg:'<color=cyan>{msg}</color>'");
+      if (dbg) Debug.Log($"{scLogPrefix} <color=#ff22ff>Publish</color> msg:'<color=cyan>{msg}</color>'");
 
       Croquet.Publish("SyncCommand", "execute1", msg);// <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
 
@@ -161,7 +143,7 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
       }
       syncCommand.MethodInfo.Invoke(syncCommand.syncedBehaviour, parameters);
 
-      Debug.Log(arrLookupFailed
+      if (dbg) Debug.Log( (arrLookupFailed)
           ? $"{scLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Executed!</color> using <color=#ff4444>SLOW commandId</color> dictionary lookup. {logIds}"
           : $"{scLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Executed!</color> using <color=#44ff44>FAST commandIdx</color>. {logIds}"
       );
@@ -176,7 +158,7 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
         }
         else {
           syncCommand.ConfirmedInArr = true;
-          Debug.Log($"{scLogPrefix} <color=green>✔️</color>Confirmed syncCommands[commandId:'<color=white>{commandId}</color>'] matches entry at syncCommandsArr[commandIdx:<color=cyan>{commandIdx}</color>]");
+          if (dbg) Debug.Log($"{scLogPrefix} <color=green>✔️</color>Confirmed syncCommands[commandId:'<color=white>{commandId}</color>'] matches entry at syncCommandsArr[commandIdx:<color=cyan>{commandIdx}</color>]");
           return syncCommand;
         }
       }
@@ -214,6 +196,38 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehavior {
     private object DeserializeValue(string serializedValue) {
       // Placeholder for actual deserialization logic
       return serializedValue;
+    }
+  #endregion
+
+  #region Singleton
+    private static SyncCommand_Mgr _Instance = null;
+    public static SyncCommand_Mgr I { 
+      get { 
+        _Instance = Singletoner.EnsureInst(_Instance);
+        return _Instance;
+      }
+      private set { _Instance = value; }
+    }
+  #endregion
+
+  #region Internal Classes
+    //========== ||||||||||||||| ===================
+    public class SyncCommandInfo {
+      public readonly string commandId;
+      public readonly int commandIdx;
+      public readonly MethodInfo MethodInfo;
+      public readonly SyncedBehaviour syncedBehaviour;
+      public readonly SyncCommandAttribute attribute;
+      public bool ConfirmedInArr { get; set; }
+
+      public SyncCommandInfo(string commandId, int commandIdx, MethodInfo methodInfo, SyncedBehaviour syncedBehaviour, SyncCommandAttribute attribute) {
+        this.commandId = commandId;
+        this.commandIdx = commandIdx;
+        MethodInfo = methodInfo;
+        this.syncedBehaviour = syncedBehaviour;
+        this.attribute = attribute;
+        ConfirmedInArr = false;
+      }
     }
   #endregion
 }

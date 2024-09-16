@@ -232,11 +232,13 @@ public class CroquetEntitySystem : CroquetSystem
             CroquetActorManifest manifest = asset.GetComponent<CroquetActorManifest>();
             if (manifest != null)
             {
-                List<string> oneAssetStrings = new List<string>();
-                oneAssetStrings.Add(kv.Key); // asset name
-                oneAssetStrings.Add(string.Join(',', manifest.mixins));
-                oneAssetStrings.Add(string.Join(',', manifest.staticProperties));
-                oneAssetStrings.Add(string.Join(',', manifest.watchedProperties));
+                List<string> oneAssetStrings = new()
+                {
+                    kv.Key, // asset name
+                    string.Join(',', manifest.mixins),
+                    string.Join(',', manifest.staticProperties),
+                    string.Join(',', manifest.watchedProperties)
+                };
                 allManifests.Add(string.Join('\x03', oneAssetStrings.ToArray()));
             }
         }
