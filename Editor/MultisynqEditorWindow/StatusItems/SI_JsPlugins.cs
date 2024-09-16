@@ -38,7 +38,7 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_AddJsPlugins_Btn() { // JS PLUGINS  ------------- Click
     Logger.MethodHeader();
-    JsCodeInjecting_MonoBehavior.InjectMissingJsPlugins();
+    JsCodeInjecting_MonoBehaviour.InjectMissingJsPlugins();
     // Update Asset DB
     AssetDatabase.Refresh();
     
@@ -62,10 +62,10 @@ public class SI_JsPlugins: StatusItem {
   }
 
   override public bool Check() { // JS PLUGINS
-    var pluginRpt = JsCodeInjecting_MonoBehavior.AnalyzeAllJsPlugins();
+    var pluginRpt = JsCodeInjecting_MonoBehaviour.AnalyzeAllJsPlugins();
     //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
     // lambda function for report from list of types
-    bool amMissingPlugins = JsCodeInjecting_MonoBehavior.LogJsPluginReport(pluginRpt);
+    bool amMissingPlugins = JsCodeInjecting_MonoBehaviour.LogJsPluginReport(pluginRpt);
     StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
     SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
     ShowVEs(GotoJsPlugins_Btn);

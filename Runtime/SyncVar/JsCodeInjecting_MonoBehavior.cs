@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 #endif
 
 //=================== ||||||||||||||||||||||||||| =========================
-abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
+abstract public class JsCodeInjecting_MonoBehaviour : MonoBehaviour {
 
   static public string logPrefix = "[ <color=yellow>Js</color><color=cyan>CodeInject</color> ]";
   static bool dbg = true;
@@ -73,25 +73,25 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
     static public void InjectMissingJsPlugins() {
       foreach (var missingJsPluginType in AnalyzeAllJsPlugins().tsMissingSomePart) {
         Debug.Log($"{logPrefix} EnsuringInstance for {missingJsPluginType.Name}");
-        var jsInjectorInstance = Singletoner.EnsureInstByType(missingJsPluginType) as JsCodeInjecting_MonoBehavior;
+        var jsInjectorInstance = Singletoner.EnsureInstByType(missingJsPluginType) as JsCodeInjecting_MonoBehaviour;
         Debug.Log($"{logPrefix} Injecting JsPluginCode for {missingJsPluginType.Name}");
         jsInjectorInstance.InjectJsPluginCode();
       }
     }
     //---------------------------------------- ||||||||||||||||||||||||| ----------------------------------------
-    static public JsCodeInjecting_MonoBehavior EnsureJsInjectorIsInScene( System.Type jsInjectorType ) {
-      return Singletoner.EnsureInstByType(jsInjectorType) as JsCodeInjecting_MonoBehavior;
+    static public JsCodeInjecting_MonoBehaviour EnsureJsInjectorIsInScene( System.Type jsInjectorType ) {
+      return Singletoner.EnsureInstByType(jsInjectorType) as JsCodeInjecting_MonoBehaviour;
     }
     //---------------- |||||||||||||||||||||||||||| ----------------------------------------
     static public bool JsFileForThisClassTypeExists( System.Type jsInjectorType ) {
-      // ensure this is a subclass of JsCodeInjecting_MonoBehavior
-      if (!typeof(JsCodeInjecting_MonoBehavior).IsAssignableFrom(jsInjectorType)) {
-        Debug.LogError($"{logPrefix} JsFileForThisClassTypeExists() called with a non-JsCodeInjecting_MonoBehavior subclass: {jsInjectorType.Name}");
+      // ensure this is a subclass of JsCodeInjecting_MonoBehaviour
+      if (!typeof(JsCodeInjecting_MonoBehaviour).IsAssignableFrom(jsInjectorType)) {
+        Debug.LogError($"{logPrefix} JsFileForThisClassTypeExists() called with a non-JsCodeInjecting_MonoBehaviour subclass: {jsInjectorType.Name}");
         return false;
       }
       // Call static JsPluginFileName() method for this class
       // Calling the .I getter will also ensure the instance is created in the scene if it doesn't exist
-      var jsInjectorMB = (JsCodeInjecting_MonoBehavior)jsInjectorType.GetMethod("I")?.Invoke(null, null);
+      var jsInjectorMB = (JsCodeInjecting_MonoBehaviour)jsInjectorType.GetMethod("I")?.Invoke(null, null);
       if (jsInjectorMB == null) {
         Debug.LogError($"{logPrefix} JsFileForThisClassTypeExists() could not find a JsPluginFileName() method for {jsInjectorType.Name}");
         return false;
@@ -149,7 +149,7 @@ abstract public class JsCodeInjecting_MonoBehavior : MonoBehaviour {
               string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsInjectorType}</color> for: <color=white>{(pattern.Replace("\\",""))}</color>";
               rpt.filesThatNeedPlugins.Add(sbPathAndPattern);
               // 4. Check if the class has an instance in the scene
-              var jsInjectorInstance = (JsCodeInjecting_MonoBehavior)Object.FindObjectOfType(jsInjectorType);
+              var jsInjectorInstance = (JsCodeInjecting_MonoBehaviour)Object.FindObjectOfType(jsInjectorType);
               // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance. 
               // Also continue if it is disabled
               if (jsInjectorInstance == null || !jsInjectorInstance.enabled) {
