@@ -80,17 +80,11 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
               // TODO: cleanup
               const command = 'croquetPub'
               const args = ['SyncVar', 'varChanged', msg]
-              return [command, ...args].join(""\x01"")
+              return [command, ...args].join('\x01')
             })
             globalThis.theGameEngineBridge.sendBundleToUnity(messages)
           }
         }
-
-        // export const createTheseModelViewPairs = [
-        //   {model: SyncVar_Mgr_Model, view: SyncVar_Mgr_View},
-        //   // {model: SyncVar_Mgr_Model, view: null}, // alternately no view
-        // ]
-
       ".LessIndent();
     }
     //------------------ |||||||||||||||||| -------------------------
