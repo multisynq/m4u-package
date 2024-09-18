@@ -5,7 +5,11 @@ using UnityEngine;
 
 static public class SceneHelp {
 
-  static public string EnsureComp<T>(GameObject gob) where T : Component {
+  static public T EnsureComp<T>(this GameObject gob) where T : Component {
+    return gob.GetComponent<T>() ?? gob.AddComponent<T>();
+  }
+  
+  static public string EnsureCompRpt<T>(GameObject gob) where T : Component {
     var comp = UnityEngine.Object.FindObjectOfType<T>();
     string name = typeof(T).Name;
     if (comp == null) {

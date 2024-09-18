@@ -485,11 +485,11 @@ public class CroquetBuilder
         }
 
         // Check that the Js Pulgins are all present
-        var pluginRpt = JsCodeInjecting_MonoBehaviour.AnalyzeAllJsPlugins();
+        var pluginRpt = JsPluginInjecting_Behaviour.AnalyzeAllJsPlugins();
         // bail if any are missing
         if (pluginRpt.tsMissingSomePart.Count > 0)
         {
-            JsCodeInjecting_MonoBehaviour.LogJsPluginReport(pluginRpt);
+            JsPluginInjecting_Behaviour.LogJsPluginReport(pluginRpt);
             Debug.Log("<color=#ff7777>  --- BUILD HALT --- </color>");
             Debug.LogError("HALT: Cannot build JS because some JS plugins are missing. See guidance in logs above.");
             return;

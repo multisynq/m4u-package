@@ -63,11 +63,11 @@ public class SI_Systems: StatusItem {
     } else {
       var cqGob = cqBridge.gameObject;
       string rpt = "";
-      rpt += SceneHelp.EnsureComp<CroquetRunner>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetEntitySystem>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetSpatialSystem>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetMaterialSystem>(cqGob);
-      rpt += SceneHelp.EnsureComp<CroquetFileReader>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<CroquetRunner>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<CroquetEntitySystem>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<CroquetSpatialSystem>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<CroquetMaterialSystem>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<CroquetFileReader>(cqGob);
       if (rpt == "") NotifyAndLog("All Croquet Systems are present in CroquetBridge GameObject.");
       else           NotifyAndLog("Added:\n"+rpt);
     }

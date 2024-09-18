@@ -13,7 +13,7 @@ public class SyncRPCAttribute : SyncCommandAttribute {
 }
 
 //========== ||||||||||||||| ======================================================= ||||||||||||||| ============
-public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class SyncCommand_Mgr <<<<<<<<<<<<
+public class SyncCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class SyncCommand_Mgr <<<<<<<<<<<<
   #region Fields
     private Dictionary<string, SyncCommandInfo> syncCommands;
     private SyncCommandInfo[] syncCommandsArr;
@@ -39,7 +39,7 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< c
                 this.publish('SyncCommand', 'execute2', msg);
             }
         }
-        SyncCommand_Mgr_Model.register('SyncCommandMgrModel');
+        SyncCommand_Mgr_Model.register('SyncCommand_Mgr_Model');
       ".LessIndent();
     }
 
@@ -58,15 +58,15 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< c
       Croquet.Subscribe("SyncCommand", "execute2", ReceiveAsMsg); // <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
 
       #if UNITY_EDITOR
-        AttributeHelper.CheckForBadAttrParents<SyncedBehaviour, SyncCommandAttribute>();
-        AttributeHelper.CheckForBadAttrParents<SyncedBehaviour, SyncRPCAttribute>();
+        AttributeHelper.CheckForBadAttrParents<SyncBehaviour, SyncCommandAttribute>();
+        AttributeHelper.CheckForBadAttrParents<SyncBehaviour, SyncRPCAttribute>();
       #endif
 
       syncCommands = new Dictionary<string, SyncCommandInfo>();
       List<SyncCommandInfo> syncCommandsList = new List<SyncCommandInfo>();
 
       int commandIdx = 0; // Index for the syncCommandsArr array for the fast lookup system
-      foreach (SyncedBehaviour syncBeh in FindObjectsOfType<SyncedBehaviour>()) {
+      foreach (SyncBehaviour syncBeh in FindObjectsOfType<SyncBehaviour>()) {
         var type = syncBeh.GetType();
         var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
@@ -97,7 +97,7 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< c
   #endregion
   #region Messaging
     //--------- |||||||||||||||||||||| ----------------------------------------
-    public void PublishSyncCommandCall(SyncedBehaviour syncBeh, RpcTarget tgt, string commandId, params object[] parameters) {
+    public void PublishSyncCommandCall(SyncBehaviour syncBeh, RpcTarget tgt, string commandId, params object[] parameters) {
       // TODO: Implement the actual logic to send the command only other clients or all clients
       // if (tgt == RpcTarget.Others) {
       // else if (tgt == RpcTarget.All) {
@@ -105,7 +105,7 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< c
       else { PublishSyncCommandCall(syncBeh, commandId, parameters); }
     }
     //--------- |||||||||||||||||||||| ----------------------------------------
-    public void PublishSyncCommandCall(SyncedBehaviour syncBeh, string commandId, params object[] parameters) {
+    public void PublishSyncCommandCall(SyncBehaviour syncBeh, string commandId, params object[] parameters) {
 
       string cmdWithNetId = $"{syncBeh.netId}_{commandId}";
       string serializedParams = (parameters.Length == 0) ? "" : msgSeparator+string.Join(msgSeparator.ToString(), parameters.Select(p => SerializeValue(p)));
@@ -178,11 +178,11 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< c
 
   #region Messaging Utilities
     //------------ ||||||||||||||||| ----------------------------------------
-    private string GenerateCommandId(SyncedBehaviour syncBeh, string commandName) {
+    private string GenerateCommandId(SyncBehaviour syncBeh, string commandName) {
       return $"{syncBeh.netId}_{commandName}";
     }
     //--------------------- ||||||||||||||||||||| ----------------------------------------
-    private SyncCommandInfo CreateSyncCommandInfo(SyncedBehaviour syncBeh, MethodInfo method, SyncCommandAttribute attribute, int commandIdx) {
+    private SyncCommandInfo CreateSyncCommandInfo(SyncBehaviour syncBeh, MethodInfo method, SyncCommandAttribute attribute, int commandIdx) {
       string commandId = GenerateCommandId(syncBeh, attribute.CustomName ?? method.Name);
       return new SyncCommandInfo(commandId, commandIdx, method, syncBeh, attribute);
     }
@@ -216,11 +216,11 @@ public class SyncCommand_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< c
       public readonly string commandId;
       public readonly int commandIdx;
       public readonly MethodInfo MethodInfo;
-      public readonly SyncedBehaviour syncedBehaviour;
+      public readonly SyncBehaviour syncedBehaviour;
       public readonly SyncCommandAttribute attribute;
       public bool ConfirmedInArr { get; set; }
 
-      public SyncCommandInfo(string commandId, int commandIdx, MethodInfo methodInfo, SyncedBehaviour syncedBehaviour, SyncCommandAttribute attribute) {
+      public SyncCommandInfo(string commandId, int commandIdx, MethodInfo methodInfo, SyncBehaviour syncedBehaviour, SyncCommandAttribute attribute) {
         this.commandId = commandId;
         this.commandIdx = commandIdx;
         MethodInfo = methodInfo;

@@ -26,7 +26,7 @@ using System.Linq;
 #endregion
 
 //========== ||||||||||| ====================================================== ||||||||||| ================
-public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class SyncVar_Mgr <<<<<<<<<<<<
+public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class SyncVar_Mgr <<<<<<<<<<<<
 
   #region Fields
     [SerializeField] private Dictionary<string, SyncVarInfo> syncVars;
@@ -42,11 +42,10 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
     override public string JsPluginCode() {
       return @"
         import { Model, View } from '@croquet/croquet';
-                
+        //---------- ||||||||||||||||| -------------------
         export class SyncVar_Mgr_Model extends Model {
-          get gamePawnType() { return '' }
-
           varValuesAsMessages = []
+          get gamePawnType() { return '' }
 
           init(options) {
             super.init(options)
@@ -54,35 +53,24 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
             console.log('### <color=magenta>SyncVar_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>')
           }
 
-          
           syncVarChange(msg) {
-
-            // store the value in the array at the index specified in the message
             const varIdx = parseInt(msg.split('|')[0])
-            this.varValuesAsMessages[varIdx] = msg
-
-            // TODO: remove this logging once broadly in use (it will SPAM the console)
-            console.log(`${this.now()} <color=blue>[SyncVar]</color> <color=yellow>JS</color> CroquetModel <color=magenta>SyncVarMgrModel.syncVarChange()</color> msg = <color=white>${JSON.stringify(msg)}</color>`)
+            this.varValuesAsMessages[varIdx] = msg // store the value in the array at the index specified in the message
             this.publish('SyncVar', 'varChanged', msg) // sent from JS to Unity
           }
         }
         SyncVar_Mgr_Model.register('SyncVar_Mgr_Model')
               
-
+        //---------- |||||||||||||||| -------------------
         export class SyncVar_Mgr_View extends View {
           constructor(model) {
             super(model)
-            console.log('### <color=green>SyncVar_Mgr_View.constructor() <<<<<<<<<<<<<<<<<<<<< </color>')
             this.model = model
-            // Initially Send All Values
-            const messages = model.varValuesAsMessages.map((msg) => {
-              // MIMICS  model.publish('SyncVar', 'varChanged', msg) // sent from JS to Unity
-              // TODO: cleanup
-              const command = 'croquetPub'
-              const args = ['SyncVar', 'varChanged', msg]
-              return [command, ...args].join('\x01')
-            })
-            globalThis.theGameEngineBridge.sendBundleToUnity(messages)
+            console.log('### <color=green>SyncVar_Mgr_View.constructor() <<<<<<<<<<<<<<<<<<<<< </color>')
+            const messages = model.varValuesAsMessages.map( (msg) => (
+              `croquetPub\x01SyncVar\x01varChanged\x01${msg}`
+            ))
+            globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SyncVar', 'varChanged', msg)
           }
         }
       ".LessIndent();
@@ -102,14 +90,14 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       Croquet.Subscribe("SyncVar", "varChanged", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
       #if UNITY_EDITOR
-        AttributeHelper.CheckForBadAttrParents<SyncedBehaviour, SyncVarAttribute>();
+        AttributeHelper.CheckForBadAttrParents<SyncBehaviour, SyncVarAttribute>();
       #endif
 
       syncVars = new Dictionary<string, SyncVarInfo>();
       List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
       int varIdx = 0; // Index for the syncVarsArr array for the fast lookup system
       // Find SyncVar attribute on fields & properties of SyncedBehaviours and add them to the syncVars dictionary
-      foreach (SyncedBehaviour syncBeh in FindObjectsOfType<SyncedBehaviour>()) {
+      foreach (SyncBehaviour syncBeh in FindObjectsOfType<SyncBehaviour>()) {
 
         if (!syncBeh.enabled) continue; // skip inactives
         var type       = syncBeh.GetType();
@@ -161,7 +149,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
 
   #region Factories
     //------------------- ||||||||||||||||||| -----------------------
-    private SyncFieldInfo CreateSyncFieldInfo(SyncedBehaviour syncBeh, FieldInfo field, SyncVarAttribute attribute, int fieldIdx) {
+    private SyncFieldInfo CreateSyncFieldInfo(SyncBehaviour syncBeh, FieldInfo field, SyncVarAttribute attribute, int fieldIdx) {
       string fieldId = (attribute.CustomName != null) 
         ? GenerateVarId(syncBeh, attribute.CustomName) 
         : GenerateVarId(syncBeh, field.Name);
@@ -175,7 +163,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       );
     }
     //------------------ |||||||||||||||||| -----------------------
-    private SyncPropInfo CreateSyncPropInfo(SyncedBehaviour syncBeh, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
+    private SyncPropInfo CreateSyncPropInfo(SyncBehaviour syncBeh, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
       string propId = GenerateVarId(syncBeh, attribute.CustomName ?? prop.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
       return new SyncPropInfo(
@@ -187,7 +175,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       );
     }
     //-------------------- ||||||||||||||||||||||| -----------------------
-    private Action<object> CreateOnChangedCallback(SyncedBehaviour syncBeh, string methodName) {
+    private Action<object> CreateOnChangedCallback(SyncBehaviour syncBeh, string methodName) {
       if (string.IsNullOrEmpty(methodName))
         return null;
 
@@ -221,7 +209,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       return lambda.Compile();
     }
     //------------ ||||||||||||| -------------------------------------------
-    private string GenerateVarId(SyncedBehaviour syncBeh, string varName) {
+    private string GenerateVarId(SyncBehaviour syncBeh, string varName) {
       return $"{syncBeh.netId}_{varName}";
     }
   #endregion
@@ -330,14 +318,21 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
   #region Serialization
     //------------ |||||||||||||| --------------------------
     private string SerializeValue(object value, Type type) {
-      // Placeholder for actual serialization logic
-      return value.ToString();
+      return (type == typeof(Vector3)) 
+        ? ((Vector3)value).Serialize()
+        : (type == typeof(Quaternion)) 
+          ? ((Quaternion)value).Serialize()
+          : value.ToString();
+          // : value.Serialize();
     }
 
     //------------ |||||||||||||||| --------------------------
     private object DeserializeValue(string serializedValue, Type type) {
-      // Placeholder for actual deserialization logic
-      return Convert.ChangeType(serializedValue, type);
+      return (type == typeof(Vector3)) 
+        ? serializedValue.DeserializeVector3()
+        : (type == typeof(Quaternion)) 
+          ? serializedValue.DeserializeQuaternion()
+          : Convert.ChangeType(serializedValue, type);
     }
   #endregion
 
@@ -350,7 +345,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       public readonly Func<object> Getter;
       public readonly Action<object> Setter;
       public readonly Action<object> onChangedCallback;
-      public readonly SyncedBehaviour syncedBehaviour;
+      public readonly SyncBehaviour syncedBehaviour;
       public readonly Type varType;
       public readonly SyncVarAttribute attribute;
       public bool blockLoopySend = false;
@@ -362,7 +357,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       protected SyncVarInfo( // constructor
         string varId, int varIdx,      
         Func<object> getter, Action<object> setter,
-        SyncedBehaviour monoBehaviour, Type varType, 
+        SyncBehaviour monoBehaviour, Type varType, 
         SyncVarAttribute attribute, object initialValue, 
         Action<object> onChangedCallback
       ) {
@@ -383,7 +378,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       public      SyncFieldInfo( // constructor
         string fieldId, int fieldIdx, 
         Func<object> getter, Action<object> setter,
-        SyncedBehaviour monoBehaviour, FieldInfo fieldInfo, 
+        SyncBehaviour monoBehaviour, FieldInfo fieldInfo, 
         SyncVarAttribute attribute, object initialValue, 
         Action<object> onChangedCallback
       ) : base(
@@ -403,7 +398,7 @@ public class SyncVar_Mgr : JsCodeInjecting_MonoBehaviour { // <<<<<<<<<<<< class
       public      SyncPropInfo( // constructor
         string propId, int propIdx, 
         Func<object> getter, Action<object> setter,
-        SyncedBehaviour monoBehaviour, PropertyInfo propInfo, 
+        SyncBehaviour monoBehaviour, PropertyInfo propInfo, 
         SyncVarAttribute attribute, object initialValue, 
         Action<object> onChangedCallback
       ) : base(
@@ -440,5 +435,32 @@ public static class SerializationExtensions {
   public static T Deserialize<T>(this string serialized) {
     // Implement your deserialization logic here
     return (T)Convert.ChangeType(serialized, typeof(T));
+  }
+
+  // Vector3
+  public static string Serialize(this Vector3 obj) {
+    return $"{obj.x},{obj.y},{obj.z}";
+  }
+  public static Vector3 DeserializeVector3(this string serialized) {
+    var parts = serialized.Split(',');
+    return new Vector3(
+      float.Parse(parts[0]),
+      float.Parse(parts[1]),
+      float.Parse(parts[2])
+    );
+  }
+
+  //Quaternion
+  public static string Serialize(this Quaternion obj) {
+    return $"{obj.x},{obj.y},{obj.z},{obj.w}";
+  }
+  public static Quaternion DeserializeQuaternion(this string serialized) {
+    var parts = serialized.Split(',');
+    return new Quaternion(
+      float.Parse(parts[0]),
+      float.Parse(parts[1]),
+      float.Parse(parts[2]),
+      float.Parse(parts[3])
+    );
   }
 }
