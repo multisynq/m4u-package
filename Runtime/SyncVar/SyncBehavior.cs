@@ -5,7 +5,7 @@ using UnityEngine;
 public enum RpcTarget { Others, All };
 
 //========== ||||||||||||||| =============
-public class SyncedBehaviour : MonoBehaviour {
+public class SyncBehaviour : MonoBehaviour {
 
   public int netId = 0;
   // string methodName
@@ -57,42 +57,45 @@ public class SyncedBehaviour : MonoBehaviour {
   public void RPC<T1, T2, T3, T4>(Action<T1, T2, T3, T4> m, RpcTarget tgt, T1 p1, T2 p2, T3 p3, T4 p4) { 
     SyncCommand_Mgr.I.PublishSyncCommandCall( this, tgt, m.Method.Name, new object[] { p1, p2, p3, p4 }); 
   }
-  
   #if UNITY_EDITOR
     // At editor time, set a new netId  ONLY IF  it is zero and unititialized
     void OnValidate() {
       if (netId == 0) {
-        netId = GenerateNewId(GetInstanceID());
-        EnsureUnique();
-        Debug.Log($"new netId={netId}");
-      }
-    }
-
-    void EnsureUnique() {
-      var allSyncedBeh = FindObjectsOfType<SyncedBehaviour>();
-      int attempts = 0;
-      int maxAttempts = 1000; // Prevent infinite loop
-
-      while (allSyncedBeh.Count(sb => sb.netId == netId) > 1 && attempts < maxAttempts) {
-        netId = GenerateNewId(netId);
-        attempts++;
-      }
-
-      if (attempts >= maxAttempts) {
-        Debug.LogWarning($"Failed to find a unique netId for {gameObject.name} after {maxAttempts} attempts.");
-      }
-    }
-
-    private int GenerateNewId(int currentId) {
-      unchecked {
-        int hash = currentId;
-        hash = (hash ^ 61) ^ (hash >> 16);
-        hash += (hash << 3);
-        hash ^= (hash >> 4);
-        hash *= 0x27d4eb2d; // Prime number
-        hash ^= (hash >> 15);
-        return Mathf.Abs(hash) % 10000000; // Keep it within 0-9999999 range
+        MakeNewId();
       }
     }
   #endif
+  public int MakeNewId() {
+    netId = GenerateNewId(GetInstanceID());
+    EnsureUnique();
+    Debug.Log($"new netId={netId}");
+    return netId;
+  }
+
+  public void EnsureUnique() {
+    var allSyncedBeh = FindObjectsOfType<SyncBehaviour>();
+    int attempts = 0;
+    int maxAttempts = 1000; // Prevent infinite loop
+
+    while (allSyncedBeh.Count(sb => sb.netId == netId) > 1 && attempts < maxAttempts) {
+      netId = GenerateNewId(netId);
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      Debug.LogWarning($"Failed to find a unique netId for {gameObject.name} after {maxAttempts} attempts.");
+    }
+  }
+
+  private int GenerateNewId(int currentId) {
+    unchecked {
+      int hash = currentId;
+      hash = (hash ^ 61) ^ (hash >> 16);
+      hash += (hash << 3);
+      hash ^= (hash >> 4);
+      hash *= 0x27d4eb2d; // Prime number
+      hash ^= (hash >> 15);
+      return Mathf.Abs(hash) % 10000000; // Keep it within 0-9999999 range
+    }
+  }
 }
