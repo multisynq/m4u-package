@@ -317,11 +317,11 @@ public class Mq_Entity_System : Mq_System
             {
                 try
                 {
-                    Type typeToAdd = Type.GetType(compName);
+                    Type typeToAdd = Type.GetType("Multisynq." + compName);
                     if (typeToAdd == null)
                     {
                         string assemblyQualifiedName =
-                            System.Reflection.Assembly.CreateQualifiedName("Assembly-CSharp", compName);
+                            System.Reflection.Assembly.CreateQualifiedName("Assembly-CSharp", "Multisynq." + compName);
                         typeToAdd = Type.GetType(assemblyQualifiedName);
                     }
                     if (typeToAdd == null)
@@ -378,7 +378,7 @@ public class Mq_Entity_System : Mq_System
             }
         }
 
-        foreach (ICroquetDriven component in gameObjectToMake.GetComponents<ICroquetDriven>())
+        foreach (IMq_Driven component in gameObjectToMake.GetComponents<IMq_Driven>())
         {
             component.PawnInitializationComplete();
         }
@@ -505,7 +505,7 @@ public class ObjectSpec
     public string[] ws; // actor properties to be watched
 }
 
-public interface ICroquetDriven
+public interface IMq_Driven
 {
     void PawnInitializationComplete();
 }
