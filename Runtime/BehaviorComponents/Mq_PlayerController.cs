@@ -1,16 +1,16 @@
 using UnityEngine;
 
-public class Mq_PlayerController : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+namespace Multisynq {
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
+public class  Mq_PlayerController : MonoBehaviour {
+  public bool mq_PlayerController;  // Helps tools resolve "missing Script" problems
+
+  void Start() {
+  }
+
+  void Update() {
+  }
+}
+
 }

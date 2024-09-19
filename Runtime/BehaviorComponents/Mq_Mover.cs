@@ -1,18 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Mq_Mover : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+namespace Multisynq {
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
+public class  Mq_Mover : MonoBehaviour {
+  public bool mq_Mover;  // Helps tools resolve "missing Script" problems
+  
+  void Start() {    
+  }
+
+  void Update() {
+  }
+}
+
 }
