@@ -7,11 +7,11 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using Multisynq;
 
-static public class CqProject {
+static public class Mq_Project {
 
   static public void EnsureAssetsFolder(string folder) {
-    string croquetFolder = Path.Combine("Assets", folder);
-    if (!AssetDatabase.IsValidFolder(croquetFolder)) {
+    string assetsFolder = Path.Combine("Assets", folder);
+    if (!AssetDatabase.IsValidFolder(assetsFolder)) {
       AssetDatabase.CreateFolder("Assets", folder);
     }
   }

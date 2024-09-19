@@ -59,7 +59,7 @@ public class SI_Settings: StatusItem {
   private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
     Logger.MethodHeader();
     // Mq_Settings in scene
-    var cqStgs = CqProject.EnsureSettingsFile();
+    var cqStgs = Mq_Project.EnsureSettingsFile();
     StatusSetMgr.ready.SetIsGood(cqStgs != null);
     if (cqStgs == null) Debug.LogError("Could not find or create Mq_Settings file");
     GotoSettings();

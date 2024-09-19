@@ -79,28 +79,28 @@ public class Mq_ContextMenuActions
     {
         // Load the Mq_Bridge prefab from the package
         var allAssetPaths = AssetDatabase.GetAllAssetPaths();
-        GameObject croquetBridgePrefab = null;
+        GameObject mqBridgePrefab = null;
         for (int i = 0; i < allAssetPaths.Length; ++i)
         {
             if (allAssetPaths[i].Contains("Mq_Bridge.prefab"))
-                croquetBridgePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(allAssetPaths[i]);
+                mqBridgePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(allAssetPaths[i]);
         }
 
-        if (croquetBridgePrefab == null)
+        if (mqBridgePrefab == null)
         {
             Debug.LogError("Could not find Mq_Bridge prefab in the package.");
             return;
         }
 
         // Instantiate the prefab into the active scene
-        GameObject croquetBridgeInstance = PrefabUtility.InstantiatePrefab(croquetBridgePrefab) as GameObject;
+        GameObject mqBridgeInstance = PrefabUtility.InstantiatePrefab(mqBridgePrefab) as GameObject;
 
-        if (croquetBridgeInstance != null)
+        if (mqBridgeInstance != null)
         {
-            Selection.activeGameObject = croquetBridgeInstance;
+            Selection.activeGameObject = mqBridgeInstance;
             SceneView.FrameLastActiveSceneView();
             // Register the creation in the undo system
-            Undo.RegisterCreatedObjectUndo(croquetBridgeInstance, "Add Multisynq Bridge");
+            Undo.RegisterCreatedObjectUndo(mqBridgeInstance, "Add Multisynq Bridge");
         }
         else
         {
@@ -119,23 +119,23 @@ public class Mq_ContextMenuActions
             return;
         }
 
-        GameObject croquetBridgePrefab = FindMq_BridgePrefab();
-        if (croquetBridgePrefab == null)
+        GameObject mqBridgePrefab = FindMq_BridgePrefab();
+        if (mqBridgePrefab == null)
         {
             Debug.LogError("Could not find Mq_Bridge prefab in the project.");
             return;
         }
 
-        GameObject croquetBridgeInstance = PrefabUtility.InstantiatePrefab(croquetBridgePrefab, targetTransform) as GameObject;
-        if (croquetBridgeInstance != null)
+        GameObject mqBridgeInstance = PrefabUtility.InstantiatePrefab(mqBridgePrefab, targetTransform) as GameObject;
+        if (mqBridgeInstance != null)
         {
             // If you want the prefab to be a sibling rather than a child, use the following line instead:
-            // croquetBridgeInstance.transform.SetParent(targetTransform.parent);
+            // mqcroquetBridgeInstance.transform.SetParent(targetTransform.parent);
 
-            croquetBridgeInstance.transform.SetAsLastSibling(); // This places it as the last sibling in the hierarchy
+            mqBridgeInstance.transform.SetAsLastSibling(); // This places it as the last sibling in the hierarchy
 
-            Selection.activeGameObject = croquetBridgeInstance;
-            Undo.RegisterCreatedObjectUndo(croquetBridgeInstance, "Add Multisynq Bridge to Selected Object");
+            Selection.activeGameObject = mqBridgeInstance;
+            Undo.RegisterCreatedObjectUndo(mqBridgeInstance, "Add Multisynq Bridge to Selected Object");
         }
         else
         {

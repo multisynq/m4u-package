@@ -61,7 +61,7 @@ public class SI_BuiltOutput: StatusItem {
   void Clk_Check_Building_Scenes() { // Check -  BUILT OUTPUT  ------------- Click
     Logger.MethodHeader();
     if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-    var isOk = CqProject.AllScenesHaveBridgeWithAppNameSet();
+    var isOk = Mq_Project.AllScenesHaveBridgeWithAppNameSet();
     StatusSetMgr.builtOutput.SetIsGood(isOk);
     if (isOk) NotifyAndLog("All scenes have Mq_Bridge\n with appName set and\n app folder in StreamingAssets.");
     else      {
