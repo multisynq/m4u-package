@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using Multisynq;
 
 [CustomEditor(typeof(SyncCommand_Mgr))]
 public class SyncCommandMgrEditor : Editor {
@@ -11,7 +12,7 @@ public class SyncCommandMgrEditor : Editor {
       InjectCode(manager);
     }
     if (GUILayout.Button("Select Plugins Folder")) {
-      var plFldr = CqFile.AppFolder().DeeperFolder("plugins").EnsureExists();
+      var plFldr = Mq_File.AppFolder().DeeperFolder("plugins").EnsureExists();
       if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
       else                            plFldr.SelectAndPing();
     }

@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 public class SI_HasAppJs: StatusItem {
 
@@ -24,7 +25,7 @@ public class SI_HasAppJs: StatusItem {
 
   override public void InitText() {
     StatusSetMgr.hasAppJs = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       "Input JS: index.js for AppName is ready to go!",
       "Input JS: index.js for AppName is missing",
       "Input JS: index.js for AppName is missing!",
@@ -35,7 +36,7 @@ public class SI_HasAppJs: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    var cqBridge = Object.FindObjectOfType<CroquetBridge>();
+    var cqBridge = Object.FindObjectOfType<Mq_Bridge>();
 
     string appName = cqBridge?.appName;
     if (appName==null || appName=="") {
@@ -44,8 +45,8 @@ public class SI_HasAppJs: StatusItem {
       HideVEs(MakeAppJsFile_Btn, GotoAppJsFile_Btn, GotoAppJsFolder_Btn);
       return false;
     }
-    var appJsFile      = CqFile.AppIndexJs();
-    bool haveAppJsFile = appJsFile.Exists(); // file should be in Assets/CroquetJS/<appName>/index.js
+    var appJsFile      = Mq_File.AppIndexJs();
+    bool haveAppJsFile = appJsFile.Exists(); // file should be in Assets/MultisynqJS/<appName>/index.js
     StatusSetMgr.hasAppJs.SetIsGood(haveAppJsFile);
     HideVEs(SetAppName_Btn);
     SetVEViz( haveAppJsFile, GotoAppJsFile_Btn, GotoAppJsFolder_Btn );
@@ -56,20 +57,20 @@ public class SI_HasAppJs: StatusItem {
 
   private void Clk_SetAppName() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
-    var cqBridge = Object.FindObjectOfType<CroquetBridge>();
+    var cqBridge = Object.FindObjectOfType<Mq_Bridge>();
     if (cqBridge == null) {
-      NotifyAndLogError("Could not find CroquetBridge in scene!");
+      NotifyAndLogError("Could not find Mq_Bridge in scene!");
       return;
     } else {
-      // direct user to enter an appName into the CroquetBridge field for appName
-      // select the CroquetBridge in the scene
+      // direct user to enter an appName into the Mq_Bridge field for appName
+      // select the Mq_Bridge in the scene
       Selection.activeGameObject = cqBridge.gameObject;
       EditorGUIUtility.PingObject(cqBridge.gameObject);
       // in 100 ms, show a dialog to the user
       EditorApplication.delayCall += ()=>{
         EditorUtility.DisplayDialog(
           "Set App Name",
-          "Enter a name for your app into the CroquetBridge's Session Configuration field \n\nApp Name\n( appName )\n \n\nWe will select it for you, so check the Inspector.",
+          "Enter a name for your app into the Mq_Bridge's Session Configuration field \n\nApp Name\n( appName )\n \n\nWe will select it for you, so check the Inspector.",
           "Ok"
         );
       };
@@ -78,9 +79,9 @@ public class SI_HasAppJs: StatusItem {
 
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
-    string fromDir = CqFile.StarterTemplateFolder().longPath;
-    string toDir   = CqFile.AppFolder(true).longPath; // here true means log no error if missing
-    CroquetBuilder.CopyDirectory(fromDir, toDir);
+    string fromDir = Mq_File.StarterTemplateFolder().longPath;
+    string toDir   = Mq_File.AppFolder(true).longPath; // here true means log no error if missing
+    Mq_Builder.CopyDirectory(fromDir, toDir);
     AssetDatabase.Refresh();
     Check(); // recheck (this SI_HasAppJs)
     edWin.CheckAllStatusForReady();
@@ -92,12 +93,12 @@ public class SI_HasAppJs: StatusItem {
 
   private void Clk_GotoAppJsFolder() {// HAS APP JS  ------------- Click
     Logger.MethodHeader();
-    CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
+    Mq_File.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
 
   private void Clk_GotoAppJsFile() {// HAS APP JS  ------------- Click
     Logger.MethodHeader();
-    CqFile.AppFolder().DeeperFile("index.js").SelectAndPing();
+    Mq_File.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
 
 }

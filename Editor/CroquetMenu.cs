@@ -8,6 +8,9 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
+using Multisynq;
+
+
 
 [InitializeOnLoad]
 public static class SceneAndPlayWatcher
@@ -23,7 +26,7 @@ public static class SceneAndPlayWatcher
         EditorApplication.playModeStateChanged += HandlePlayModeState;
         // if (EditorApplication.isPlayingOrWillChangePlaymode)
         // {
-        //     CroquetBuilder.EnteringPlayMode();
+        //     Mq_Builder.EnteringPlayMode();
         // }
 
         EditorSceneManager.activeSceneChangedInEditMode += HandleSceneChange;
@@ -35,7 +38,7 @@ public static class SceneAndPlayWatcher
     {
         lastState = state;
         // PlayModeStateChange.ExitingEditMode (i.e., before entering Play) - if needed - is handled above in the constructor
-        if (state == PlayModeStateChange.EnteredEditMode) CroquetBuilder.EnteredEditMode();
+        if (state == PlayModeStateChange.EnteredEditMode) Mq_Builder.EnteredEditMode();
         // about to play
         // if (state == PlayModeStateChange.ExitingEditMode) { // About to enter Play
             // check if the platform is webgl
@@ -43,7 +46,7 @@ public static class SceneAndPlayWatcher
             // if (isWebGL) { // UnPlay and show a dialog
             //     EditorApplication.isPlaying = false;
             //     string msg = "To Play in WebGL, you must build the app first.\n\nUse Croquet => Build JS Now to build the app.";
-            //     EditorUtility.DisplayDialog("Croquet", msg, "OK");
+            //     EditorUtility.DisplayDialog("Multisynq", msg, "OK");
             //     EditorApplication.ExecuteMenuItem("File/Build Settings..."); // open the build settings window
             // }
         // }
@@ -53,41 +56,41 @@ public static class SceneAndPlayWatcher
     {
         // for some reason, this can on occasion be triggered with a "next" scene that has no name, no path, and zero rootCount.
         // we feel justified in ignoring such changes.
-        if (next.name != "") CroquetBuilder.CacheSceneComponents(next);
+        if (next.name != "") Mq_Builder.CacheSceneComponents(next);
     }
 
     private static void EditorQuitting()
     {
 #if UNITY_EDITOR_OSX
-        CroquetBuilder.StopWatcher(); // if any
+        Mq_Builder.StopWatcher(); // if any
 #endif
     }
 }
 
 
-public class CroquetMenu
+public class MultisynqMenu
 {
-    private const string BuildNowItem = "Croquet/Build JS Now";
-    private const string HarvestDefinitionsItem = "Croquet/Harvest Scene Definitions Now";
-    private const string BuildOnPlayItem = "Croquet/Build JS on Play";
+    private const string BuildNowItem = "Multisynq/Build JS Now";
+    private const string HarvestDefinitionsItem = "Multisynq/Harvest Scene Definitions Now";
+    private const string BuildOnPlayItem = "Multisynq/Build JS on Play";
 
-    private const string StarterItem = "Croquet/Start JS Watcher";
-    private const string StopperItemHere = "Croquet/Stop JS Watcher (this app)";
-    private const string StopperItemOther = "Croquet/Stop JS Watcher (other app)";
+    private const string StarterItem = "Multisynq/Start JS Watcher";
+    private const string StopperItemHere = "Multisynq/Stop JS Watcher (this app)";
+    private const string StopperItemOther = "Multisynq/Stop JS Watcher (other app)";
 
-    private const string InstallJSToolsItem = "Croquet/Install JS Build Tools";
+    private const string InstallJSToolsItem = "Multisynq/Install JS Build Tools";
 
-    private const string OpenDiscordItem = "Croquet/Join Croquet Discord...";
-    private const string OpenPackageItem = "Croquet/Open package on Github...";
+    private const string OpenDiscordItem = "Multisynq/Join Croquet Discord...";
+    private const string OpenPackageItem = "Multisynq/Open package on Github...";
 
     [MenuItem(BuildNowItem, false, 100)]
     public static async void BuildNow()
     {
         Debug.Log("<color=yellow>----------------   Building JS...  ----------------</color>");
-        bool success = await CroquetBuilder.EnsureJSToolsAvailable();
+        bool success = await Mq_Builder.EnsureJSToolsAvailable();
         if (!success) return;
 
-        CroquetBuilder.StartBuild(false); // false => no watcher
+        Mq_Builder.StartBuild(false); // false => no watcher
     }
 
     [MenuItem(BuildNowItem, true)]
@@ -98,30 +101,30 @@ public class CroquetMenu
         //   we don't know how to build for the current scene, or
         //   a watcher for any scene is running (MacOS only), or
         //   a build has been requested and hasn't finished yet
-        if (!CroquetBuilder.KnowHowToBuildJS()) return false;
+        if (!Mq_Builder.KnowHowToBuildJS()) return false;
 
 #if UNITY_EDITOR_OSX
-        if (CroquetBuilder.RunningWatcherApp() == CroquetBuilder.GetSceneBuildDetails().appName) return false;
+        if (Mq_Builder.RunningWatcherApp() == Mq_Builder.GetSceneBuildDetails().appName) return false;
 #endif
-        if (CroquetBuilder.oneTimeBuildProcess != null) return false;
+        if (Mq_Builder.oneTimeBuildProcess != null) return false;
         return true;
     }
 
     [MenuItem(BuildOnPlayItem, false, 100)]
     private static void BuildOnPlayToggle()
     {
-        CroquetBuilder.BuildOnPlayEnabled = !CroquetBuilder.BuildOnPlayEnabled;
+        Mq_Builder.BuildOnPlayEnabled = !Mq_Builder.BuildOnPlayEnabled;
     }
 
     [MenuItem(BuildOnPlayItem, true)]
     private static bool ValidateBuildOnPlayToggle()
     {
-        if (!CroquetBuilder.KnowHowToBuildJS()) return false;
+        if (!Mq_Builder.KnowHowToBuildJS()) return false;
 #if UNITY_EDITOR_OSX
-        if (CroquetBuilder.RunningWatcherApp() == CroquetBuilder.GetSceneBuildDetails().appName) return false;
+        if (Mq_Builder.RunningWatcherApp() == Mq_Builder.GetSceneBuildDetails().appName) return false;
 #endif
 
-        Menu.SetChecked(BuildOnPlayItem, CroquetBuilder.BuildOnPlayEnabled);
+        Menu.SetChecked(BuildOnPlayItem, Mq_Builder.BuildOnPlayEnabled);
         return true;
     }
 
@@ -129,48 +132,48 @@ public class CroquetMenu
     [MenuItem(StarterItem, false, 100)]
     public static async void StartWatcher()
     {
-        bool success = await CroquetBuilder.EnsureJSToolsAvailable();
+        bool success = await Mq_Builder.EnsureJSToolsAvailable();
         if (!success) return;
 
-        CroquetBuilder.StartBuild(true); // true => start watcher
+        Mq_Builder.StartBuild(true); // true => start watcher
     }
 
     [MenuItem(StarterItem, true)]
     private static bool ValidateStartWatcher()
     {
-        if (!CroquetBuilder.KnowHowToBuildJS()) return false;
+        if (!Mq_Builder.KnowHowToBuildJS()) return false;
 
-        // Debug.Log($"CroquetBuilder has process: {CroquetBuilder.builderProcess != null}");
-        return CroquetBuilder.RunningWatcherApp() == "";
+        // Debug.Log($"Mq_Builder has process: {Mq_Builder.builderProcess != null}");
+        return Mq_Builder.RunningWatcherApp() == "";
     }
 
     [MenuItem(StopperItemHere, false, 100)]
     private static void StopWatcherHere()
     {
-        CroquetBuilder.StopWatcher();
+        Mq_Builder.StopWatcher();
     }
 
     [MenuItem(StopperItemHere, true)]
     private static bool ValidateStopWatcherHere()
     {
-        if (!CroquetBuilder.KnowHowToBuildJS()) return false;
+        if (!Mq_Builder.KnowHowToBuildJS()) return false;
 
-        return CroquetBuilder.RunningWatcherApp() == CroquetBuilder.GetSceneBuildDetails().appName;
+        return Mq_Builder.RunningWatcherApp() == Mq_Builder.GetSceneBuildDetails().appName;
     }
 
     [MenuItem(StopperItemOther, false, 100)]
     private static void StopWatcherOther()
     {
-        CroquetBuilder.StopWatcher();
+        Mq_Builder.StopWatcher();
     }
 
     [MenuItem(StopperItemOther, true)]
     private static bool ValidateStopWatcherOther()
     {
-        if (!CroquetBuilder.KnowHowToBuildJS()) return false;
+        if (!Mq_Builder.KnowHowToBuildJS()) return false;
 
-        string appName = CroquetBuilder.RunningWatcherApp();
-        return appName != "" && appName != CroquetBuilder.GetSceneBuildDetails().appName;
+        string appName = Mq_Builder.RunningWatcherApp();
+        return appName != "" && appName != Mq_Builder.GetSceneBuildDetails().appName;
     }
 #endif
 
@@ -191,8 +194,8 @@ public class CroquetMenu
             if (scene.enabled)
             {
                 EditorSceneManager.OpenScene(scene.path);
-                CroquetBridge[] allObjects = Resources.FindObjectsOfTypeAll<CroquetBridge>();
-                foreach (CroquetBridge obj in allObjects)
+                Mq_Bridge[] allObjects = Resources.FindObjectsOfTypeAll<Mq_Bridge>();
+                foreach (Mq_Bridge obj in allObjects)
                 {
                     // the collection will contain components from the scene and from any known prefab.
                     // filter out the latter.
@@ -210,12 +213,12 @@ public class CroquetMenu
         if (scenesAndApps.Count == 0)
         {
             Debug.LogError("Found no scenes to harvest from.  Are all desired scenes included in Build Settings, and does each have a Croquet object that specifies its App Name?");
-            CroquetBuilder.HarvestSceneList = "";
+            Mq_Builder.HarvestSceneList = "";
         }
         else
         {
             string harvestString = string.Join(',', scenesAndApps.ToArray());
-            CroquetBuilder.HarvestSceneList = harvestString;
+            Mq_Builder.HarvestSceneList = harvestString;
             EditorApplication.EnterPlaymode();
         }
     }
@@ -223,7 +226,7 @@ public class CroquetMenu
     [MenuItem(InstallJSToolsItem, false, 200)]
     public static async void InstallJSTools()
     {
-        bool success = await CroquetBuilder.InstallJSTools();
+        bool success = await Mq_Builder.InstallJSTools();
         if (success)
         {
             Debug.Log("JS Build Tools successfully installed");
@@ -238,7 +241,7 @@ public class CroquetMenu
     private static bool ValidateInstallJSTools()
     {
 #if UNITY_EDITOR_OSX
-        if (CroquetBuilder.RunningWatcherApp() != "") return false;
+        if (Mq_Builder.RunningWatcherApp() != "") return false;
 #endif
         return true;
     }
@@ -257,7 +260,7 @@ public class CroquetMenu
 }
 
 
-class CroquetBuildPreprocess : IPreprocessBuildWithReport
+class Mq_BuildPreprocess : IPreprocessBuildWithReport
 {
     public int callbackOrder { get { return 0; } }
     public void OnPreprocessBuild(BuildReport report)
@@ -269,7 +272,7 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
         Debug.LogWarning($"Building for target {jsTarget}");
 
         Scene activeScene = EditorSceneManager.GetActiveScene();
-        if (!CroquetBuilder.PrepareSceneForBuildTarget(activeScene, isWindowsBuild))
+        if (!Mq_Builder.PrepareSceneForBuildTarget(activeScene, isWindowsBuild))
         {
             // reason for refusal will already have been logged
             throw new BuildFailedException("You must fix some settings (see warnings above) before building");
@@ -277,7 +280,7 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
 
         bool readyToBuild = true;
         string failureMessage = "Missing JS build tools";
-        string state = CroquetBuilder.StateOfJSBuildTools(); // ok, needsRefresh, needsInstall, unavailable
+        string state = Mq_Builder.StateOfJSBuildTools(); // ok, needsRefresh, needsInstall, unavailable
         if (state == "unavailable") readyToBuild = false; // explanatory error will already have been logged
         else if (state == "needsInstall")
         {
@@ -295,8 +298,8 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
                 if (scene.enabled)
                 {
                     EditorSceneManager.OpenScene(scene.path);
-                    CroquetBridge[] allObjects = Resources.FindObjectsOfTypeAll<CroquetBridge>();
-                    foreach (CroquetBridge obj in allObjects)
+                    Mq_Bridge[] allObjects = Resources.FindObjectsOfTypeAll<Mq_Bridge>();
+                    foreach (Mq_Bridge obj in allObjects)
                     {
                         // the collection will contain components from the scene and from all known prefabs.
                         // filter out the latter.
@@ -313,7 +316,7 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
             // have an up-to-date build for the current installed level of the JS build tools.
             foreach (string appName in appNames)
             {
-                if (!CroquetBuilder.CheckJSBuildState(appName, jsTarget))
+                if (!Mq_Builder.CheckJSBuildState(appName, jsTarget))
                 {
                     Debug.LogError($"Failed to find up-to-date build for \"{appName}\", target \"{jsTarget}\"");
                     failureMessage = "Missing up-to-date JS build(s)";
@@ -332,8 +335,8 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
 
     private void CopyJSToolsRecord()
     {
-        string src = CroquetBuilder.JSToolsRecordInEditor;
-        string dest = CroquetBuilder.JSToolsRecordInBuild;
+        string src = Mq_Builder.JSToolsRecordInEditor;
+        string dest = Mq_Builder.JSToolsRecordInBuild;
         string destDir = Path.GetDirectoryName(dest);
         Directory.CreateDirectory(destDir);
         FileUtil.ReplaceFile(src, dest);
@@ -342,15 +345,15 @@ class CroquetBuildPreprocess : IPreprocessBuildWithReport
 
     private void CopyNodeExe()
     {
-        string src = CroquetBuilder.NodeExeInPackage;
-        string dest = CroquetBuilder.NodeExeInBuild;
+        string src = Mq_Builder.NodeExeInPackage;
+        string dest = Mq_Builder.NodeExeInBuild;
         string destDir = Path.GetDirectoryName(dest);
         Directory.CreateDirectory(destDir);
         FileUtil.ReplaceFile(src, dest);
     }
 }
 
-class CroquetBuildPostprocess : IPostprocessBuildWithReport
+class Mq_BuildPostprocess : IPostprocessBuildWithReport
 {
     public int callbackOrder { get { return 0; } }
     public void OnPostprocessBuild(BuildReport report)
@@ -359,7 +362,7 @@ class CroquetBuildPostprocess : IPostprocessBuildWithReport
         BuildTarget target = report.summary.platform;
         if (target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64)
         {
-            string dest = CroquetBuilder.NodeExeInBuild;
+            string dest = Mq_Builder.NodeExeInBuild;
             FileUtil.DeleteFileOrDirectory(dest);
             FileUtil.DeleteFileOrDirectory(dest + ".meta");
         }

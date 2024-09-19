@@ -1,8 +1,8 @@
 {
     "name":"io.croquet.multiplayer",
     "version":"0.9.3",
-    "displayName":"Croquet Multiplayer",
-    "description": "A simple multiplayer framework built using Croquet Synchronized Computation Architecture",
+    "displayName":"Multisynq Multiplayer",
+    "description": "Multiplayer framework built using Croquet Synchronized Computation Architecture",
     "unity":"2021.3",
     "dependencies": {
         "com.unity.addressables": "1.19.19",

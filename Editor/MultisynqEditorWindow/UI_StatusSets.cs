@@ -2,6 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
   //=============================================================================
   public class Status {
@@ -75,7 +76,7 @@ using UnityEngine.UIElements;
 
     //=============================================================================
     static public StyleBackground LoadTexture(string fNm) {
-      string path = Path.Combine(CqFile.img_root, fNm);
+      string path = Path.Combine(Mq_File.img_root, fNm);
       return new StyleBackground(AssetDatabase.LoadAssetAtPath<Sprite>(path));
     }
 

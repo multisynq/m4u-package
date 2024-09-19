@@ -6,6 +6,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.Utilities;
 
+
+namespace Multisynq {
+
+
 public class UserInput : MonoBehaviour
 {
     public bool SendAllKeysAsEvents = true;
@@ -92,26 +96,27 @@ public class UserInput : MonoBehaviour
     {
         // Debug.Log($"[INPUT] KEYDOWN: " + control.name);
 
-        CroquetBridge.Instance.SendToCroquet("event", "keyDown", control.name);
+        Mq_Bridge.Instance.SendToCroquet("event", "keyDown", control.name);
     }
 
     void SendKeyUp(InputControl control)
     {
         // Debug.Log($"[INPUT] KEYUP: " + control.name);
 
-        CroquetBridge.Instance.SendToCroquet("event", "keyUp", control.name);
+        Mq_Bridge.Instance.SendToCroquet("event", "keyUp", control.name);
     }
 
     void SendPointerDown(InputAction.CallbackContext callbackContext)
     {
         // Debug.Log("[INPUT] Pointer Down");
-        //CroquetBridge.Instance.SendToCroquet("event", "pointerDown");
+        //Mq_Bridge.Instance.SendToCroquet("event", "pointerDown");
     }
 
     void SendPointerUp(InputAction.CallbackContext callbackContext)
     {
         Debug.Log("[INPUT] Pointer Up");
-        //CroquetBridge.Instance.SendToCroquet("event", "pointerUp");
+        //Mq_Bridge.Instance.SendToCroquet("event", "pointerUp");
     }
 }
 
+}

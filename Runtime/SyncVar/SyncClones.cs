@@ -1,5 +1,8 @@
 using UnityEngine;
 
+namespace Multisynq {
+
+
 public class SyncClones : SyncBehaviour {
   public bool shouldClone = false;
   private static bool isCloning = false;
@@ -36,3 +39,5 @@ public class SyncClones : SyncBehaviour {
   }
 
 }
+
+} // namespace Multisynq

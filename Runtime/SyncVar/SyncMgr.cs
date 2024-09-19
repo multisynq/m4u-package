@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+
+namespace Multisynq {
+
 
 [AttributeUsage(AttributeTargets.Class)]
 public class SyncInstanceAttribute : Attribute { }
@@ -63,5 +65,7 @@ public class SyncMgr : MonoBehaviour {
     private static SyncMgr _instance;
   #endregion
 
+
+}
 
 }

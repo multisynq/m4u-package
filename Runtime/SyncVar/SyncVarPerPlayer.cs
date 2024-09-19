@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace Multisynq {
+
+
 [SerializeField]
 public class SyncVarPerPlayer<T> {
   
@@ -16,10 +19,10 @@ public class SyncVarPerPlayer<T> {
 
   public T myValue {
     get {
-      return values[CroquetBridge.Instance.croquetViewId];
+      return values[Mq_Bridge.Instance.croquetViewId];
     }
     set {
-      values[CroquetBridge.Instance.croquetViewId] = value;
+      values[Mq_Bridge.Instance.croquetViewId] = value;
     }
   }
 
@@ -28,3 +31,5 @@ public class SyncVarPerPlayer<T> {
   }
 
 }
+
+} // namespace Multisynq

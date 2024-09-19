@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 //------------------ ||||||||||||||||||||||||| ----------------------------------
 public partial class MultisynqBuildAssistantEW : EditorWindow {
@@ -30,7 +31,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   //====== EditowWindow Init (auto-called when Shown) ==================================
   public void CreateGUI() {
 
-    var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(CqFile.ewFolder + "MultisynqBuildAssistant_UI.uxml");
+    var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Mq_File.ewFolder + "MultisynqBuildAssistant_UI.uxml");
     var labelFromUXML = visualTree.Instantiate();
     rootVisualElement.Add(labelFromUXML);
 
@@ -129,11 +130,11 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   }
 
   //====== Open _this_ Editor Window from   >>>> MENU <<<<    =============================
-  [MenuItem("Croquet/Open Croquet Build Assistant Window...",priority=0)]
-  [MenuItem("Window/Croquet/Open Build Assistant...",priority=1000)]
+  [MenuItem("Multisynq/Open Multisynq Build Assistant Window...",priority=0)]
+  [MenuItem("Window/Multisynq/Open Build Assistant...",priority=1000)]
   public static void ShowMultisynqWelcome_MenuMethod() {
     if (_Instance != null) _Instance.Close(); // First destroy the old one...
-    var icon = AssetDatabase.LoadAssetAtPath<Texture>(CqFile.ewFolder + "Images/MultiSynq_Icon.png");
+    var icon = AssetDatabase.LoadAssetAtPath<Texture>(Mq_File.ewFolder + "Images/MultiSynq_Icon.png");
     Instance.titleContent = new GUIContent("Croquet Build Assistant", icon); // Referencing the Instance property will auto-create the window
   }
 

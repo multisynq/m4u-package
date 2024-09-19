@@ -9,7 +9,7 @@ const fs = require('fs');
 
 module.exports = env => {
     const isWebGL = env.buildTarget === 'webgl';
-    const webGLPath = path.join(__dirname, `../WebGLTemplates/CroquetLoader/`);
+    const webGLPath = path.join(__dirname, `../WebGLTemplates/MultisynqLoader/`);
     const nonWebGLPath = path.join(__dirname, `../StreamingAssets/${env.appName}/`);
     const destination = env.buildTarget === 'webgl' ? webGLPath : nonWebGLPath;
 

@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using Multisynq;
 
 static public class CqProject {
 
@@ -18,7 +19,7 @@ static public class CqProject {
 
 
   static public void RenameToUnHideAppNameOutputFolders() {
-    foreach (FolderThing dir in CqFile.ListAppNameOutputFolders()) {
+    foreach (FolderThing dir in Mq_File.ListAppNameOutputFolders()) {
       if (dir.shortPath.Contains("~")) {
         string newName = dir.shortPath.Replace("~", "");
         AssetDatabase.RenameAsset(dir.shortPath, newName);
@@ -26,7 +27,7 @@ static public class CqProject {
     }
   }
   static public void RenameToHideAppNameOutputFoldersExceptOne(string appName) {
-    foreach (FolderThing dir in CqFile.ListAppNameOutputFolders()) {
+    foreach (FolderThing dir in Mq_File.ListAppNameOutputFolders()) {
       if (dir.shortPath.Contains(appName)) {
         dir.SelectAndPing();
       } else {
@@ -37,21 +38,21 @@ static public class CqProject {
   }
   static public bool AllScenesHaveBridgeWithAppNameSet() {
     string[] buildingScenes = EditorBuildSettings.scenes.Where( s => s.enabled ).Select( s => s.path ).ToArray();
-    // load each scene in the list and get its CroquetBridge
+    // load each scene in the list and get its Mq_Bridge
     foreach (string scenePath in buildingScenes) {
       EditorSceneManager.OpenScene(scenePath);
-      var bridge = Object.FindObjectOfType<CroquetBridge>();
+      var bridge = Object.FindObjectOfType<Mq_Bridge>();
       if (bridge == null) {
-        Debug.LogError("Could not find CroquetBridge in scene: " + scenePath);
+        Debug.LogError("Could not find Mq_Bridge in scene: " + scenePath);
         return false;
       } else {
-        // grab the appName from the CroquetBridge and make sure there is a folder for it in the StreamingAssets folder
+        // grab the appName from the Mq_Bridge and make sure there is a folder for it in the StreamingAssets folder
         string appName = bridge.appName;
         if (appName == "") {
-          Debug.LogError("CroquetBridge in scene: " + scenePath + " has no appName set.");
+          Debug.LogError("Mq_Bridge in scene: " + scenePath + " has no appName set.");
           return false;
         } else {
-          var appFolder = CqFile.StreamingAssetsAppFolder(appName);
+          var appFolder = Mq_File.StreamingAssetsAppFolder(appName);
           if (!appFolder.Exists()) {
             Debug.LogError("Could not find app folder: " + appFolder);
             return false;
@@ -63,29 +64,29 @@ static public class CqProject {
       Debug.LogError("No scenes in Build Settings.\nAdd some scenes to build.");
       return false;
     } else {
-      Debug.Log("Yay! >> All scenes have CroquetBridge with appName set and app folder in StreamingAssets.");
+      Debug.Log("Yay! >> All scenes have Mq_Bridge with appName set and app folder in StreamingAssets.");
       return true;
     }
   }
 
-  static public CroquetSettings CopyDefaultSettingsFile() {
-    // string path = ewFolder + "resources/CroquetSettings_Template.asset";
-    // croquet-for-unity-package/Prefabs/CroquetSettings_Template.asset
-    string path = CqFile.CqSettingsTemplateFile().shortPath;
-    EnsureAssetsFolder("Croquet");
-    Debug.Log($"Copying from '{path}' to '{CqFile.cqSettingsAssetOutputPath}'");
+  static public Mq_Settings CopyDefaultSettingsFile() {
+    // string path = ewFolder + "resources/Mq_Settings_Template.asset";
+    // croquet-for-unity-package/Prefabs/Mq_Settings_Template.asset
+    string path = Mq_File.CqSettingsTemplateFile().shortPath;
+    EnsureAssetsFolder("Multisynq");
+    Debug.Log($"Copying from '{path}' to '{Mq_File.cqSettingsAssetOutputPath}'");
     bool sourceFileExists = File.Exists(path);
-    bool targFolderExists = Directory.Exists(Path.GetDirectoryName(CqFile.cqSettingsAssetOutputPath));
-    AssetDatabase.CopyAsset(path, CqFile.cqSettingsAssetOutputPath);
-    bool copiedFileExists = File.Exists(CqFile.cqSettingsAssetOutputPath);
+    bool targFolderExists = Directory.Exists(Path.GetDirectoryName(Mq_File.cqSettingsAssetOutputPath));
+    AssetDatabase.CopyAsset(path, Mq_File.cqSettingsAssetOutputPath);
+    bool copiedFileExists = File.Exists(Mq_File.cqSettingsAssetOutputPath);
     Debug.Log($"Source file exists: {sourceFileExists}  Target folder exists: {targFolderExists}, Copied file exists: {copiedFileExists}");
-    return AssetDatabase.LoadAssetAtPath<CroquetSettings>(CqFile.cqSettingsAssetOutputPath);
+    return AssetDatabase.LoadAssetAtPath<Mq_Settings>(Mq_File.cqSettingsAssetOutputPath);
   }
 
-  static public CroquetSettings EnsureSettingsFile() {
-    CroquetSettings cqSettings = StatusSetMgr.FindProjectCqSettings();
-    // If not, copy file from ./resources/CroquetSettings_Template.asset
-    // into Assets/Settings/CroquetSettings.asset
+  static public Mq_Settings EnsureSettingsFile() {
+    Mq_Settings cqSettings = StatusSetMgr.FindProjectCqSettings();
+    // If not, copy file from ./resources/Mq_Settings_Template.asset
+    // into Assets/Settings/Mq_Settings.asset
     if (cqSettings == null) cqSettings = CopyDefaultSettingsFile();
     return cqSettings;
   }

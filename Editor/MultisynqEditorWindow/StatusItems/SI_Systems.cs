@@ -1,6 +1,6 @@
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 public class SI_Systems: StatusItem {
 
@@ -22,7 +22,7 @@ public class SI_Systems: StatusItem {
 
   override public void InitText() {
     StatusSetMgr.hasCqSys = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success, blank)
+      // (ready, warning, error, success, blank )
       "Croquet Systems are ready to go!",
       "Croquet Systems are missing",
       "Croquet Systems are missing! Click <b>Add Croquet Systems</b> to get them.",
@@ -56,19 +56,19 @@ public class SI_Systems: StatusItem {
   //-- Clicks - HAS CROQUET SYSTEMS --------------------------------
   void Clk_AddCqSys() { // HAS CQ SYSTEMS  ------------- Click
     Logger.MethodHeader();
-    var cqBridge = Object.FindObjectOfType<CroquetBridge>();
+    var cqBridge = Object.FindObjectOfType<Mq_Bridge>();
     if (cqBridge == null) {
-      NotifyAndLogError("Could not find CroquetBridge in scene!");
+      NotifyAndLogError("Could not find Mq_Bridge in scene!");
       return;
     } else {
       var cqGob = cqBridge.gameObject;
       string rpt = "";
-      rpt += SceneHelp.EnsureCompRpt<CroquetRunner>(cqGob);
-      rpt += SceneHelp.EnsureCompRpt<CroquetEntitySystem>(cqGob);
-      rpt += SceneHelp.EnsureCompRpt<CroquetSpatialSystem>(cqGob);
-      rpt += SceneHelp.EnsureCompRpt<CroquetMaterialSystem>(cqGob);
-      rpt += SceneHelp.EnsureCompRpt<CroquetFileReader>(cqGob);
-      if (rpt == "") NotifyAndLog("All Croquet Systems are present in CroquetBridge GameObject.");
+      rpt += SceneHelp.EnsureCompRpt<Mq_Runner>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<Mq_Entity_System>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<Mq_Spatial_System>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<Mq_Material_System>(cqGob);
+      rpt += SceneHelp.EnsureCompRpt<Mq_FileReader>(cqGob);
+      if (rpt == "") NotifyAndLog("All Croquet Systems are present in Mq_Bridge GameObject.");
       else           NotifyAndLog("Added:\n"+rpt);
     }
     Check(); // recheck self (Cq Systems)
@@ -77,20 +77,20 @@ public class SI_Systems: StatusItem {
   //--------------------------------------------------------------------------------
   (string,string) MissingSystemsRpt() {
     string critRpt = "";
-    critRpt += (Object.FindObjectOfType<CroquetRunner>()         == null) ? "CroquetRunner\n"         : "";
-    critRpt += (Object.FindObjectOfType<CroquetFileReader>()     == null) ? "CroquetFileReader\n"     : "";
-    critRpt += (Object.FindObjectOfType<CroquetEntitySystem>()   == null) ? "CroquetEntitySystem\n"   : "";
-    critRpt += (Object.FindObjectOfType<CroquetSpatialSystem>()  == null) ? "CroquetSpatialSystem\n"  : "";
+    critRpt += (Object.FindObjectOfType<Mq_Runner>()         == null) ? "CroquetRunner\n"         : "";
+    critRpt += (Object.FindObjectOfType<Mq_FileReader>()     == null) ? "Mq_FileReader\n"     : "";
+    critRpt += (Object.FindObjectOfType<Mq_Entity_System>()   == null) ? "Mq_Entity_System\n"   : "";
+    critRpt += (Object.FindObjectOfType<Mq_Spatial_System>()  == null) ? "Mq_Spatial_System\n"  : "";
     string optRpt = "";
-    optRpt += (Object.FindObjectOfType<CroquetMaterialSystem>() == null) ? "CroquetMaterialSystem\n" : "";
+    optRpt += (Object.FindObjectOfType<Mq_Material_System>() == null) ? "Mq_Material_System\n" : "";
     return (critRpt, optRpt);
   }
 
   void Clk_ListMissingCqSys() { // HAS CQ SYSTEMS  ------------- Click
     Logger.MethodHeader();
-    var cqBridge = Object.FindObjectOfType<CroquetBridge>();
+    var cqBridge = Object.FindObjectOfType<Mq_Bridge>();
     if (cqBridge == null) {
-      NotifyAndLogError("Could not find CroquetBridge in scene!");
+      NotifyAndLogError("Could not find Mq_Bridge in scene!");
       return;
     } else {
       (string critRpt, string optRpt) = MissingSystemsRpt();

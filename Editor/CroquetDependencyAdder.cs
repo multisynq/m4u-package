@@ -3,6 +3,10 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 
+
+namespace Multisynq {
+
+
 [InitializeOnLoad]
 public class CroquetDependencyAdder
 {
@@ -16,7 +20,7 @@ public class CroquetDependencyAdder
         EditorApplication.delayCall -= AddDependencyAndCopyFolder;
 
         AddDependency();
-        // CroquetBuilder.CopyWebGLTemplatesFolder();
+        // Mq_Builder.CopyWebGLTemplatesFolder();
         SetWebGLTemplate();
     }
 
@@ -55,7 +59,7 @@ public class CroquetDependencyAdder
     }
     static void SetWebGLTemplate()
     {
-        string templateName = "CroquetLoader"; // our WebGL template folder
+        string templateName = "MultisynqLoader"; // our WebGL template folder
         string templatePath = Path.Combine("WebGLTemplates", templateName);
 
         if (!Directory.Exists(Path.Combine(Application.dataPath, templatePath)))
@@ -71,4 +75,6 @@ public class CroquetDependencyAdder
             }
         }
     }
+}
+
 }

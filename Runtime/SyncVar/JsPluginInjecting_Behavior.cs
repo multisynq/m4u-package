@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Threading.Tasks;
 
 
 #if UNITY_EDITOR
@@ -8,6 +7,11 @@ using System.Text.RegularExpressions;
   using System.Linq;
   using UnityEditor;
 #endif
+
+
+namespace Multisynq {
+
+
 
 //=================== ||||||||||||||||||||||||||| =========================
 abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
@@ -43,7 +47,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
     virtual public void InjectJsPluginCode() { // you can override this to do more complex stuff, but it's base is a good default
       if (dbg)  Debug.Log($"{logPrefix} <color=white>BASE</color>   virtual public void InjectJsPluginCode()");
 
-      var modelClassPath = CqFile.AppFolder().DeeperFile(JsPluginFileName());
+      var modelClassPath = Mq_File.AppFolder().DeeperFile(JsPluginFileName());
       if (modelClassPath.Exists()) {
         Debug.Log($"{logPrefix} '{modelClassPath.shortPath}' already present. Skip.");
       } else {
@@ -55,7 +59,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
     //--------- |||||||||||||||||||||||| ----------------------------------------
     public void CheckIfMyJsCodeIsPresent() {
-      var modelClassPath = CqFile.AppFolder().DeeperFile(JsPluginFileName());
+      var modelClassPath = Mq_File.AppFolder().DeeperFile(JsPluginFileName());
       if (modelClassPath.Exists()) {
         Debug.Log($"{logPrefix} '{JsPluginFileName()}' already present at '{modelClassPath.longPath}'");
       } else {
@@ -98,7 +102,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
         return false;
       }
       string jsPluginFileName = jsInjectorMB.JsPluginFileName();
-      var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
+      var modelClassPath = Mq_File.AppFolder().DeeperFile(jsPluginFileName);
       return modelClassPath.Exists();
     }
     //========== |||||||||||||| ====================
@@ -164,7 +168,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
               // 6. Call JsPluginFileName() method for this class
               string jsPluginFileName = jsInjectorInstance.JsPluginFileName();
               // 7. Check if the file exists
-              var modelClassPath = CqFile.AppFolder().DeeperFile(jsPluginFileName);
+              var modelClassPath = Mq_File.AppFolder().DeeperFile(jsPluginFileName);
               if (modelClassPath.Exists()) {
                 rpt.tsThatAreReady.Add(jsInjectorInstance.GetType());
                 rpt.filesThatAreReady.Add(sbPathAndPattern);
@@ -201,7 +205,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
         return "[ " + string.Join(", ", types.Select(x => $"<color=yellow>{x.Name}</color>")) + " ]";
       });
 
-      var fldr = $"<color=#ff55ff>Assets/CroquetJS/{CqFile.GetAppNameForOpenScene()}/plugins/</color>";
+      var fldr = $"<color=#ff55ff>Assets/MultisynqJS/{Mq_File.GetAppNameForOpenScene()}/plugins/</color>";
       int missingCnt = pluginRpt.tsMissingSomePart.Count;
       int neededCnt = pluginRpt.neededTs.Count;
       bool amMissingPlugins = pluginRpt.tsMissingSomePart.Count > 0;
@@ -230,3 +234,6 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
     }
   #endif
 }
+
+
+} // namespace Multisynq

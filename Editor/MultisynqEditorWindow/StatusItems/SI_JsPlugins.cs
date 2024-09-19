@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 public class SI_JsPlugins: StatusItem {
 
@@ -23,7 +22,7 @@ public class SI_JsPlugins: StatusItem {
   override public void InitText() {
     string t_js  = "<b><color=#FFFF44>JS</color></b>";
     StatusSetMgr.jsPlugins = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       $"All needed C#-to-{t_js}-Proxy-Plugins found!",
       $"Missing some C#-to-{t_js}-Proxy-Plugins!",
       $"Missing some C#-to-{t_js}-Proxy-Plugins!",
@@ -42,7 +41,7 @@ public class SI_JsPlugins: StatusItem {
     // Update Asset DB
     AssetDatabase.Refresh();
     
-    CqFile.AppFolder().DeeperFolder("plugins").SelectAndPing();
+    Mq_File.AppFolder().DeeperFolder("plugins").SelectAndPing();
     edWin.CheckAllStatusForReady();
     Notify("Files Added.\nSelected on Project pane.");
   }
@@ -50,7 +49,7 @@ public class SI_JsPlugins: StatusItem {
   private void Clk_GotoJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader();
     // CqFile.AppFolder().DeeperFolder("plugins").EnsureExists().SelectAndPing();
-    var plFldr = CqFile.AppFolder().DeeperFolder("plugins");
+    var plFldr = Mq_File.AppFolder().DeeperFolder("plugins");
     if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
     else                            plFldr.SelectAndPing();
     Notify("Selected in Project.\nSee Inspector.");

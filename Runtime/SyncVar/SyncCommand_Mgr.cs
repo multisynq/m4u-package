@@ -4,6 +4,9 @@ using System.Reflection;
 using System.Linq;
 using UnityEngine;
 
+namespace Multisynq {
+
+
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class SyncCommandAttribute : Attribute {
   public string CustomName { get; set; }
@@ -55,7 +58,7 @@ public class SyncCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
     override public void Start() {
       base.Start();
 
-      Croquet.Subscribe("SyncCommand", "execute2", ReceiveAsMsg); // <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
+      Multisynq.Subscribe("SyncCommand", "execute2", ReceiveAsMsg); // <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
 
       #if UNITY_EDITOR
         AttributeHelper.CheckForBadAttrParents<SyncBehaviour, SyncCommandAttribute>();
@@ -112,7 +115,7 @@ public class SyncCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
       var msg = $"{syncCommands[cmdWithNetId].commandIdx}{msgSeparator}{cmdWithNetId}{serializedParams}";
       if (dbg) Debug.Log($"{scLogPrefix} <color=#ff22ff>Publish</color> msg:'<color=cyan>{msg}</color>'");
 
-      Croquet.Publish("SyncCommand", "execute1", msg);// <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
+      Multisynq.Publish("SyncCommand", "execute1", msg);// <<<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq 
 
     }
     //--------- ||||||||||||| ----------------------------------------
@@ -231,3 +234,5 @@ public class SyncCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
     }
   #endregion
 }
+
+} // namespace Multisynq

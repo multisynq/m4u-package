@@ -1,4 +1,4 @@
-# .gitignore for CroquetJS folder
+# .gitignore for MultisynqJS folder
 
 .js-build
 .last-installed-tools

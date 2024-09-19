@@ -1,6 +1,6 @@
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 public class SI_BridgeHasSettings: StatusItem {
 
@@ -22,7 +22,7 @@ public class SI_BridgeHasSettings: StatusItem {
 
   override public void InitText() {
     StatusSetMgr.bridgeHasSettings = new StatusSet( messageLabel, statusImage,
-      // ... info, warning, error, success)
+      // (ready, warning, error, success, blank )
       "Bridge has settings!",
       "Bridge is missing settings!",
       "Bridge is missing settings! Click <b>Auto Connect</b> to connect it.",
@@ -33,7 +33,7 @@ public class SI_BridgeHasSettings: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    var bridge = Object.FindObjectOfType<CroquetBridge>();
+    var bridge = Object.FindObjectOfType<Mq_Bridge>();
     if (bridge==null) {
       StatusSetMgr.bridgeHasSettings.error.Set();
       HideVEs(BridgeHasSettings_AutoConnect_Btn, BridgeHasSettings_Goto_Btn);
@@ -53,18 +53,18 @@ public class SI_BridgeHasSettings: StatusItem {
 
   void Clk_BridgeHasSettings_AutoConnect() { // BRIDGE HAS SETTINGS  ------------- Click
     Logger.MethodHeader();
-    var bridge = Object.FindObjectOfType<CroquetBridge>();
+    var bridge = Object.FindObjectOfType<Mq_Bridge>();
     if (bridge == null) {
-      NotifyAndLogError("Could not find CroquetBridge in scene!");
+      NotifyAndLogError("Could not find Mq_Bridge in scene!");
       return;
     } else {
       var cqSettings = StatusSetMgr.FindProjectCqSettings();
       if (cqSettings == null) {
-        NotifyAndLogError("Could not find CroquetSettings in project!");
+        NotifyAndLogError("Could not find Mq_Settings in project!");
         return;
       } else {
         bridge.appProperties = cqSettings;
-        NotifyAndLog("Connected CroquetBridge to CroquetSettings!");
+        NotifyAndLog("Connected Mq_Bridge to Mq_Settings!");
         Check(); // recheck self (SI_BridgeHasSettings)
         edWin.CheckAllStatusForReady();
       }

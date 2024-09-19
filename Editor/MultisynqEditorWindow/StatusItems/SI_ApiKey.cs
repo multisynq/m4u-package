@@ -23,7 +23,7 @@ public class SI_ApiKey: StatusItem {
   override public void InitText() {
     string t_key  = "<b><color=#006AFF>API Key</color></b>";
     StatusSetMgr.apiKey = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       $"The {t_key} is ready to go!",
       $"The {t_key} is not set",
       $"Let's get you a free {t_key}. It's easy.",

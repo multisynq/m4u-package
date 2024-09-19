@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.VersionControl;
+using Multisynq;
 
 [CustomEditor(typeof(SyncVar_Mgr))]
 public class CroquetSyncVarMgrEditor : Editor {
@@ -12,7 +12,7 @@ public class CroquetSyncVarMgrEditor : Editor {
       InjectCode(manager);
     }
     if (GUILayout.Button("Select Plugins Folder")) {
-      var plFldr = CqFile.AppFolder().DeeperFolder("plugins").EnsureExists();
+      var plFldr = Mq_File.AppFolder().DeeperFolder("plugins").EnsureExists();
       if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
       else                            plFldr.SelectAndPing();
     }

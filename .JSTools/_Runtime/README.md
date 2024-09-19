@@ -1,4 +1,4 @@
-# CroquetJS Runtime Files
+# MultisynqJS Runtime Files
 
 Croquet needs a JavaScript engine to execute JS code, and its supporting JS code. This folder contains both.
 
@@ -20,7 +20,7 @@ On Windows, we launch a Web Server and a NodeJS process to execute JS code. The 
 
 On WebGL builds, the Web Browser provides the JS execution context. It essentially loads `WebGL/index.html` which executes both the C# code that has been compiled to WASM, and the Croquet JS code. Since both run in the same JS context, they communicate directly, rather than via a WebSocket.
 
-The build process copies this folder and a bundle of all the JS source code into `Assets/WebGLTemplates/CroquetLoader`, from which the regular Unity WebGL build continues.
+The build process copies this folder and a bundle of all the JS source code into `Assets/WebGLTemplates/MultisynqLoader`, from which the regular Unity WebGL build continues.
 
 ## Packages
 
