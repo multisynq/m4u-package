@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine.SceneManagement;
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 /// <summary>

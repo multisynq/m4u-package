@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 [AddComponentMenu("Multisynq/Mq_Entity_Comp")]

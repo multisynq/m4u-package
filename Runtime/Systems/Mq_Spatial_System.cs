@@ -4,10 +4,9 @@ using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
-public class Mq_Spatial_System : Mq_System {
-
+public class  Mq_Spatial_System : Mq_System {
   public bool mq_Spatial_System;
 
   public override List<string> KnownCommands { get;  } = new() {

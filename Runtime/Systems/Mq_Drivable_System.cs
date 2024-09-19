@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 public class Mq_Drivable_System : Mq_System {
 

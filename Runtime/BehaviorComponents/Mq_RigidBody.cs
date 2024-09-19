@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 public class  Mq_RigidBody : MonoBehaviour {

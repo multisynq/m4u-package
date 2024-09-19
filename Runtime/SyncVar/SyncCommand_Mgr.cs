@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Linq;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
@@ -235,4 +235,4 @@ public class SyncCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
   #endregion
 }
 
-} // namespace Multisynq
+} // namespace MultisynqNS

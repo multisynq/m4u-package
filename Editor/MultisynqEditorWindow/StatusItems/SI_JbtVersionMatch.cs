@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Multisynq;
+using MultisynqNS;
 
 public class SI_JbtVersionMatch: StatusItem {
 

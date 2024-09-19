@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 [InitializeOnLoad]
@@ -54,7 +54,9 @@ public class Mq_DependencyAdder {
     string templatePath = Path.Combine("WebGLTemplates", templateName);
 
     if (!Directory.Exists(Path.Combine(Application.dataPath, templatePath))) {
-      Debug.LogError("WebGL template folder does not exist: " + Path.Combine(Application.dataPath, templatePath));
+      // create the folder
+      Directory.CreateDirectory(Path.Combine(Application.dataPath, templatePath));
+      Debug.LogWarning("Created WebGL template folder: " + Path.Combine(Application.dataPath, templatePath));
     }
     else {
       string template = "PROJECT:" + templateName;

@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using Multisynq;
+using MultisynqNS;
 
 public class SI_BridgeHasSettings: StatusItem {
 

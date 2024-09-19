@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 public abstract class Mq_System : MonoBehaviour {
-  public bool mq_System;
+  public bool         mq_System;
   /// <summary>
   /// Commands this system understands.
   /// </summary>

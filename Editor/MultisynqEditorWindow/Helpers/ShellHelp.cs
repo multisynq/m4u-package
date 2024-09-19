@@ -1,6 +1,6 @@
 using System.IO;
 using UnityEngine;
-using Multisynq;
+using MultisynqNS;
 
 static public class ShellHelp {
 

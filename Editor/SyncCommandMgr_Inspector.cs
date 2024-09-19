@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using Multisynq;
+using MultisynqNS;
 
 [CustomEditor(typeof(SyncCommand_Mgr))]
 public class SyncCommandMgrEditor : Editor {

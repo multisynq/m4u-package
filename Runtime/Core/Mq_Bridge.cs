@@ -13,7 +13,7 @@ using WebSocketSharp.Net;
 using System.Runtime.InteropServices;
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 /// <summary>

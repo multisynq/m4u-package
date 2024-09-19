@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 static public class Mq_File {

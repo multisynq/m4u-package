@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using Multisynq;
+using MultisynqNS;
 
 [CustomEditor(typeof(SyncVar_Mgr))]
 public class CroquetSyncVarMgrEditor : Editor {
