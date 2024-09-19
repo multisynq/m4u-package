@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 #endif
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 
@@ -236,4 +236,4 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 }
 
 
-} // namespace Multisynq
+} // namespace MultisynqNS

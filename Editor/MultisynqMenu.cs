@@ -8,7 +8,7 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
-using Multisynq;
+using MultisynqNS;
 
 
 
@@ -280,7 +280,7 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
       // have an up-to-date build for the current installed level of the JS build tools.
       foreach (string appName in appNames) {
         if (!Mq_Builder.CheckJSBuildState(appName, jsTarget)) {
-          Debug.LogError($"Failed to find up-to-date build for \"{appName}\", target \"{jsTarget}\"");
+          Debug.LogError($"Check Menu: Multisynq > Build Assistant & Unity Build panel. Failed to find up-to-date build for \"{appName}\", target \"{jsTarget}\"");
           failureMessage = "Missing up-to-date JS build(s)";
           readyToBuild = false;
         }

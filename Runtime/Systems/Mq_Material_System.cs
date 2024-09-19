@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
-public class Mq_Material_System : Mq_System {
-
-  public bool                                 mq_Material_System;
+public class  Mq_Material_System : Mq_System {
+  public bool mq_Material_System;
   public override List<string>                KnownCommands { get; } = new List<string>() { };
   protected override Dictionary<int, Mq_Comp> components { get; set; } = new Dictionary<int, Mq_Comp>();
   public static Mq_Material_System            Instance { get; private set; }

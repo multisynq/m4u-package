@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using Multisynq;
+using MultisynqNS;
 
 static public class Mq_Project {
 

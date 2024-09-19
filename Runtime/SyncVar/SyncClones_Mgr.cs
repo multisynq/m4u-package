@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 public class SyncClones_Mgr : JsPluginInjecting_Behaviour {

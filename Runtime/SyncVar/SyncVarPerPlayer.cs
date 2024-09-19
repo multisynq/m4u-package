@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 [SerializeField]
@@ -32,4 +32,4 @@ public class SyncVarPerPlayer<T> {
 
 }
 
-} // namespace Multisynq
+} // namespace MultisynqNS

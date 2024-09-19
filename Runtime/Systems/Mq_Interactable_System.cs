@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
-public class Mq_Interactable_System : Mq_System {
+public class  Mq_Interactable_System : Mq_System {
+  public bool mq_Interactable_System;
 
-  public bool   mq_Interactable_System;
   public bool   SendPointerHitEvents = true;
   public float  PointerHitDistance = 50.0f;
   public Camera userCamera;

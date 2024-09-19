@@ -2,7 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Multisynq;
+using MultisynqNS;
 
   //=============================================================================
   public class Status {

@@ -8,18 +8,17 @@ using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 /// <summary>
 /// Handles Creation and Destruction of Objects.
 /// Maintains the mapping between the model and the view objects.
 /// </summary>
-public class Mq_Entity_System : Mq_System {
-  
+public class  Mq_Entity_System : Mq_System {
   public bool mq_Entity_System;
 
-  private Dictionary<string, GameObject> addressableAssets; // manages preloading the addressableAssets
+  private Dictionary<string, GameObject> addressableAssets = new(); // manages preloading the addressableAssets
   private string assetScene = ""; // the scene for which we've loaded the assets
   private int assetLoadKey = 0; // to distinguish the asynchronous loads
   public string assetManifestString;
@@ -218,7 +217,7 @@ public class Mq_Entity_System : Mq_System {
   }
 
   void MakeObject(string[] args) {
-    Debug.Log($"Making object {args[0]}");
+    // Debug.Log($"Making object {args[0]}");
     ObjectSpec spec = JsonUtility.FromJson<ObjectSpec>(args[0]);
     // Debug.Log($"making object {spec.cH}");
 
@@ -263,10 +262,10 @@ public class Mq_Entity_System : Mq_System {
       string[] comps = spec.cs.Split(',');
       foreach (string compName in comps) {
         try {
-          Type typeToAdd = Type.GetType("Multisynq." + compName);
+          Type typeToAdd = Type.GetType("MultisynqNS." + compName);
           if (typeToAdd == null) {
             string assemblyQualifiedName =
-              System.Reflection.Assembly.CreateQualifiedName("Assembly-CSharp", "Multisynq." + compName);
+              System.Reflection.Assembly.CreateQualifiedName("Assembly-CSharp", "MultisynqNS." + compName);
             typeToAdd = Type.GetType(assemblyQualifiedName);
           }
           if (typeToAdd == null) {

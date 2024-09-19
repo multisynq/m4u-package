@@ -1,6 +1,6 @@
 
 using UnityEngine;
-using Multisynq;
+using MultisynqNS;
 
 public class SyncTransform: SyncBehaviour {
 

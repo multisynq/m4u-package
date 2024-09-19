@@ -7,7 +7,7 @@ using System.IO;
 using Debug = UnityEngine.Debug;
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 public class Mq_Runner : MonoBehaviour {
@@ -229,4 +229,4 @@ public class Mq_Runner : MonoBehaviour {
 
 }
 
-} // namespace Multisynq
+} // namespace MultisynqNS

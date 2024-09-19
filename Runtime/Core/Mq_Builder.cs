@@ -13,7 +13,7 @@ using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 // Mq_Builder is a class with only static methods.  Its responsibility is to manage the bundling of

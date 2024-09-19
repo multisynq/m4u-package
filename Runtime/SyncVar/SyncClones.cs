@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 public class SyncClones : SyncBehaviour {
@@ -40,4 +40,4 @@ public class SyncClones : SyncBehaviour {
 
 }
 
-} // namespace Multisynq
+} // namespace MultisynqNS

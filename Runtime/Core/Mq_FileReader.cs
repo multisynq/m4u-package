@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
 
 
-namespace Multisynq {
+namespace MultisynqNS {
 
 
 // this is currently only needed in a WebGL deployment, where we have no way to carry out
