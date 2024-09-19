@@ -23,7 +23,7 @@ public class SI_Settings: StatusItem {
   }
   override public void InitText() {
     StatusSetMgr.settings = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       $"Settings are ready to go!",
       $"Settings are set to defaults! Look for other red items below to fix this.",
       $"Settings asset is missing! Click <b>Create Settings</b> to make some.",
@@ -58,10 +58,10 @@ public class SI_Settings: StatusItem {
 
   private void Clk_SettingsCreate() { // SETTINGS  ------------- Click
     Logger.MethodHeader();
-    // CroquetSettings in scene
+    // Mq_Settings in scene
     var cqStgs = CqProject.EnsureSettingsFile();
     StatusSetMgr.ready.SetIsGood(cqStgs != null);
-    if (cqStgs == null) Debug.LogError("Could not find or create CroquetSettings file");
+    if (cqStgs == null) Debug.LogError("Could not find or create Mq_Settings file");
     GotoSettings();
     ShowVEs(GotoNodePath_Btn, GotoApiKey_Btn);
     Check();
@@ -72,7 +72,7 @@ public class SI_Settings: StatusItem {
     // Select the file in Project pane of the Editor so it shows up in the Inspector
     var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null) {
-      Debug.LogError("Could not find or create CroquetSettings file");
+      Debug.LogError("Could not find or create Mq_Settings file");
       return;
     } else {
       Notify("Selected in Project.\nSettings in Inspector.");

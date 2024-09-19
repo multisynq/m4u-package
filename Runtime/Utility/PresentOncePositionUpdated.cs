@@ -1,18 +1,18 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+
+namespace Multisynq {
+
 
 public class PresentOncePositionUpdated : MonoBehaviour
 {
     public bool waitUntilMove = false;
     public float timeout = 0.1f; // present after this time even if not moved
-    private CroquetSpatialComponent sc;
+    private Mq_Spatial_Comp sc;
     private float startTime;
 
     private void Start()
     {
-        sc = GetComponent<CroquetSpatialComponent>();
+        sc = GetComponent<Mq_Spatial_Comp>();
         startTime = Time.realtimeSinceStartup;
     }
 
@@ -27,4 +27,6 @@ public class PresentOncePositionUpdated : MonoBehaviour
             Destroy(this);
         }
     }
+}
+
 }

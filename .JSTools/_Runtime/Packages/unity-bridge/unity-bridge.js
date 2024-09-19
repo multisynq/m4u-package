@@ -41,7 +41,7 @@ const originalConsole = {
 };
 
 // Define the function to handle messages from Unity
-// (invoked from CroquetBridge.jslib)
+// (invoked from Mq_Bridge.jslib)
 globalThis.handleUnityMessage = function (message) {
   if (typeof globalThis.theGameEngineBridge !== "undefined") {
     globalThis.theGameEngineBridge.receiveMessageFromUnity(message);
@@ -171,7 +171,7 @@ class BridgeToUnity {
   sendToUnityViaInterop(buffer, isBinary) {
     const message = isBinary ? this.arrayBufferToBase64(buffer) : buffer;
     const wrappedMessage = { message, isBinary };
-    globalThis.unityInstance.SendMessage('Croquet', 'OnMessageReceivedFromJS', JSON.stringify(wrappedMessage));
+    globalThis.unityInstance.SendMessage('Multisynq', 'OnMessageReceivedFromJS', JSON.stringify(wrappedMessage));
   }
 
   // Helper function to convert ArrayBuffer to base64 string
@@ -1192,7 +1192,7 @@ export const PM_GameMaterial = (superclass) =>
   class extends superclass {
     constructor(actor) {
       super(actor);
-      this.componentNames.add("CroquetMaterialComponent");
+      this.componentNames.add("Mq_Material_Comp");
     }
   };
 gamePawnMixins.Material = PM_GameMaterial;
@@ -1201,7 +1201,7 @@ export const PM_GameSpatial = (superclass) =>
   class extends superclass {
     constructor(actor) {
       super(actor);
-      this.componentNames.add("CroquetSpatialComponent");
+      this.componentNames.add("Mq_Spatial_Comp");
       this.resetGeometrySnapState();
       this._alwaysSnap = true; // overridden in PM_GameSmoothed
 
@@ -1410,7 +1410,7 @@ export const PM_GameInteractable = (superclass) =>
 
     constructor(actor) {
       super(actor);
-      this.componentNames.add("CroquetInteractableComponent");
+      this.componentNames.add("Mq_Interactable_Comp");
       this.extraWatched.add("layers");
     }
   };
@@ -1420,7 +1420,7 @@ export const PM_GameDrivable = (superclass) =>
   class extends superclass {
     constructor(actor) {
       super(actor);
-      this.componentNames.add("CroquetDrivableComponent");
+      this.componentNames.add("Mq_Drivable_Comp");
       this.extraWatched.add("driver");
       this.onDriverSet();
       this.listenOnce("driverSet", this.onDriverSet);

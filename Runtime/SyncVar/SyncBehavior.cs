@@ -2,6 +2,9 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+namespace Multisynq {
+
+
 public enum RpcTarget { Others, All };
 
 //========== ||||||||||||||| =============
@@ -99,3 +102,5 @@ public class SyncBehaviour : MonoBehaviour {
     }
   }
 }
+
+} // namespace Multisynq

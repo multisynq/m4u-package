@@ -26,7 +26,7 @@ static public class SceneHelp {
   static public T FindComp<T>() where T : Component{
     T component = null;
     string tName = typeof(T).Name;
-    // First check for a T on the scene's CroquetBridge
+    // First check for a T on the scene's Mq_Bridge
     var bridge = UnityEngine.Object.FindObjectOfType<T>();
     if (bridge != null) {
         component = bridge.GetComponent<T>();

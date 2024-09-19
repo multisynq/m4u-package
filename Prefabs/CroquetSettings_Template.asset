@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6e369286035f43f2a8109a346170456, type: 3}
-  m_Name: CroquetSettings_Template
+  m_Name: Mq_Settings_Template
   m_EditorClassIdentifier: 
   apiKey: <go get one at multisynq.io>
   appPrefix: io.croquet.worldcore

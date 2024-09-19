@@ -18,7 +18,7 @@ public class SI_ReadyTotal: StatusItem {
   override public void InitText() {
     string t_synq = "<b><color=#006AFF>Synq</color></b>";
     StatusSetMgr.ready = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       $"You are <b><size=+1><color=#77ff77>Ready to </color>{t_synq}</b></size><color=#888>      All green lights below.",
       $"Warn 00000",
       $"Look below to fix what's not ready...",

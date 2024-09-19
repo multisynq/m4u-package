@@ -2,6 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 public class SI_JbtVersionMatch: StatusItem {
 
@@ -21,7 +22,7 @@ public class SI_JbtVersionMatch: StatusItem {
   override public void InitText() {
     string t_jsb  = "<b><color=#E5DB1C>JS Build</color></b>";
     StatusSetMgr.versionMatch = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success, blank)
+      // (ready, warning, error, success, blank )
       $"Versions of {t_jsb} Tools and Built output match!",
       $"Versions of {t_jsb} Tools and Built output do not match",
       $"Versions of {t_jsb} Tools and Built output do not match!\n<b>Make a new or first build!</b>",
@@ -33,18 +34,18 @@ public class SI_JbtVersionMatch: StatusItem {
 
   override public bool Check() { 
     // load the two ".last-installed-tools" files to compare versions and Tools levels
-    // of (1) the tools in DotJsBuild and (2) the tools in CroquetBridge
-    // var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.installedToolsForDotJsBuild_Path);
-    // var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.installedToolsForCroquetBridge_Path);
-    var installedToolsForDotJsBuild    = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInBuild);
-    var installedToolsForCroquetBridge = LastInstalled.LoadPath(CroquetBuilder.JSToolsRecordInEditor);
-    bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForCroquetBridge);
+    // of (1) the tools in DotJsBuild and (2) the tools in Mq_Bridge
+    // var installedToolsForDotJsBuild    = LastInstalled.LoadPath(Mq_Builder.installedToolsForDotJsBuild_Path);
+    // var installedToolsForMq_Bridge = LastInstalled.LoadPath(Mq_Builder.installedToolsForMq_Bridge_Path);
+    var installedToolsForDotJsBuild    = LastInstalled.LoadPath(Mq_Builder.JSToolsRecordInBuild);
+    var installedToolsForMq_Bridge = LastInstalled.LoadPath(Mq_Builder.JSToolsRecordInEditor);
+    bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForMq_Bridge);
 
     StatusSetMgr.versionMatch.SetIsGood(allMatch);
     if (allMatch) {
       Debug.Log("JSTools for Editor & Build match!!!");
     } else {
-      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForCroquetBridge, "Build", "Editor"));
+      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForMq_Bridge, "Build", "Editor"));
       ShowVEs(ReinstallTools_Btn);
     }
     // ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);

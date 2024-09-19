@@ -1,6 +1,5 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 public class SI_BuiltOutput: StatusItem {
@@ -23,7 +22,7 @@ public class SI_BuiltOutput: StatusItem {
   }
   override public void InitText() {
     StatusSetMgr.builtOutput = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success, blank)
+      // (ready, warning, error, success, blank )
       $"Built output folders match the building scene list!",
       $"Compare output JS folders to Unity Build scene list with [ Check Building Scenes ] button.",
       $"Compare output JS folders to Unity Build scene list with [ Check Building Scenes ] button.",
@@ -64,9 +63,9 @@ public class SI_BuiltOutput: StatusItem {
     if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
     var isOk = CqProject.AllScenesHaveBridgeWithAppNameSet();
     StatusSetMgr.builtOutput.SetIsGood(isOk);
-    if (isOk) NotifyAndLog("All scenes have CroquetBridge\n with appName set and\n app folder in StreamingAssets.");
+    if (isOk) NotifyAndLog("All scenes have Mq_Bridge\n with appName set and\n app folder in StreamingAssets.");
     else      {
-      NotifyAndLogError("Some scenes are missing CroquetBridge \nwith appName set or\n app folder in StreamingAssets.");
+      NotifyAndLogError("Some scenes are missing Mq_Bridge \nwith appName set or\n app folder in StreamingAssets.");
     }
     skipCheckingThisSi = true; // prevent double-checking
     edWin.CheckAllStatusForReady();

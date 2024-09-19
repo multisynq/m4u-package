@@ -2,13 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+namespace Multisynq {
+
+
 public class SyncClones_Mgr : JsPluginInjecting_Behaviour {
 
   private Dictionary<int, SyncBehaviour> sbsByNetId = new();
 
   override public void Start() {
     base.Start();
-    Croquet.Subscribe("SyncClone", "tellToClone", OnTellToInstance);
+    Multisynq.Subscribe("SyncClone", "tellToClone", OnTellToInstance);
   }
 
   public override string JsPluginFileName() {
@@ -60,7 +63,7 @@ public class SyncClones_Mgr : JsPluginInjecting_Behaviour {
     Vector3    scale    = clone.transform.localScale;
 
     string msg = $"{cloneMeNetId}|{madeOneNetId}|{position.x},{position.y},{position.z}|{rotation.x},{rotation.y},{rotation.z},{rotation.w}|{scale.x},{scale.y},{scale.z}";
-    Croquet.Publish("SyncClone", "askToClone", msg);
+    Multisynq.Publish("SyncClone", "askToClone", msg);
     Debug.Log($"SyncClone, askToClone, %cy%{msg}".TagColors());
     return (clone, newSb);
   }
@@ -147,4 +150,6 @@ public class SyncClones_Mgr : JsPluginInjecting_Behaviour {
     }
     private static SyncClones_Mgr _Instance;
   #endregion
+}
+
 }

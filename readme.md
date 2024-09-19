@@ -63,12 +63,12 @@ https://github.com/croquet/croquet-for-unity-package.git
 #### Install the Tools
 As part of the installation of the C4U package, the Unity editor will have been given a `Croquet` menu.
 On this menu, now invoke the option `Install JS Build Tools`.
-That option will create a "CroquetJS" folder that has the following application structure.
+That option will create a "MultisynqJS" folder that has the following application structure.
 
 ```
 - (unity project root)
     - /Assets
-        - /CroquetJS
+        - /MultisynqJS
             .gitignore
             .eslintrc
             package.json
@@ -88,7 +88,7 @@ That option will create a "CroquetJS" folder that has the following application 
     - Packages
     - etc
 ```
-The `CroquetJS` folder itself has various tools for building the JavaScript part of you app, while the `_Runtime` folder has mostly source files needed for building.
+The `MultisynqJS` folder itself has various tools for building the JavaScript part of you app, while the `_Runtime` folder has mostly source files needed for building.
 
 The `your_app_name` subdirectories can be used for independent apps - for example, in our `croquet-for-unity-tutorials` repository, there are independent directories for nine introductory apps.
 
@@ -102,8 +102,8 @@ will create the group; an `AddressableAssetsData` folder will appear in your pro
 Add tags that correspond with the scene names you will use each prefab in (Croquet will only load what is needed for each scene), _or_ add the "default" tag if the asset should be loaded for every scene.
 
 
-### Create and fill in a CroquetSettings asset
-Find the `CroquetDefaultSettings` asset within the C4U package, by going to `Packages/Croquet Multiplayer/Scripts/Runtime/Settings`. Copy the settings into your project - for example, into an `Assets/Settings` directory.
+### Create and fill in a Mq_Settings asset
+Find the `Mq_DefaultSettings` asset within the C4U package, by going to `Packages/Croquet Multiplayer/Scripts/Runtime/Settings`. Copy the settings into your project - for example, into an `Assets/Settings` directory.
 
 The most important field to set up in the settings asset is the **Api Key**, which is a token of around 40 characters that you can create for yourself at https://croquet.io/account. It provides access to the Croquet infrastructure.
 
@@ -119,11 +119,11 @@ On the Settings asset, fill in the **Path to Node** field with the path.
 
 Create a new scene _(note: a scene's name is used in our package to tie the scene to its assets and other build aspects; these features have not yet been tested with names containing white space, punctuation etc)_
 
-From the `Croquet Multiplayer` package's `Prefabs` folder drag a `CroquetBridge` object to your scene. Configure the bridge object as follows:
+From the `Croquet Multiplayer` package's `Prefabs` folder drag a `Mq_Bridge` object to your scene. Configure the bridge object as follows:
 
-Associate the **App Properties** field with the `CroquetSettings` object that you created in the last step.
+Associate the **App Properties** field with the `Mq_Settings` object that you created in the last step.
 
-Set the **App Name** to the `your_app_name` part of the path, illustrated above, to the directory holding the JavaScript source that belongs with this scene. For example, a name `myGame` would connect this scene to the code inside `Assets/CroquetJS/myGame`.
+Set the **App Name** to the `your_app_name` part of the path, illustrated above, to the directory holding the JavaScript source that belongs with this scene. For example, a name `myGame` would connect this scene to the code inside `Assets/MultisynqJS/myGame`.
 
 ### Create Your App's JavaScript Code and Unity-side Entities
 
@@ -140,7 +140,7 @@ StartSession(MyModelRoot, GameViewRoot);
 #### Provide the JavaScript Model Code
 Create the file that implements the JavaScript model behavior for your app. The `index.js` above expects a file called `Models.js`, that exports a `MyModelRoot` class.
 
-To get started, you can copy any Models file from under the `CroquetJS` folder of one of our demonstration repositories.  Here is a sample, copied from Tutorial 1 of our Tutorials repository:
+To get started, you can copy any Models file from under the `MultisynqJS` folder of one of our demonstration repositories.  Here is a sample, copied from Tutorial 1 of our Tutorials repository:
 
 ```javascript
 import { Actor, mix, AM_Spatial } from "@croquet/worldcore-kernel";
@@ -184,7 +184,7 @@ MyModelRoot.register("MyModelRoot");
 
 #### Enable the Input Handler
 We provide a basic keypress and pointer forwarding template that uses Unity's new input system.
-See `Croquet/Runtime/UserInputActions` (lightning bolt icon).
+See `Multisynq/Runtime/UserInputActions` (lightning bolt icon).
 Select it and click "Make this the active input map".
 
 This allows most keypresses and pointer events to be forwarded. Skip this step if you want to use your own completely custom set of input events.
@@ -203,7 +203,7 @@ _Within the package we have provided a Croquet Menu which gives developers the a
 ### Build JS Now
 _Manually initiate a build of the JavaScript code for the Croquet session that synchronizes this app._
 
-This and the other JS build items are available when the open scene has a Croquet Bridge object with an appropriately set App Name (and there is a corresponding app source directory under CroquetJS).
+This and the other JS build items are available when the open scene has a Croquet Bridge object with an appropriately set App Name (and there is a corresponding app source directory under MultisynqJS).
 
 This item triggers a bundling of that source along with the libraries that are currently installed as part of the "JS build tools". The bundling is required for the Croquet session to run.
 

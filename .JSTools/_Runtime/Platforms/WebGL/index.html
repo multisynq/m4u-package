@@ -196,7 +196,7 @@
             };
 
             if (room) {
-              unityInstance.SendMessage("Croquet", "SetSessionName", room);
+              unityInstance.SendMessage("Multisynq", "SetSessionName", room);
             }
             console.log("Sending isMobile: " + isMobile);
             window.unityInstance.SendMessage("MobileControls", "toggleControls", isMobile.toString());

@@ -1,6 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
+
 
 public class SI_JsBuildTools: StatusItem {
 
@@ -20,7 +22,7 @@ public class SI_JsBuildTools: StatusItem {
 
   override public void InitText() {
     StatusSetMgr.jsBuildTools = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       "JS Build Tools are ready to go!",
       "JS Build Tools are missing",
       "JS Build Tools are missing! Click <b>Copy JS Build Tools</b> to get them.",
@@ -31,7 +33,7 @@ public class SI_JsBuildTools: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    var cqJsNodeModulesFolder = CqFile.CroquetJS().DeeperFolder("node_modules");
+    var cqJsNodeModulesFolder = Mq_File.MultisynqJS().DeeperFolder("node_modules");
     bool haveFolder = cqJsNodeModulesFolder.Exists();
     StatusSetMgr.jsBuildTools.SetIsGood(haveFolder);
 
@@ -51,19 +53,19 @@ public class SI_JsBuildTools: StatusItem {
 
   private async void Clk_CopyJSBuildTools() { // JS BUILD TOOLS  ------------- Click
     Logger.MethodHeader();
-    await CroquetBuilder.InstallJSTools();
+    await Mq_Builder.InstallJSTools();
     Check(); // recheck (this SI_JsBuildTools)
     edWin.CheckAllStatusForReady();
   }
 
   private void Clk_GotoJSBuildToolsFolder() { // JS BUILD TOOLS  ------------- Click
     Logger.MethodHeader();
-    var croquetJSFolder = CqFile.CroquetJS();
+    var croquetJSFolder = Mq_File.MultisynqJS();
     if (croquetJSFolder.Exists()) {
-      NotifyAndLog("Assets/CroquetJS/ \nfolder opened\nin Finder/Explorer.");
+      NotifyAndLog("Assets/MultisynqJS/ \nfolder opened\nin Finder/Explorer.");
       EditorUtility.RevealInFinder(croquetJSFolder.longPath);
     } else {
-      NotifyAndLogError("Could not find\nCroquetJS folder");
+      NotifyAndLogError("Could not find\nMultisynqJS folder");
     }
   }
 

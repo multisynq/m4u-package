@@ -6,6 +6,9 @@ using UnityEngine;
 using System.Linq;
 
 
+namespace Multisynq {
+
+
 #region Attribute
   //========== |||||||||||||||| ================
   //========| [SyncVar] | ======================
@@ -84,10 +87,10 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
 
   #region Start/Update
     //------------------ ||||| ------------------------------------------
-    override public void Start() { // CroquetSynchVarMgr.Start()
+    override public void Start() { // MultisynqSynchVarMgr.Start()
       base.Start();
 
-      Croquet.Subscribe("SyncVar", "varChanged", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+      Multisynq.Subscribe("SyncVar", "varChanged", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
       #if UNITY_EDITOR
         AttributeHelper.CheckForBadAttrParents<SyncBehaviour, SyncVarAttribute>();
@@ -237,7 +240,7 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
 
-      Croquet.Publish("SyncVar", "setVar", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+      Multisynq.Publish("SyncVar", "setVar", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
     }
 
@@ -463,4 +466,6 @@ public static class SerializationExtensions {
       float.Parse(parts[3])
     );
   }
+}
+
 }

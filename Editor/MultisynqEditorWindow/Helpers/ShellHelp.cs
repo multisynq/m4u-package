@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using Multisynq;
 
 static public class ShellHelp {
 
@@ -9,7 +10,7 @@ static public class ShellHelp {
     pcs.StartInfo.RedirectStandardOutput = true;
     pcs.StartInfo.RedirectStandardError  = true;
     pcs.StartInfo.CreateNoWindow         = true;
-    pcs.StartInfo.WorkingDirectory       = Path.GetFullPath(CqFile.ewFolder);
+    pcs.StartInfo.WorkingDirectory       = Path.GetFullPath(Mq_File.ewFolder);
     pcs.StartInfo.FileName               = executable;
     pcs.StartInfo.Arguments              = arguments;
     pcs.StartInfo.UserName               = "root";

@@ -44,7 +44,7 @@ public class SI_Node: StatusItem {
   override public void InitText() {
     string t_node = "<b><color=#417E37>Node</color></b>";
     StatusSetMgr.node = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success)
+      // (ready, warning, error, success, blank )
       $"{t_node} is ready to go!",
       $"{t_node} is not running",
       $"{t_node} needs your help getting set up.",
@@ -177,7 +177,7 @@ public class SI_Node: StatusItem {
     var nps = FindAllNodeIntances().Select( f => (f+"/node").Replace("/"," ∕ ") ).ToList();
     Node_Dropdown.choices = nps;
     ShowVEs(Node_Dropdown);
-    // compare to CroquetSettings
+    // compare to Mq_Settings
     var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs != null) {
       string nodePath = cqStgs.pathToNode.Replace("/"," ∕ ");

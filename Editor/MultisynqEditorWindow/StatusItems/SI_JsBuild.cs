@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Multisynq;
 
 public class SI_JsBuild: StatusItem {
 
@@ -22,7 +23,7 @@ public class SI_JsBuild: StatusItem {
 
   override public void InitText() {
     StatusSetMgr.jsBuild = new StatusSet( messageLabel, statusImage,
-      // (info, warning, error, success, blank)
+      // (ready, warning, error, success, blank )
       $"Output JS was built!",
       $"Output JS missing.",
       $"Output JS not found. Need to Build JS.",
@@ -33,7 +34,7 @@ public class SI_JsBuild: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    bool haveBuiltOutput = CqFile.StreamingAssetsAppFolder().Exists();
+    bool haveBuiltOutput = Mq_File.StreamingAssetsAppFolder().Exists();
     StatusSetMgr.jsBuild.SetIsGood(haveBuiltOutput);
     if (!haveBuiltOutput) ShowVEs(Build_JsNow_Btn);
     ShowVEs(GotoBuiltOutput_Btn);
@@ -44,36 +45,36 @@ public class SI_JsBuild: StatusItem {
   async void Clk_ToggleJSBuild() { // JS BUILD  ------------- Click
     Logger.MethodHeader();
     if (ToggleJSBuild_Btn.text == "Start JS Build Watcher") {
-      bool success = await CroquetBuilder.EnsureJSToolsAvailable();
+      bool success = await Mq_Builder.EnsureJSToolsAvailable();
       if (!success) return;
-      CroquetBuilder.StartBuild(true); // true => start watcher
+      Mq_Builder.StartBuild(true); // true => start watcher
       Debug.Log("Started JS Build Watcher");
       ToggleJSBuild_Btn.text = "Stop JS Build Watcher";
     } else {
       ToggleJSBuild_Btn.text = "Start JS Build Watcher";
-      CroquetBuilder.StopWatcher();
+      Mq_Builder.StopWatcher();
     }
   }
 
   async public void Clk_Build_JsNow() { // JS BUILD  ------------- Click
     Logger.MethodHeader();
     Debug.Log("Building JS...");
-    bool success = await CroquetBuilder.EnsureJSToolsAvailable();
+    bool success = await Mq_Builder.EnsureJSToolsAvailable();
     if (!success) {
       var msg = "JS Build Tools are missing!!!\nCannot build.";
       Debug.LogError(msg);
       EditorUtility.DisplayDialog("Missing JS Tools", msg, "OK");
       return;
     }
-    CroquetBuilder.StartBuild(false); // false => no watcher
+    Mq_Builder.StartBuild(false); // false => no watcher
     AssetDatabase.Refresh();
-    CqFile.StreamingAssetsAppFolder().SelectAndPing(false);
+    Mq_File.StreamingAssetsAppFolder().SelectAndPing(false);
     Check(); // recheck (this SI_JsBuild)
   }
 
   void Clk_GotoBuiltOutput() { // JS BUILD  ------------- Click
     Logger.MethodHeader();
-    var boF = CqFile.StreamingAssetsAppFolder();
+    var boF = Mq_File.StreamingAssetsAppFolder();
     if (!boF.Exists()) {
       NotifyAndLogError("Could not find\nJS Build output folder");
       var ft = new FolderThing(Application.streamingAssetsPath);
@@ -82,7 +83,7 @@ public class SI_JsBuild: StatusItem {
     }
     boF.SelectAndPing();
     EditorApplication.delayCall += ()=>{
-      var ixdF = CqFile.AppStreamingAssetsOutputFolder().DeeperFile("index.html");
+      var ixdF = Mq_File.AppStreamingAssetsOutputFolder().DeeperFile("index.html");
       if (ixdF.Exists()) ixdF.SelectAndPing(false);
       else {
         NotifyAndLogWarning("Could not find\nindex.html in\nJS Build output folder");
