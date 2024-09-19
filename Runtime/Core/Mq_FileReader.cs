@@ -13,32 +13,34 @@ namespace Multisynq {
 // is in fetching the JS tools record (from which we learn the package version string).
 
 [AddComponentMenu("Multisynq/Mq_FileReader")]
-public class Mq_FileReader : MonoBehaviour {
-    public void Awake() {
-        Mq_Builder.FileReaderIsReady(this);
-    }
+public class  Mq_FileReader : MonoBehaviour {
+  public bool mq_FileReader;  // Helps tools resolve "missing Script" problems
+  
+  public void Awake() {
+    Mq_Builder.FileReaderIsReady(this);
+  }
 
-    public void FetchFile(string url, Action<string> callback) {
-        StartCoroutine(GetRequest(url, callback));
-    }
+  public void FetchFile(string url, Action<string> callback) {
+    StartCoroutine(GetRequest(url, callback));
+  }
 
-    IEnumerator GetRequest(string url, Action<string> callback)
+  IEnumerator GetRequest(string url, Action<string> callback)
+  {
+    using (UnityWebRequest www = UnityWebRequest.Get(url))
     {
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            yield return www.SendWebRequest();
+      yield return www.SendWebRequest();
 
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                callback(www.downloadHandler.text);
-            }
-            else
-            {
-                Debug.Log("Error: " + www.error);
-                callback("");
-            }
-        } // The using block ensures www.Dispose() is called when this block is exited
-    }
+      if (www.result == UnityWebRequest.Result.Success)
+      {
+        callback(www.downloadHandler.text);
+      }
+      else
+      {
+        Debug.Log("Error: " + www.error);
+        callback("");
+      }
+    } // The using block ensures www.Dispose() is called when this block is exited
+  }
 }
 
 

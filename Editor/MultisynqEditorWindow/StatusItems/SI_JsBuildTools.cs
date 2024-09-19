@@ -60,10 +60,10 @@ public class SI_JsBuildTools: StatusItem {
 
   private void Clk_GotoJSBuildToolsFolder() { // JS BUILD TOOLS  ------------- Click
     Logger.MethodHeader();
-    var croquetJSFolder = Mq_File.MultisynqJS();
-    if (croquetJSFolder.Exists()) {
+    var mqJSFolder = Mq_File.MultisynqJS();
+    if (mqJSFolder.Exists()) {
       NotifyAndLog("Assets/MultisynqJS/ \nfolder opened\nin Finder/Explorer.");
-      EditorUtility.RevealInFinder(croquetJSFolder.longPath);
+      EditorUtility.RevealInFinder(mqJSFolder.longPath);
     } else {
       NotifyAndLogError("Could not find\nMultisynqJS folder");
     }
