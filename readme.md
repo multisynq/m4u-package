@@ -258,15 +258,15 @@ In your testing project folder, you will want to make an edit to the Package/man
 
 For example in the file:
 
-`croquet-for-unity-tutorials/Tutorials/Packages/manifest.json`
+`m4u-tutorials/Tutorials/Packages/manifest.json`
 
 Change the line:
 
-`"io.multisynq.multiplayer": "https://github.com/croquet/croquet-for-unity-package.git#v0.9.3",`
+`"io.multisynq.multiplayer": "https://github.com/multisynq/m4u-package.git",`
 
 To:
 
-`"io.multisynq.multiplayer": "file:../../../croquet-for-unity-package",`
+`"io.multisynq.multiplayer": "file:../../../m4u-package",`
 
 Of course, this folder path assumes you have a particular file structure with sibling project and package folders. Your path may vary a bit. Let the Unity Editor console log messages be your guide to get this wired up correctly.
 

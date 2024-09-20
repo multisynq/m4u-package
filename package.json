@@ -1,6 +1,6 @@
 {
     "name":"io.multisynq.multiplayer",
-    "version":"0.9.3",
+    "version":"0.1.0",
     "displayName":"Multisynq Multiplayer",
     "description": "Multiplayer framework built using Croquet Synchronized Computation Architecture",
     "unity":"2021.3",
