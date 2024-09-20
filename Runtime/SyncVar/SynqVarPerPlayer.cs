@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 [SerializeField]
-public class SyncVarPerPlayer<T> {
+public class SynqVarPerPlayer<T> {
   
   string varId;
   Dictionary<string,T> values = new();
 
-  public SyncVarPerPlayer(string _varId, T _myValue) {
+  public SynqVarPerPlayer(string _varId, T _myValue) {
     myValue = _myValue;
     varId = _varId;
 

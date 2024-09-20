@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using MultisynqNS;
+using Multisynq;
 
 //------------------ ||||||||||||||||||||||||| ----------------------------------
 public partial class MultisynqBuildAssistantEW : EditorWindow {
@@ -135,7 +135,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   public static void ShowMultisynqWelcome_MenuMethod() {
     if (_Instance != null) _Instance.Close(); // First destroy the old one...
     var icon = AssetDatabase.LoadAssetAtPath<Texture>(Mq_File.ewFolder + "Images/MultiSynq_Icon.png");
-    Instance.titleContent = new GUIContent("Croquet Build Assistant", icon); // Referencing the Instance property will auto-create the window
+    Instance.titleContent = new GUIContent("Multisynq Build Assistant", icon); // Referencing the Instance property will auto-create the window
   }
 
   [UnityEditor.Callbacks.DidReloadScripts]

@@ -13,7 +13,7 @@ using WebSocketSharp.Net;
 using System.Runtime.InteropServices;
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 /// <summary>
@@ -259,7 +259,7 @@ public class  Mq_Bridge : MonoBehaviour {
 
       DontDestroyOnLoad(gameObject);
       croquetSystems = gameObject.GetComponents<Mq_System>();
-      Multisynq.Subscribe("croquet", "viewCount", HandleViewCount);
+      Croquet.Subscribe("croquet", "viewCount", HandleViewCount);
     }
   }
 
@@ -1344,7 +1344,7 @@ public class  Mq_Bridge : MonoBehaviour {
       string startupSceneName = launchViaMenuIntoScene == ""
         ? SceneManager.GetActiveScene().name
         : launchViaMenuIntoScene;
-      Multisynq.RequestToLoadScene(startupSceneName, true, true);
+      Croquet.RequestToLoadScene(startupSceneName, true, true);
     }
   }
 
@@ -1400,7 +1400,7 @@ public class  Mq_Bridge : MonoBehaviour {
       // note that once the Croquet session has started any scene, the active scene can change
       // but is never reset to "".
       Debug.Log($"No initial scene name set; requesting to load scene \"{startupSceneName}\"");
-      Multisynq.RequestToLoadScene(startupSceneName, false);
+      Croquet.RequestToLoadScene(startupSceneName, false);
       return; // nothing more to do here
     }
 

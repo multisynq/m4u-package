@@ -5,13 +5,13 @@ using System.IO;
 using UnityEngine.SceneManagement;
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 /// <summary>
 /// Main Public API for Croquet
 /// </summary>
-public static class Multisynq
+public static class Croquet
 {
     #region Say and Listen Functions
 

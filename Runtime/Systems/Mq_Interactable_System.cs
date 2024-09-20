@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 public class  Mq_Interactable_System : Mq_System {
@@ -82,7 +82,7 @@ public class  Mq_Interactable_System : Mq_System {
     // we're being notified that a watched property on an object that we are
     // known to have an interest in has changed (or been set for the first time).
     if (propName == "layers") {
-      string[] layers = Multisynq.ReadActorStringArray(go, "layers");
+      string[] layers = Croquet.ReadActorStringArray(go, "layers");
       Mq_Interactable_Comp interactable = components[go.GetInstanceID()] as Mq_Interactable_Comp;
       interactable.interactableLayers = layers;
     }

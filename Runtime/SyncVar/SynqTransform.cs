@@ -1,12 +1,12 @@
 
 using UnityEngine;
-using MultisynqNS;
+using Multisynq;
 
-public class SyncTransform: SyncBehaviour {
+public class SynqTransform: SynqBehaviour {
 
-  [SyncVar] public Vector3    pos;
-  [SyncVar] public Quaternion rot;
-  [SyncVar] public Vector3    scl;
+  [SynqVar] public Vector3    pos;
+  [SynqVar] public Quaternion rot;
+  [SynqVar] public Vector3    scl;
 
   Vector3    lastPos;
   Quaternion lastRot;

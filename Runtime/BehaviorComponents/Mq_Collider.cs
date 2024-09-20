@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 public class  Mq_Collider : MonoBehaviour {

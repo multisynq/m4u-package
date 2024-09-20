@@ -4,7 +4,7 @@ using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 public class  Mq_Spatial_System : Mq_System {
   public bool mq_Spatial_System;
@@ -130,20 +130,20 @@ public class  Mq_Spatial_System : Mq_System {
   }
 
   public override void PawnInitializationComplete(GameObject go) {
-    if (Multisynq.HasActorSentProperty(go, "spatialOptions")) {
-      string options = Multisynq.ReadActorString(go, "spatialOptions");
+    if (Croquet.HasActorSentProperty(go, "spatialOptions")) {
+      string options = Croquet.ReadActorString(go, "spatialOptions");
       Mq_Spatial_Comp spatial = go.GetComponent<Mq_Spatial_Comp>();
       UnpackOptionValues(options, spatial);
     }
 
     Mq_ActorManifest manifest = go.GetComponent<Mq_ActorManifest>();
     if (manifest != null && Array.IndexOf(manifest.mixins, "Ballistic2D") >= 0) {
-      float[] p = Multisynq.ReadActorFloatArray(go, "position");
+      float[] p = Croquet.ReadActorFloatArray(go, "position");
       Vector3 initialPos = new Vector3(p[0], p[1], p[2]);
-      float[] r = Multisynq.ReadActorFloatArray(go, "rotation");
+      float[] r = Croquet.ReadActorFloatArray(go, "rotation");
       Quaternion initialRot = new Quaternion(r[0], r[1], r[2], r[3]);
       initialRot.Normalize(); // probably ok, but doesn't hurt to confirm
-      float[] s = Multisynq.ReadActorFloatArray(go, "scale");
+      float[] s = Croquet.ReadActorFloatArray(go, "scale");
       Vector3 initialScale = new Vector3(s[0], s[1], s[2]);
 
       int croquetHandle = go.GetComponent<Mq_Entity_Comp>().croquetHandle;
@@ -156,7 +156,7 @@ public class  Mq_Spatial_System : Mq_System {
     // we're being notified that a watched property on an object that we are
     // known to have an interest in has changed (or been set for the first time).
     if (propName == "ballisticVelocity") {
-      float[] v = Multisynq.ReadActorFloatArray(go, "ballisticVelocity");
+      float[] v = Croquet.ReadActorFloatArray(go, "ballisticVelocity");
       Vector3 velocity = new Vector3(v[0], v[1], v[2]);
       Mq_Spatial_Comp spatial = components[go.GetInstanceID()] as Mq_Spatial_Comp;
       spatial.ballisticVelocity = velocity;

@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using Debug = UnityEngine.Debug;
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 // this is currently only needed in a WebGL deployment, where we have no way to carry out
@@ -15,7 +15,7 @@ namespace MultisynqNS {
 [AddComponentMenu("Multisynq/Mq_FileReader")]
 public class  Mq_FileReader : MonoBehaviour {
   public bool mq_FileReader;  // Helps tools resolve "missing Script" problems
-  
+
   public void Awake() {
     Mq_Builder.FileReaderIsReady(this);
   }

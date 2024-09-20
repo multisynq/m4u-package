@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
-using MultisynqNS;
+using Multisynq;
 
 [HelpURL("https://forum.unity.com/threads/finally-a-serializable-dictionary-for-unity-extracted-from-system-collections-generic.335797/page-2")]
 public abstract class DictionaryDrawer<TK, TV> : PropertyDrawer

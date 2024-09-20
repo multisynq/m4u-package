@@ -6,21 +6,21 @@ using UnityEngine;
 using System.Linq;
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 #region Attribute
   //========== |||||||||||||||| ================
-  //========| [SyncVar] | ======================
+  //========| [SynqVar] | ======================
   [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-  public class SyncVarAttribute : Attribute { // C# Attribute
+  public class SynqVarAttribute : Attribute { // C# Attribute
     // Usage options: 
-    // [SyncVar] 
-    // [SyncVar(CustomName = "shrtNm")]
-    // [SyncVar(OnChangedCallback = "MethodNameOfClassWithTheVar")] // Method to call when the value changes
-    // [SyncVar(MinSyncInterval = 0.5f)] // Minimum time between syncs in seconds
-    // [SyncVar(CustomName = "myVar", OnChangedCallback = "MyMethod", MinSyncInterval = 0.5f)] // any combo of options
-    // [SyncVar(updateEveryInterval = true)] // Forces update every interval, even if value hasn't changed
+    // [SynqVar] 
+    // [SynqVar(CustomName = "shrtNm")]
+    // [SynqVar(OnChangedCallback = "MethodNameOfClassWithTheVar")] // Method to call when the value changes
+    // [SynqVar(MinSyncInterval = 0.5f)] // Minimum time between syncs in seconds
+    // [SynqVar(CustomName = "myVar", OnChangedCallback = "MyMethod", MinSyncInterval = 0.5f)] // any combo of options
+    // [SynqVar(updateEveryInterval = true)] // Forces update every interval, even if value hasn't changed
     public string CustomName          { get; set; } // Custom name for the variable, useful for shortening to reduce message size
     public float  updateInterval      { get; set; } = 0.1f; // Minimum time between syncs in seconds
     public bool   updateEveryInterval { get; set; } = false; //   true: Force update every interval, even if value hasn't changed.   false: Only sync when the value has changed.
@@ -29,51 +29,51 @@ namespace MultisynqNS {
 #endregion
 
 //========== ||||||||||| ====================================================== ||||||||||| ================
-public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class SyncVar_Mgr <<<<<<<<<<<<
+public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class SynqVar_Mgr <<<<<<<<<<<<
 
   #region Fields
-    [SerializeField] private Dictionary<string, SyncVarInfo> syncVars;
-    [SerializeField] private SyncVarInfo[]                   syncVarsArr;
+    [SerializeField] private Dictionary<string, SynqVarInfo> syncVars;
+    [SerializeField] private SynqVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
-    static public string svLogPrefix = "<color=#5555FF>[SyncVar]</color> ";
+    static public string svLogPrefix = "<color=#5555FF>[SynqVar]</color> ";
     static bool dbg = true;
   #endregion
 
   #region JavaScript
     //-------------------- |||||||||||||||| -------------------------
-    override public string JsPluginFileName() { return "plugins/SyncVar_Mgr_Model.js"; }
+    override public string JsPluginFileName() { return "plugins/SynqVar_Mgr_Model.js"; }
     override public string JsPluginCode() {
       return @"
         import { Model, View } from '@croquet/croquet';
         //---------- ||||||||||||||||| -------------------
-        export class SyncVar_Mgr_Model extends Model {
+        export class SynqVar_Mgr_Model extends Model {
           varValuesAsMessages = []
           get gamePawnType() { return '' }
 
           init(options) {
             super.init(options)
-            this.subscribe('SyncVar', 'setVar', this.syncVarChange) // sent from Unity to JS
-            console.log('### <color=magenta>SyncVar_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>')
+            this.subscribe('SynqVar', 'setVar', this.syncVarChange) // sent from Unity to JS
+            console.log('### <color=magenta>SynqVar_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>')
           }
 
           syncVarChange(msg) {
             const varIdx = parseInt(msg.split('|')[0])
             this.varValuesAsMessages[varIdx] = msg // store the value in the array at the index specified in the message
-            this.publish('SyncVar', 'varChanged', msg) // sent from JS to Unity
+            this.publish('SynqVar', 'varChanged', msg) // sent from JS to Unity
           }
         }
-        SyncVar_Mgr_Model.register('SyncVar_Mgr_Model')
+        SynqVar_Mgr_Model.register('SynqVar_Mgr_Model')
               
         //---------- |||||||||||||||| -------------------
-        export class SyncVar_Mgr_View extends View {
+        export class SynqVar_Mgr_View extends View {
           constructor(model) {
             super(model)
             this.model = model
-            console.log('### <color=green>SyncVar_Mgr_View.constructor() <<<<<<<<<<<<<<<<<<<<< </color>')
+            console.log('### <color=green>SynqVar_Mgr_View.constructor() <<<<<<<<<<<<<<<<<<<<< </color>')
             const messages = model.varValuesAsMessages.map( (msg) => (
-              `croquetPub\x01SyncVar\x01varChanged\x01${msg}`
+              `croquetPub\x01SynqVar\x01varChanged\x01${msg}`
             ))
-            globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SyncVar', 'varChanged', msg)
+            globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SynqVar', 'varChanged', msg)
           }
         }
       ".LessIndent();
@@ -87,40 +87,40 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
 
   #region Start/Update
     //------------------ ||||| ------------------------------------------
-    override public void Start() { // MultisynqSynchVarMgr.Start()
+    override public void Start() { // SynqVar_Mgr.Start()
       base.Start();
 
-      Multisynq.Subscribe("SyncVar", "varChanged", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+      Croquet.Subscribe("SynqVar", "varChanged", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
       #if UNITY_EDITOR
-        AttributeHelper.CheckForBadAttrParents<SyncBehaviour, SyncVarAttribute>();
+        AttributeHelper.CheckForBadAttrParents<SynqBehaviour, SynqVarAttribute>();
       #endif
 
-      syncVars = new Dictionary<string, SyncVarInfo>();
-      List<SyncVarInfo> syncVarsList = new List<SyncVarInfo>();
+      syncVars = new Dictionary<string, SynqVarInfo>();
+      List<SynqVarInfo> syncVarsList = new List<SynqVarInfo>();
       int varIdx = 0; // Index for the syncVarsArr array for the fast lookup system
-      // Find SyncVar attribute on fields & properties of SyncedBehaviours and add them to the syncVars dictionary
-      foreach (SyncBehaviour syncBeh in FindObjectsOfType<SyncBehaviour>()) {
+      // Find SynqVar attribute on fields & properties of SyncedBehaviours and add them to the syncVars dictionary
+      foreach (SynqBehaviour syncBeh in FindObjectsOfType<SynqBehaviour>()) {
 
         if (!syncBeh.enabled) continue; // skip inactives
         var type       = syncBeh.GetType();
         var fields     = type.GetFields(    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-        // Find FIELDS w/ [SyncVar] attributes
+        // Find FIELDS w/ [SynqVar] attributes
         foreach (var field in fields) {
-          var svAttr = field.GetCustomAttribute<SyncVarAttribute>();
+          var svAttr = field.GetCustomAttribute<SynqVarAttribute>();
           if (svAttr != null) {
-            var syncFieldInfo = CreateSyncFieldInfo(syncBeh, field, svAttr, varIdx++);
+            var syncFieldInfo = CreateSynqFieldInfo(syncBeh, field, svAttr, varIdx++);
             syncVars.Add(syncFieldInfo.varId, syncFieldInfo);
             syncVarsList.Add(syncFieldInfo);
           }
         }
-        // Find PROPERTIES w/ [SyncVar] attributes
+        // Find PROPERTIES w/ [SynqVar] attributes
         foreach (var prop in properties) {
-          var svAttr = prop.GetCustomAttribute<SyncVarAttribute>();
+          var svAttr = prop.GetCustomAttribute<SynqVarAttribute>();
           if (svAttr != null) {
-            var syncPropInfo = CreateSyncPropInfo(syncBeh, prop, svAttr, varIdx++);
+            var syncPropInfo = CreateSynqPropInfo(syncBeh, prop, svAttr, varIdx++);
             syncVars.Add(syncPropInfo.varId, syncPropInfo);
             syncVarsList.Add(syncPropInfo);
           }
@@ -152,12 +152,12 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
 
   #region Factories
     //------------------- ||||||||||||||||||| -----------------------
-    private SyncFieldInfo CreateSyncFieldInfo(SyncBehaviour syncBeh, FieldInfo field, SyncVarAttribute attribute, int fieldIdx) {
+    private SynqFieldInfo CreateSynqFieldInfo(SynqBehaviour syncBeh, FieldInfo field, SynqVarAttribute attribute, int fieldIdx) {
       string fieldId = (attribute.CustomName != null) 
         ? GenerateVarId(syncBeh, attribute.CustomName) 
         : GenerateVarId(syncBeh, field.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
-      return new SyncFieldInfo(
+      return new SynqFieldInfo(
           fieldId, fieldIdx,
           CreateGetter(field, syncBeh), CreateSetter(field, syncBeh),
           syncBeh, field, attribute,
@@ -166,10 +166,10 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       );
     }
     //------------------ |||||||||||||||||| -----------------------
-    private SyncPropInfo CreateSyncPropInfo(SyncBehaviour syncBeh, PropertyInfo prop, SyncVarAttribute attribute, int propIdx) {
+    private SynqPropInfo CreateSynqPropInfo(SynqBehaviour syncBeh, PropertyInfo prop, SynqVarAttribute attribute, int propIdx) {
       string propId = GenerateVarId(syncBeh, attribute.CustomName ?? prop.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
-      return new SyncPropInfo(
+      return new SynqPropInfo(
           propId, propIdx,
           CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh), // TODO: pass in propId & propIdx so we can make a callback handler and remove Update checking for changes
           syncBeh, prop, attribute,
@@ -178,7 +178,7 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       );
     }
     //-------------------- ||||||||||||||||||||||| -----------------------
-    private Action<object> CreateOnChangedCallback(SyncBehaviour syncBeh, string methodName) {
+    private Action<object> CreateOnChangedCallback(SynqBehaviour syncBeh, string methodName) {
       if (string.IsNullOrEmpty(methodName))
         return null;
 
@@ -212,14 +212,14 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       return lambda.Compile();
     }
     //------------ ||||||||||||| -------------------------------------------
-    private string GenerateVarId(SyncBehaviour syncBeh, string varName) {
+    private string GenerateVarId(SynqBehaviour syncBeh, string varName) {
       return $"{syncBeh.netId}_{varName}";
     }
   #endregion
 
   #region Messaging
     //-- |||||||||||||||| -------------------------------------------------------
-    void SendMsgIfChanged(SyncVarInfo syncVar) {
+    void SendMsgIfChanged(SynqVarInfo syncVar) {
       if ((Time.time - syncVar.LastSyncTime) < syncVar.attribute.updateInterval) {// Skip sending if the update interval has not passed for this var
         return;
       } else syncVar.LastSyncTime = Time.time; // Restart the timer until we can send again
@@ -240,7 +240,7 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
 
-      Multisynq.Publish("SyncVar", "setVar", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+      Croquet.Publish("SynqVar", "setVar", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
     }
 
@@ -265,9 +265,9 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       var logIds = $"varId=<color=white>{varId}</color> varIdx=<color=cyan>{varIdx}</color>";
 
       // Find the syncVar fast by varIdx, or slower by varId if that fails
-      var syncVar = FindSyncVarByArr(varIdx, varId);
+      var syncVar = FindSynqVarByArr(varIdx, varId);
       var arrLookupFailed = (syncVar == null);
-      if (arrLookupFailed) syncVar = FindSyncVarByDict(varId); // Array find failed, try to find by dictionary
+      if (arrLookupFailed) syncVar = FindSynqVarByDict(varId); // Array find failed, try to find by dictionary
       if (syncVar == null) { // Still null, not found!! Error.
         Debug.LogError($"{svLogPrefix} {logMsg} {logPrefix} message for <color=#ff4444>UNKNOWN</color> {logIds}");
         return;
@@ -294,7 +294,7 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
 
     } // end ReceiveAsMsg()
     //----------------- ||||||||||||||||| --------------------------
-    private SyncVarInfo FindSyncVarByDict( string varId ) {
+    private SynqVarInfo FindSynqVarByDict( string varId ) {
       if (syncVars.TryGetValue(varId, out var syncVar)) {
         return syncVar;
       } else {
@@ -303,7 +303,7 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       }
     }
     //----------------- |||||||||||||||| --------------------------
-    private SyncVarInfo FindSyncVarByArr( int varIdx, string varId ) {
+    private SynqVarInfo FindSynqVarByArr( int varIdx, string varId ) {
       if (varIdx >= 0 && varIdx < syncVarsArr.Length) {
         var syncVar = syncVarsArr[varIdx];
         if (!syncVar.ConfirmedInArr && syncVar.varId != varId) {
@@ -342,26 +342,26 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
   #region InternalClasses
     //==================== ||||||||||| ===
     [Serializable]
-    private abstract class SyncVarInfo {
+    private abstract class SynqVarInfo {
       public readonly string varId;
       public readonly int varIdx;
       public readonly Func<object> Getter;
       public readonly Action<object> Setter;
       public readonly Action<object> onChangedCallback;
-      public readonly SyncBehaviour syncedBehaviour;
+      public readonly SynqBehaviour syncedBehaviour;
       public readonly Type varType;
-      public readonly SyncVarAttribute attribute;
+      public readonly SynqVarAttribute attribute;
       public bool blockLoopySend = false;
 
       public object LastValue { get; set; }
       public bool ConfirmedInArr { get; set; }
       public float LastSyncTime { get; set; }
 
-      protected SyncVarInfo( // constructor
+      protected SynqVarInfo( // constructor
         string varId, int varIdx,      
         Func<object> getter, Action<object> setter,
-        SyncBehaviour monoBehaviour, Type varType, 
-        SyncVarAttribute attribute, object initialValue, 
+        SynqBehaviour monoBehaviour, Type varType, 
+        SynqVarAttribute attribute, object initialValue, 
         Action<object> onChangedCallback
       ) {
         this.varId = varId; this.varIdx = varIdx;
@@ -375,14 +375,14 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
     }
 
     //=========== ||||||||||||| ===
-    private class SyncFieldInfo : SyncVarInfo {
+    private class SynqFieldInfo : SynqVarInfo {
       public readonly FieldInfo FieldInfo;
 
-      public      SyncFieldInfo( // constructor
+      public      SynqFieldInfo( // constructor
         string fieldId, int fieldIdx, 
         Func<object> getter, Action<object> setter,
-        SyncBehaviour monoBehaviour, FieldInfo fieldInfo, 
-        SyncVarAttribute attribute, object initialValue, 
+        SynqBehaviour monoBehaviour, FieldInfo fieldInfo, 
+        SynqVarAttribute attribute, object initialValue, 
         Action<object> onChangedCallback
       ) : base(
         fieldId, fieldIdx, getter, setter, 
@@ -395,14 +395,14 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
     }
 
     //=========== |||||||||||| ===
-    private class SyncPropInfo : SyncVarInfo {
+    private class SynqPropInfo : SynqVarInfo {
       public readonly PropertyInfo PropInfo;
 
-      public      SyncPropInfo( // constructor
+      public      SynqPropInfo( // constructor
         string propId, int propIdx, 
         Func<object> getter, Action<object> setter,
-        SyncBehaviour monoBehaviour, PropertyInfo propInfo, 
-        SyncVarAttribute attribute, object initialValue, 
+        SynqBehaviour monoBehaviour, PropertyInfo propInfo, 
+        SynqVarAttribute attribute, object initialValue, 
         Action<object> onChangedCallback
       ) : base(
         propId, propIdx, getter, setter, 
@@ -417,14 +417,14 @@ public class SyncVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
 
   #region Singleton
     //---------------------- | -------------------------
-    public static SyncVar_Mgr I { // Usage:   SyncVarMgr.I.JsPluginFileName();
+    public static SynqVar_Mgr I { // Usage:   SynqVarMgr.I.JsPluginFileName();
       get { 
         _Instance = Singletoner.EnsureInst(_Instance);
         return _Instance;
       }
       private set { _Instance = value; }
     }
-    private static SyncVar_Mgr _Instance;
+    private static SynqVar_Mgr _Instance;
   #endregion
 }
 

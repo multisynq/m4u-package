@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 public class  Mq_Material_System : Mq_System {
@@ -28,7 +28,7 @@ public class  Mq_Material_System : Mq_System {
     // known to have an interest in has changed.  right now, this system
     // only cares about color.
     if (propName == "color") {
-      float[] rgb = Multisynq.ReadActorFloatArray(go, "color");
+      float[] rgb = Croquet.ReadActorFloatArray(go, "color");
       // as a convention, a red value of -1 means "don't change the color"
       if (rgb[0] == -1) {
         return;

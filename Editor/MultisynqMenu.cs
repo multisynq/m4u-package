@@ -8,7 +8,7 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
-using MultisynqNS;
+using Multisynq;
 
 
 

@@ -1,12 +1,12 @@
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 [AddComponentMenu("Multisynq/Mq_Spatial_Comp")]
 [SelectionBase]
 public class  Mq_Spatial_Comp : Mq_Comp {
   public bool mq_Spatial_Comp;  // Helps tools resolve "missing Script" problems
-  
+
   public override Mq_System croquetSystem { get; set; } = Mq_Spatial_System.Instance;
 
   [Header("Model Transform (read-only)")]

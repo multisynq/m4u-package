@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 public class  Mq_ActorManifest : MonoBehaviour {
   public bool mq_ActorManifest;  // Helps tools resolve "missing Script" problems
