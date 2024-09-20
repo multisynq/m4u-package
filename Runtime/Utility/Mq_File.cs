@@ -13,7 +13,7 @@ static public class Mq_File {
   }
 
   static public string cqSettingsAssetOutputPath = "Assets/Multisynq/Mq_Settings_XXXXXXXX.asset";
-  static public string pkgRootFolder = "Packages/io.croquet.multiplayer";
+  static public string pkgRootFolder = "Packages/io.multisynq.multiplayer";
 
   public static string ewFolder = pkgRootFolder + "/Editor/MultisynqEditorWindow/";
   public static string img_root = pkgRootFolder + "/Editor/MultisynqEditorWindow/Images/";

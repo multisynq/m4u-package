@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Mq_Settings
   m_EditorClassIdentifier: 
   apiKey: <go get one at multisynq.io>
-  appPrefix: io.croquet.worldcore
+  appPrefix: io.multisynq.multiplayer
   preferredPort: 5555
   pathToNode: <needs to be set up>

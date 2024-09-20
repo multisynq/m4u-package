@@ -58,7 +58,7 @@ public class SI_ApiKey: StatusItem {
     var cqStgs = StatusSetMgr.FindProjectCqSettings();
     if (cqStgs == null)  return false;
     ShowVEs(GotoApiKey_Btn, SignUpApi_Btn);
-
+    // check a key:
     // curl -s -X GET -H "X-Croquet-Auth: 1_s77e6tyzkx5m3yryb9305sqxhkdmz65y69oy5s8e" -H "X-Croquet-App: io.croquet.vdom.ploma" -H "X-Croquet-Id: persistentId" -H "X-Croquet-Version: 1.1.0" -H "X-Croquet-Path: https://croquet.io" 'https://api.croquet.io/sign/join?meta=login'
     var apiKey = cqStgs.apiKey;
     bool apiKeyIsGood = (apiKey != null && apiKey != "<go get one at multisynq.io>" && apiKey.Length > 0);
