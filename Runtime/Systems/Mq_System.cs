@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 public abstract class Mq_System : MonoBehaviour {
   public bool         mq_System;

@@ -1,4 +1,4 @@
-namespace MultisynqNS {
+namespace Multisynq {
 
 public class  Mq_Interactable_Comp : Mq_Comp {
   public bool mq_Interactable_Comp;  // Helps tools resolve "missing Script" problems

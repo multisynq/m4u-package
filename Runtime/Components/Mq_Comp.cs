@@ -1,10 +1,10 @@
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 public abstract class Mq_Comp : MonoBehaviour {
   public bool mq_Comp;  // Helps tools resolve "missing Script" problems
-  
+
   public abstract Mq_System croquetSystem  { get; set; }
 
   void Awake() {

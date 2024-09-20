@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 public class Mq_Drivable_System : Mq_System {
 
@@ -21,7 +21,7 @@ public class Mq_Drivable_System : Mq_System {
   }
 
   public override void PawnInitializationComplete(GameObject go) {
-    if (Multisynq.HasActorSentProperty(go, "driver")) {
+    if (Croquet.HasActorSentProperty(go, "driver")) {
       SetDrivenFlag(go);
     }
   }
@@ -37,7 +37,7 @@ public class Mq_Drivable_System : Mq_System {
   private void SetDrivenFlag(GameObject go) {
     Mq_Drivable_Comp drivable = go.GetComponent<Mq_Drivable_Comp>();
     if (drivable != null) {
-      string driver = Multisynq.ReadActorString(go, "driver");
+      string driver = Croquet.ReadActorString(go, "driver");
       drivable.isDrivenByThisView = driver == Mq_Bridge.Instance.croquetViewId;
     }
   }

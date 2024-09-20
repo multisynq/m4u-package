@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using MultisynqNS;
+using Multisynq;
 
 //=============================================================================
 static public class StatusSetMgr {

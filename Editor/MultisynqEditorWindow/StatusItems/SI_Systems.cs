@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using MultisynqNS;
+using Multisynq;
 
 public class SI_Systems: StatusItem {
 

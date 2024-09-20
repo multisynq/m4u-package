@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 [AddComponentMenu("Multisynq/Mq_Material_Comp")]

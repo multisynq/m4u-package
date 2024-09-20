@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 using System.Text.RegularExpressions;
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 // Mq_Builder is a class with only static methods.  Its responsibility is to manage the bundling of

@@ -1,16 +1,16 @@
 using UnityEngine;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
-public class SyncClones : SyncBehaviour {
+public class SynqClones : SynqBehaviour {
   public bool shouldClone = false;
   private static bool isCloning = false;
   private bool hasCloned = false;
 
   void Start() {
-    Debug.Log($"[{Time.frameCount}] SyncInstances Start: {gameObject.name} (netId: {netId}, shouldClone: {shouldClone}, isCloning: {isCloning}, hasCloned: {hasCloned})");
-    SyncClones_Mgr.I.RegisterSyncedBehaviour(this);
+    Debug.Log($"[{Time.frameCount}] SynqInstances Start: {gameObject.name} (netId: {netId}, shouldClone: {shouldClone}, isCloning: {isCloning}, hasCloned: {hasCloned})");
+    SynqClones_Mgr.I.RegisterSynqBehaviour(this);
     
     if (shouldClone && !isCloning && !hasCloned) {
       StartCloning();
@@ -27,15 +27,15 @@ public class SyncClones : SyncBehaviour {
     hasCloned = true;
     Debug.Log($"[{Time.frameCount}] Starting clone process for {gameObject.name} (netId: {netId})");
 
-    var (clone, clonesSb) = SyncClones_Mgr.SyncClone(this);
+    var (clone, clonesSb) = SynqClones_Mgr.SynqClone(this);
 
-    var si = clonesSb as SyncClones ?? clonesSb.GetComponent<SyncClones>();
+    var si = clonesSb as SynqClones ?? clonesSb.GetComponent<SynqClones>();
     si.shouldClone = false;
     si.hasCloned = true;
     si.MakeNewId();
 
     isCloning = false;
-    Debug.Log($"[{Time.frameCount}] SyncInstances: %gn%CLONE%gy%: %ye%{clone.name}%gy%: %mg%{netId}%gy% to %mg%{si.netId}".TagColors());
+    Debug.Log($"[{Time.frameCount}] SynqInstances: %gn%CLONE%gy%: %ye%{clone.name}%gy%: %mg%{netId}%gy% to %mg%{si.netId}".TagColors());
   }
 
 }

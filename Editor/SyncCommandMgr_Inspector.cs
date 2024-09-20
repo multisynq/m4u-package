@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEditor;
-using MultisynqNS;
+using Multisynq;
 
-[CustomEditor(typeof(SyncCommand_Mgr))]
-public class SyncCommandMgrEditor : Editor {
+[CustomEditor(typeof(SynqCommand_Mgr))]
+public class SynqCommandMgrEditor : Editor {
   
   public override void OnInspectorGUI() {
     DrawDefaultInspector();
-    SyncCommand_Mgr manager = (SyncCommand_Mgr)target;
+    SynqCommand_Mgr manager = (SynqCommand_Mgr)target;
     if (GUILayout.Button("Inject JS Plugin Code")) {
       InjectCode(manager);
     }
@@ -19,7 +19,7 @@ public class SyncCommandMgrEditor : Editor {
 
   }
 
-  private void InjectCode(SyncCommand_Mgr manager) {
+  private void InjectCode(SynqCommand_Mgr manager) {
     manager.InjectJsPluginCode();
     AssetDatabase.Refresh();
   }

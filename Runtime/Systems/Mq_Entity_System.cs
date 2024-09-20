@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 /// <summary>
@@ -298,7 +298,7 @@ public class  Mq_Entity_System : Mq_System {
     if (spec.ws.Length != 0) {
       foreach (string propName in spec.ws) {
         string eventName = propName + "Set";
-        Multisynq.Listen(gameObjectToMake, eventName, (string stringyVal) => {
+        Croquet.Listen(gameObjectToMake, eventName, (string stringyVal) => {
           SetPropertyValueString(entity, propName, stringyVal);
         });
       }

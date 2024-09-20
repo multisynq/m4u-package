@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEditor;
-using MultisynqNS;
+using Multisynq;
 
-[CustomEditor(typeof(SyncVar_Mgr))]
-public class CroquetSyncVarMgrEditor : Editor {
+[CustomEditor(typeof(SynqVar_Mgr))]
+public class CroquetSynqVarMgrEditor : Editor {
 
   public override void OnInspectorGUI() {
     DrawDefaultInspector();
-    SyncVar_Mgr manager = (SyncVar_Mgr)target;
+    SynqVar_Mgr manager = (SynqVar_Mgr)target;
     if (GUILayout.Button("Inject JS Plugin Code")) {
       InjectCode(manager);
     }
@@ -18,7 +18,7 @@ public class CroquetSyncVarMgrEditor : Editor {
     }
   }
 
-  private void InjectCode(SyncVar_Mgr manager) {
+  private void InjectCode(SynqVar_Mgr manager) {
     manager.InjectJsPluginCode();
     AssetDatabase.Refresh();
   }

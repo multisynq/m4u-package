@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 #endif
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 
@@ -24,9 +24,9 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
   #if UNITY_EDITOR
     static public Dictionary<System.Type, string[]> codeMatchPatternsByJsInjectorsNeeded = new() {
-      { typeof(SyncVar_Mgr), new[] { @"\[SyncVar\]" } },
-      { typeof(SyncCommand_Mgr), new[] { @"\[SyncCommand\]", @"\[SyncRPC\]" } },
-      { typeof(SyncClones_Mgr), new[] {@"SyncClones_Mgr\.SyncClone\(", @"\[SyncedInstances\]"} },
+      { typeof(SynqVar_Mgr), new[] { @"\[SynqVar\]" } },
+      { typeof(SynqCommand_Mgr), new[] { @"\[SynqCommand\]", @"\[SynqRPC\]" } },
+      { typeof(SynqClones_Mgr), new[] {@"SynqClones_Mgr\.SynqClone\(", @"\[SyncedInstances\]"} },
       // Add more patterns here as needed
     };
   #endif
@@ -127,7 +127,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
       JsPluginReport rpt = new();
 
-      // 0. For each SyncedBehavior
+      // 0. For each SynqBehavior
       // 1. Read the script file
       // 2. Check if it contains a pattern with a needed JsInjector
       // 3. If it does, add the JsInjector to the neededInjectors list
@@ -136,13 +136,13 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
       // 6. Call JsPluginFileName() method for this class
       // 7. Check if the file exists
 
-      // 0. For each SyncedBehavior
-      foreach (var behaviour in FindObjectsOfType<SyncBehaviour>(false)){ // false means we skip inactives
-        // 1. Read the SyncedBehavior script file
+      // 0. For each SynqBehavior
+      foreach (var behaviour in FindObjectsOfType<SynqBehaviour>(false)){ // false means we skip inactives
+        // 1. Read the SynqBehavior script file
         MonoScript sbScript = MonoScript.FromMonoBehaviour(behaviour);
         string sbPath = AssetDatabase.GetAssetPath(sbScript);
         if (sbScript.text == null) {
-          Debug.LogError($"{logPrefix} FindMissingJsPluginTypes() found a SyncBehaviour with no script: {behaviour.name}");
+          Debug.LogError($"{logPrefix} FindMissingJsPluginTypes() found a SynqBehaviour with no script: {behaviour.name}");
           continue;
         }
         // 2. Check if it contains a pattern with a needed JsInjector

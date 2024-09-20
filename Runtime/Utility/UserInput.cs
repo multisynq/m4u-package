@@ -7,7 +7,7 @@ using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.Utilities;
 
 
-namespace MultisynqNS {
+namespace Multisynq {
 
 
 public class UserInput : MonoBehaviour
