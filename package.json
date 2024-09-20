@@ -1,5 +1,5 @@
 {
-    "name":"io.croquet.multiplayer",
+    "name":"io.multisynq.multiplayer",
     "version":"0.9.3",
     "displayName":"Multisynq Multiplayer",
     "description": "Multiplayer framework built using Croquet Synchronized Computation Architecture",

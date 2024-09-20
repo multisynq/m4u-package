@@ -3,7 +3,7 @@
         <ui:VisualElement name="Root" style="flex-direction: column; width: 100%; height: 100%; color: rgb(236, 236, 236);">
             <ui:Foldout text="Welcome" name="Welcome_Foldout" style="width: 100%; height: auto; padding-bottom: 35px;">
                 <ui:VisualElement name="Hero_Ve" style="width: 100%; height: auto;">
-                    <ui:VisualElement name="Logo_Img" style="width: 100%; background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Logo.png?fileID=2800000&amp;guid=2701bc24092814a3f8dd208af8eb1600&amp;type=3#Multisynq_Logo&apos;); height: 100%; -unity-background-scale-mode: scale-to-fit; display: flex;" />
+                    <ui:VisualElement name="Logo_Img" style="width: 100%; background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Logo.png?fileID=2800000&amp;guid=2701bc24092814a3f8dd208af8eb1600&amp;type=3#Multisynq_Logo&apos;); height: 100%; -unity-background-scale-mode: scale-to-fit; display: flex;" />
                     <ui:VisualElement name="BlurbLbl_Ve">
                         <ui:Label text="Thanks for joining this community of connected visionaries engaged in bringing people closer together as peers without ominous servers." display-tooltip-when-elided="true" name="Blurb_Label" style="white-space: normal; font-size: 14px; margin-top: 10px; align-items: auto; -unity-text-align: middle-center; justify-content: flex-start; -unity-paragraph-spacing: 0; letter-spacing: 2px; word-spacing: 0;" />
                         <ui:Label text="Join us to help synq up the whole world." display-tooltip-when-elided="true" name="Blurb_Label" style="white-space: normal; font-size: 16px; margin-top: 9px; align-items: auto; -unity-text-align: middle-center; justify-content: flex-start; color: rgb(0, 106, 255); -unity-font-style: bold; margin-bottom: 12px;" />
@@ -16,7 +16,7 @@
                         <ui:Button text="Check If Ready" display-tooltip-when-elided="true" name="CheckIfReady_Btn" style="width: 72%; align-items: flex-start; justify-content: center; height: 26px;" />
                     </ui:VisualElement>
                     <ui:VisualElement name="ReadyStatus_Lay" style="width: 100%; height: 75px; flex-direction: row; margin-bottom: 0; justify-content: center;">
-                        <ui:VisualElement name="Ready_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="Ready_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px; height: 51px;">
                             <ui:Label text="## You are &lt;b&gt;&lt;size=+1&gt;&lt;color=#77ff77&gt;Ready to &lt;/color&gt;&lt;color=#006AFF&gt;Synq&lt;/color&gt;&lt;/b&gt;&lt;/size&gt;&lt;color=#888&gt;      All green lights below." display-tooltip-when-elided="true" name="Ready_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 0; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -30,7 +30,7 @@
             <ui:Foldout text="Help Getting Set Up" name="SetupHelp_Foldout" style="width: 100%;">
                 <ui:VisualElement name="SetupRoot" style="width: 100%; height: 100%;">
                     <ui:VisualElement name="HaveSettings_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="Settings_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="Settings_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="You need to add Settings" display-tooltip-when-elided="true" name="Settings_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -41,7 +41,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="NodeStatus_Lay" style="width: 100%; height: 128%; flex-direction: row; flex-wrap: wrap; overflow: hidden;">
-                        <ui:VisualElement name="Node_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="Node_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px; width: 90%; height: 101px;">
                             <ui:Label text=" &lt;b&gt;Node&lt;/b&gt; needs your help getting set up." display-tooltip-when-elided="true" name="Node_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -53,7 +53,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="ApiKeyStatus_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="ApiKey_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="ApiKey_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Let&apos;s get you a free &lt;b&gt;API Key&lt;/b&gt;. It&apos;s easy." display-tooltip-when-elided="true" name="ApiKey_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -64,7 +64,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="HaveBridge_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="HaveBridge_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="HaveBridge_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Scene needs a Bridge Object" display-tooltip-when-elided="true" name="HaveBridge_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -75,7 +75,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="HasCqSys_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="HasCqSys_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="HasCqSys_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Scene Has All Croquet Systems" display-tooltip-when-elided="true" name="HasCqSys_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -86,7 +86,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="BridgeHasSettings_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="BridgeHasSettings_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="BridgeHasSettings_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Bridge Component needs Settings" display-tooltip-when-elided="true" name="BridgeHasSettings_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -97,7 +97,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="JSBuildTools_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="JSBuildTools_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JSBuildTools_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
                             <ui:Label text="JS Build Tools" display-tooltip-when-elided="true" name="JSBuildTools_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -108,7 +108,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="HasAppJs_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="HasAppJs_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="HasAppJs_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Has JS App Code" display-tooltip-when-elided="true" name="HasAppJs_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0; height: 100px;">
@@ -123,7 +123,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="JSBuildStatus_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="JSBuild_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JSBuild_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Networking JavaScript needs to build" display-tooltip-when-elided="true" name="JSBuild_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -138,7 +138,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="BuiltOutput_Lay" style="width: 100%; height: 100%; flex-direction: row;">
-                        <ui:VisualElement name="BuiltOutput_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="BuiltOutput_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px;">
                             <ui:Label text="Networking JavaScript needs to build" display-tooltip-when-elided="true" name="BuiltOutput_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -153,7 +153,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="JbtVersionMatch_Lay" style="width: 100%; height: 100%; flex-direction: row; display: flex;">
-                        <ui:VisualElement name="JbtVersionMatch_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JbtVersionMatch_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
                             <ui:Label text="Version Match - Built Output &amp; JS Build Tools" display-tooltip-when-elided="true" name="JbtVersionMatch_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -164,7 +164,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="JsPlugins_Lay" style="width: 100%; height: 100%; flex-direction: row; display: flex;">
-                        <ui:VisualElement name="JsPlugins_Status_Img" style="background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
+                        <ui:VisualElement name="JsPlugins_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="JsPlugins_Lay" style="margin-left: 5px;">
                             <ui:Label text="JS-C# Proxy Plugins" display-tooltip-when-elided="true" name="JsPlugins_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="JsPlugins_Btn_Lay" style="flex-direction: row; margin-left: 0;">
@@ -178,7 +178,7 @@
             </ui:Foldout>
             <ui:Foldout text="About" name="About_Foldout" value="true" style="width: 100%; height: 265px; margin-top: 25px;">
                 <ui:VisualElement name="Hero_Ve" style="width: 100%; height: 200px;">
-                    <ui:VisualElement name="Logo_Img" style="width: auto; background-image: url(&apos;project://database/Packages/io.croquet.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Icon_Blue.png?fileID=2800000&amp;guid=c69ea545bbe0b4fb88fbb78c14c55fa6&amp;type=3#Multisynq_Icon_Blue&apos;); height: 51px; -unity-background-scale-mode: scale-to-fit; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; justify-content: center;" />
+                    <ui:VisualElement name="Logo_Img" style="width: auto; background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/Multisynq_Icon_Blue.png?fileID=2800000&amp;guid=c69ea545bbe0b4fb88fbb78c14c55fa6&amp;type=3#Multisynq_Icon_Blue&apos;); height: 51px; -unity-background-scale-mode: scale-to-fit; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; justify-content: center;" />
                     <ui:VisualElement name="BlurbLbl_Ve">
                         <ui:Label text="“I think Multisynq is the best thing I&apos;ve seen in computing over the last 10 or 15 years. It solves some important and massive problems in extremely elegant ways. &lt;color=#00c0ff&gt;It really could become a new kind of operating system for the whole Internet.&lt;/color&gt;”\n      &lt;b&gt;- Alan Kay&lt;/b&gt;\n&lt;size=-3&gt;Father of the Personal Computer&lt;/size&gt;" display-tooltip-when-elided="true" name="Blurb_Label" style="white-space: normal; font-size: 14px; margin-top: 25px; align-items: auto; -unity-text-align: middle-center; justify-content: flex-start; -unity-paragraph-spacing: 0; letter-spacing: 2px; word-spacing: 0; padding-left: 40px; padding-right: 40px;" />
                         <ui:Label text="Join us to help synq up the whole world." display-tooltip-when-elided="true" name="Blurb_Label" style="white-space: normal; font-size: 16px; margin-top: 24px; align-items: auto; -unity-text-align: middle-center; justify-content: flex-start; color: rgb(0, 106, 255); -unity-font-style: bold;" />
