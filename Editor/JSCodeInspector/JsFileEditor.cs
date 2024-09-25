@@ -1,130 +1,125 @@
-using System;
-using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using UnityEngine.UIElements;
 using System.IO;
 using System.Text.RegularExpressions;
-using UnityEditor;
-using UnityEngine;
-
+using System.Collections.Generic;
+using System;
 [CustomEditor(typeof(DefaultAsset))]
-public class JsFileEditor : Editor {
-  private Vector2 scrollPosition;
-  private GUIStyle richTextStyle;
+public class JsFileEditorInspector : Editor {
+  private VisualElement root;
+  private ScrollView codeScrollView;
+  private Label codeLabel;
+  private SliderInt fontSizeSlider;
+  static public int fontSize = 16;
   private string cachedCode;
-  private Font monoSpaceFont;
-  private int fontSize = 16; // Default font size
 
-  public override void OnInspectorGUI() {
-    var path = AssetDatabase.GetAssetPath(target);
-    string[] validExtensions = { ".js", ".ts", ".jsx", ".tsx", ".jslib" };
+  public override VisualElement CreateInspectorGUI() {
+    root = new VisualElement();
 
-    if (Array.Exists(validExtensions, ext => path.ToLower().EndsWith(ext))) {
-      CodeInspectorGUI();
+    // Load UXML
+    var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.multisynq.multiplayer/Editor/JSCodeInspector/JsFileEditorInspector.uxml");
+    visualTree.CloneTree(root);
+
+    // Query elements
+    codeScrollView = root.Q<ScrollView>("code-scroll-view");
+    codeLabel = root.Q<Label>("code-label");
+    fontSizeSlider = root.Q<SliderInt>("font-size-slider");
+
+    // Set up font size slider
+    fontSizeSlider.value = fontSize;
+    fontSizeSlider.RegisterValueChangedCallback(evt => UpdateFontSize(evt.newValue));
+
+    // Load and display code
+    string path = AssetDatabase.GetAssetPath(target);
+    if (IsValidFileType(path)) {
+      LoadAndDisplayCode(path);
     }
     else {
-      base.OnInspectorGUI();
+      codeLabel.text = "Not a valid file type for this inspector.";
     }
+
+    // Register callback for layout changes
+    root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+
+    // Set initial size
+    EditorApplication.delayCall += () => FitToInspector();
+
+    return root;
   }
 
-  private void CodeInspectorGUI() {
-
-    // Controls outside the scroll view
-    EditorGUI.BeginChangeCheck();
-    fontSize = EditorGUILayout.IntSlider("Font Size", fontSize, 8, 36);
-    if (EditorGUI.EndChangeCheck()) {
-      richTextStyle = null;
-      Repaint();
-    }
-
-    EditorGUILayout.LabelField($"Current Font Size: {fontSize}");
-
-    if (richTextStyle == null) {
-      richTextStyle = new GUIStyle(EditorStyles.textArea) {
-        richText = true,
-        wordWrap = false,
-        fontSize = fontSize,
-        font = LoadCustomFont()
-      };
-    }
-
-    if (target == null) {
-      EditorGUILayout.LabelField("Target is null");
-      return;
-    }
-
-    string path = AssetDatabase.GetAssetPath(target);
-
-    if (!File.Exists(path)) {
-      EditorGUILayout.LabelField("File not found at path: " + path);
-      return;
-    }
-
-    // Load and highlight code if needed
+  private void LoadAndDisplayCode(string path) {
     if (string.IsNullOrEmpty(cachedCode)) {
       cachedCode = ApplySyntaxHighlighting(File.ReadAllText(path));
     }
 
-    // Scrollable code area
-    scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
-
-    float textWidth = richTextStyle.CalcSize(new GUIContent(cachedCode)).x;
-    float textHeight = richTextStyle.CalcHeight(new GUIContent(cachedCode), textWidth);
-    Rect viewRect = GUILayoutUtility.GetRect(textWidth, textHeight);
-
-    EditorGUI.DrawRect(viewRect, Color.black);
-    cachedCode = EditorGUI.TextArea(viewRect, cachedCode, richTextStyle);
-
-    EditorGUILayout.EndScrollView();
+    codeLabel.text = cachedCode;
+    UpdateFontSize(fontSizeSlider.value);
   }
 
-  private Font LoadCustomFont() {
-    if (monoSpaceFont != null) return monoSpaceFont;
+  private void UpdateFontSize(int _fontSize) {
+    codeLabel.style.fontSize = _fontSize;
+    fontSize = _fontSize;
+    FitToInspector();
+  }
 
-    string[] potentialPaths = new string[] {
-      "Packages/io.multisynq.multiplayer/Editor/JSCodeInspector/RobotoMono-Regular.ttf",
-      "Packages/io.multisynq.multiplayer/Editor/JSCodeInspector/SpaceMono-Regular.ttf",
-      "Assets/Fonts/SpaceMono-Regular.ttf",
-      "Assets/SpaceMono-Regular.ttf"
-    };
+  private void OnGeometryChanged(GeometryChangedEvent evt) {
+    FitToInspector();
+  }
 
-    foreach (string path in potentialPaths) {
-      monoSpaceFont = AssetDatabase.LoadAssetAtPath<Font>(path);
-      if (monoSpaceFont != null) {
-        Debug.Log($"Loaded custom font from: {path}");
-        return monoSpaceFont;
-      }
+  private void FitToInspector() {
+    if (root == null) return;
+
+    // Get the current inspector window
+    EditorWindow inspectorWindow = EditorWindow.focusedWindow;
+    if (inspectorWindow == null || inspectorWindow.GetType().Name != "InspectorWindow") {
+      inspectorWindow = EditorWindow.GetWindow(typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow"));
     }
 
-    Debug.LogWarning("Custom font not found. Falling back to default font.");
-    return EditorStyles.label.font;  // Fallback to default font
+    // Calculate available height
+    float availableHeight = inspectorWindow.position.height - EditorGUIUtility.singleLineHeight * 9; // Subtracting space for the font size slider and some padding
+
+    // Set the height of the scroll view
+    codeScrollView.style.height = availableHeight;
+
+    // Set the width of the code label to enable horizontal scrolling if needed
+    codeLabel.style.width = new StyleLength(StyleKeyword.Auto);
+    codeLabel.style.flexShrink = 0;
   }
 
+  private bool IsValidFileType(string path) {
+    string[] validExtensions = { ".js", ".ts", ".jsx", ".tsx", ".jslib" };
+    return System.Array.Exists(validExtensions, ext => path.ToLower().EndsWith(ext));
+  }
+  
   private string ApplySyntaxHighlighting(string code) {
-    string ColorWrap(string s, string color) => $"<color={color}>{s}</color>";
-    string Yellow(string s) => ColorWrap(s, "#FFD702");
-    string Tan(string s) => ColorWrap(s, "#DEDEAC");
-    string Green(string s) => ColorWrap(s, "#6B9955");
-    string Blue(string s) => ColorWrap(s, "#569CD6");
-    string Orange(string s) => ColorWrap(s, "#FFA500");
-    string White(string s) => ColorWrap(s, "white");
-    string Mag(string s) => ColorWrap(s, "#DB70D6");
-    string Cyan(string s) => ColorWrap(s, "#4EC9B0");
+  string ColorWrap(string s, string color) => $"<color={color}>{s}</color>";
+  string Yellow(string s) => ColorWrap(s, "#FFD702");
+  string Tan(string s) => ColorWrap(s, "#E2E2AC");
+  string Green(string s) => ColorWrap(s, "#6B9955");
+  string Blue(string s) => ColorWrap(s, "#569CD6");
+  string Orange(string s) => ColorWrap(s, "#FFA500");
+  string White(string s) => ColorWrap(s, "white");
+  string Mag(string s) => ColorWrap(s, "#DB70D6");
+  string Cyan(string s) => ColorWrap(s, "#4EC9B0");
 
-    code = Regex.Replace(code, @"color", "c0l0r");
-    code = Regex.Replace(code, @"(\=)", m => Mag(m.Value));
-    code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
-    code = Regex.Replace(code, @"(\(|\))", m => Mag(m.Value));
-    code = Regex.Replace(code, @"(\{|\})", m => Yellow(m.Value));
-    code = Regex.Replace(code, @"(\;)", m => Blue(m.Value));
-    code = Regex.Replace(code, @"(\,)", m => White(m.Value));
-    code = Regex.Replace(code, @"(//.*)", m => Green(m.Value));
+  code = Regex.Replace(code, @"color", "c0l0r"); // hide the word "color" from the syntax highlighter
+  code = Regex.Replace(code, @"(\=)", m => Mag(m.Value));
+  code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
+  code = Regex.Replace(code, @"(\(|\))", m => Mag(m.Value));
+  code = Regex.Replace(code, @"(\{|\})", m => Yellow(m.Value));
+  code = Regex.Replace(code, @"(\;)", m => Blue(m.Value));
+  code = Regex.Replace(code, @"(\,)", m => White(m.Value));
+  code = Regex.Replace(code, @"(//.*)", m => Green(m.Value));
+  code = Regex.Replace(code, "c0l0r", "color"); // restore the word "color"
 
-    var keywordColors = new Dictionary<string, Func<string, string>> { { @"\bclass\s+(\w+)\b", Cyan }, { @"\b(if|else|for|while|return|class)\b", Orange }, { @"\b(from|import|export)\b", Mag }, { @"\b(function|var|let|const|extends)\b", Blue }
+  var keywordColors = new Dictionary<string, Func<string, string>> { { @"\bclass\s+(\w+)\b", Cyan }, { @"\b(if|else|for|while|return|class)\b", Orange }, { @"\b(from|import|export)\b", Mag }, { @"\b(function|var|let|const|extends)\b", Blue }
   };
 
-    foreach (var kvp in keywordColors) {
+  foreach (var kvp in keywordColors) {
       code = Regex.Replace(code, kvp.Key, m => kvp.Value(m.Value));
-    }
+  }
 
-    return White(code);
+  return White(code);
   }
 }
