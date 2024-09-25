@@ -95,22 +95,22 @@ public class JsFileEditorInspector : Editor {
   private string ApplySyntaxHighlighting(string code) {
   string ColorWrap(string s, string color) => $"<color={color}>{s}</color>";
   string Yellow(string s) => ColorWrap(s, "#FFD702");
-  string Tan(string s) => ColorWrap(s, "#E2E2AC");
-  string Green(string s) => ColorWrap(s, "#6B9955");
-  string Blue(string s) => ColorWrap(s, "#569CD6");
+  string Tan(   string s) => ColorWrap(s, "#E8E890");
+  string Green( string s) => ColorWrap(s, "#6B9955");
+  string Blue(  string s) => ColorWrap(s, "#569CD6");
   string Orange(string s) => ColorWrap(s, "#FFA500");
-  string White(string s) => ColorWrap(s, "white");
-  string Mag(string s) => ColorWrap(s, "#DB70D6");
-  string Cyan(string s) => ColorWrap(s, "#4EC9B0");
+  string White( string s) => ColorWrap(s, "white");
+  string Mag(   string s) => ColorWrap(s, "#DB70D6");
+  string Cyan(  string s) => ColorWrap(s, "#4EC9B0");
 
   code = Regex.Replace(code, @"color", "c0l0r"); // hide the word "color" from the syntax highlighter
-  code = Regex.Replace(code, @"(\=)", m => Mag(m.Value));
+  code = Regex.Replace(code, @"(\=)",            m => Mag(m.Value));
   code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
-  code = Regex.Replace(code, @"(\(|\))", m => Mag(m.Value));
-  code = Regex.Replace(code, @"(\{|\})", m => Yellow(m.Value));
-  code = Regex.Replace(code, @"(\;)", m => Blue(m.Value));
-  code = Regex.Replace(code, @"(\,)", m => White(m.Value));
-  code = Regex.Replace(code, @"(//.*)", m => Green(m.Value));
+  code = Regex.Replace(code, @"(\(|\))",         m => Mag(m.Value));
+  code = Regex.Replace(code, @"(\{|\})",         m => Yellow(m.Value));
+  code = Regex.Replace(code, @"(\;)",            m => Blue(m.Value));
+  code = Regex.Replace(code, @"(\,)",            m => White(m.Value));
+  code = Regex.Replace(code, @"(//.*)",          m => Green(m.Value));
   code = Regex.Replace(code, "c0l0r", "color"); // restore the word "color"
 
   var keywordColors = new Dictionary<string, Func<string, string>> { { @"\bclass\s+(\w+)\b", Cyan }, { @"\b(if|else|for|while|return|class)\b", Orange }, { @"\b(from|import|export)\b", Mag }, { @"\b(function|var|let|const|extends)\b", Blue }
