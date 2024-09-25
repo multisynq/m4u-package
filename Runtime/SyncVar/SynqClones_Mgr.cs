@@ -1,57 +1,68 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using PlasticGui.WorkspaceWindow;
 using UnityEngine;
 
 namespace Multisynq {
 
-
+//========== |||||||||||||| ==================================
 public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
-
-  private Dictionary<int, SynqBehaviour> sbsByNetId = new();
-
+  #region Fields
+    private Dictionary<int, SynqBehaviour> sbsByNetId = new();
+    new static public string[] CodeMatchPatterns() => new[] {@"SynqClones_Mgr.*SynqClone", @"\[SyncedInstances\]"}; 
+  
+  #endregion
+  //------------------ ||||| ----------------------
   override public void Start() {
     base.Start();
-    Croquet.Subscribe("SynqClone", "tellToClone", OnTellToInstance);
+    Croquet.Subscribe("SynqClone", "everybodyClone", OnTellToClone);
   }
+  #region JavaScript
+    //-------------------------- ||||||||||||||| -------------------------
+    public override JsPluginCode GetJsPluginCode() {
+      return new(
+        klassName: "SynqClones_Mgr_Model",
+        klassCode: @"
+          import { Model, View } from '@croquet/croquet';
 
-  public override string JsPluginFileName() {
-    return "plugins/SynqClones_Mgr_Model.js";
-  }
+          export class SynqClones_Mgr_Model extends Model {
+            init(options) {
+              super.init(options);
+              this.subscribe('SynqClone', 'pleaseClone', this.onPleaseClone);
+              console.log('<color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.init()</color>');
+            }
+            
+            onPleaseClone(data) {
+              console.log('<color=blue>SynqClone</color> <color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.onAskForInstance()</color><color=cyan>' + data + '</color>');
+              this.publish('SynqClone', 'everybodyClone', data);
+            }
+          }
+          SynqClones_Mgr_Model.register('SynqClones_Mgr_Model');
 
-  public override string JsPluginCode() {
-    return @"
-      import { Model, View } from '@croquet/croquet';
-
-      export class SynqClones_Mgr_Model extends Model {
-        init(options) {
-          super.init(options);
-          this.subscribe('SynqClone', 'askToClone', this.onAskForInstance);
-          console.log('<color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.init()</color>');
+          export class SynqClones_Mgr_View extends View {
+            constructor(model) {
+              super(model);
+              this.model = model;
+            }
+          }
+        ".LessIndent(),
+        // initModelCode: @"SynqClones_Mgr_Model.create({})"
+        taggedInits: new CodeBlockForATag[] {
+          new CodeBlockForATag( "ModelInits", @"SynqClones_Mgr_Model.create({})"  ),   
+          new CodeBlockForATag( "ViewInits",  @"SynqClones_Mgr_View.create(this)" )
         }
-        
-        onAskForInstance(data) {
-          console.log('<color=blue>SynqClone</color> <color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.onAskForInstance()</color><color=cyan>' + data + '</color>');
-          this.publish('SynqClone', 'tellToClone', data);
-        }
-      }
-      SynqClones_Mgr_Model.register('SynqClones_Mgr_Model');
+      );
+    }
+  #endregion
 
-      export class SynqClones_Mgr_View extends View {
-        constructor(model) {
-          super(model);
-          this.model = model;
-        }
-      }
-    ".LessIndent();
-  }
-
-  //----------------------------------------- ||||||||||||||||| ----------------------
+  //--------------------------------------- ||||||||| ----------------------
   static public (GameObject, SynqBehaviour) SynqClone(GameObject gob) {
     var sb = gob.EnsureComp<SynqBehaviour>();
     if (sb.netId == 0) sb.MakeNewId();
     return SynqClone(sb);
   }
-  //----------------------------------------- ||||||||||||||||| ----------------------
+  //--------------------------------------- ||||||||| ----------------------
   static public (GameObject, SynqBehaviour) SynqClone(SynqBehaviour sb=null) {
     int      cloneMeNetId = sb.netId;
     GameObject      clone = Instantiate(sb.gameObject);
@@ -63,18 +74,18 @@ public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
     Vector3    scale    = clone.transform.localScale;
 
     string msg = $"{cloneMeNetId}|{madeOneNetId}|{position.x},{position.y},{position.z}|{rotation.x},{rotation.y},{rotation.z},{rotation.w}|{scale.x},{scale.y},{scale.z}";
-    Croquet.Publish("SynqClone", "askToClone", msg);
-    Debug.Log($"SynqClone, askToClone, %cy%{msg}".TagColors());
+    Croquet.Publish("SynqClone", "pleaseClone", msg);
+    Debug.Log($"SynqClone, pleaseClone, %cy%{msg}".TagColors());
     return (clone, newSb);
   }
-  //---------- |||||||||||||||| ----------------------
-  private void OnTellToInstance(string msg) {
+  //---------- ||||||||||||| ----------------------
+  private void OnTellToClone(string msg) {
     string[] parts = msg.Split('|');
     if (parts.Length != 5) {
       Debug.LogError($"SynqInstance_Mgr.OnTellToInstance() Invalid message: {msg}");
       return;
     }
-    Debug.Log($"SynqClone, tellToClone, %cy%{msg}".TagColors());
+    Debug.Log($"SynqClone, everybodyClone, %cy%{msg}".TagColors());
 
     int cloneMeNetId    = int.Parse(      parts[0]);
     int madeOneNetId    = int.Parse(      parts[1]);
@@ -98,12 +109,11 @@ public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
       RegisterPrefab(instance);
 
       Debug.Log($"Remotely instantiated object. cloneMeNetId: {cloneMeNetId}, madeOneNetId: {madeOneNetId}");
-    }
-    else {
+    } else {
       Debug.LogError($"Prefab not found for cloneMeNetId: {cloneMeNetId}");
     }
   }
-  //--------- |||||||||||||| ----------------------
+  //--------- ||||||||||||||||||||| ----------------------
   public void RegisterSynqBehaviour(SynqBehaviour sb) {
     RegisterPrefab(sb.gameObject);
   }
@@ -118,12 +128,11 @@ public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
     }
   }
   
-  //--------------------- |||||||||||||||||||||||||||||||||| ----------------------
+  //------------------- |||||||||||||||||||||||||||||||| ----------------------
   private SynqBehaviour FindInDictOrOnOtherSynqBehaviour( int netId) {
     if (sbsByNetId.TryGetValue(netId, out SynqBehaviour sb)) {
       return sb;
-    }
-    else {
+    } else {
       return FindObjectsOfType<SynqBehaviour>().FirstOrDefault(sb => sb.netId == netId);
     }
   }
@@ -141,15 +150,11 @@ public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
   }
 
   #region Singleton
-    public static SynqClones_Mgr I {
-      get {
-        _Instance = Singletoner.EnsureInst(_Instance);
-        return _Instance;
-      }
-      private set { _Instance = value; }
-    }
     private static SynqClones_Mgr _Instance;
+    public  static SynqClones_Mgr I { // Usage:   SynqClones_Mgr.I.JsPluginFileName();
+      get { return _Instance = Singletoner.EnsureInst(_Instance); }
+    }
   #endregion
-}
+    }
 
 }

@@ -11,7 +11,7 @@ public class SynqCommandMgrEditor : Editor {
     if (GUILayout.Button("Inject JS Plugin Code")) {
       InjectCode(manager);
     }
-    if (GUILayout.Button("Select Plugins Folder")) {
+    if (GUILayout.Button("Select JS Plugins Folder")) {
       var plFldr = Mq_File.AppFolder().DeeperFolder("plugins").EnsureExists();
       if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
       else                            plFldr.SelectAndPing();

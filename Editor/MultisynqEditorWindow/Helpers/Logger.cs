@@ -25,13 +25,13 @@ static public class Logger {
     UnityEngine.Debug.Log($"<color={c1}>{s1} [ <color={c2}>{message}</color> ] {s2}</color>{suffix}");
   }
 
-  static public void MethodHeader() {
-    Header(GetClassAndMethod(), spacer, spacer);
+  static public void MethodHeader(int depth=4) {
+    Header(GetClassAndMethod(depth), spacer, spacer);
   }
-  static public void MethodHeaderAndOpenUrl() {
+  static public void MethodHeaderAndOpenUrl(int depth=0) {
     var shortNm = Regex.Replace(GetMethodName(), @"^Clk_(.+)_Docs$", "$1");
     string url = $"{docsRootUrl}{shortNm}";
-    Header(GetClassAndMethod(), spacer, spacer, null, null, "\n   " + url);
+    Header(GetClassAndMethod(depth), spacer, spacer, null, null, "\n   " + url);
     Application.OpenURL(url);
   }
   
@@ -53,12 +53,12 @@ static public class Logger {
   }
 
   static public string GetMethodName(int depth = 2) {
-    MethodBase methodBase = GetMethod();
+    MethodBase methodBase = GetMethod(depth);
     return methodBase.Name;
   }
 
   static public string GetClassAndMethod(int depth = 2) {
-    MethodBase methodBase = GetMethod();
+    MethodBase methodBase = GetMethod(depth);
     return $"{methodBase.ReflectedType.Name}.{methodBase.Name}";
   }
 }

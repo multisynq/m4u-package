@@ -37,13 +37,15 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
     static char msgSeparator = '|';
     static public string svLogPrefix = "<color=#5555FF>[SynqVar]</color> ";
     static bool dbg = true;
+    new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVar\]"};
   #endregion
-
+  
   #region JavaScript
     //-------------------- |||||||||||||||| -------------------------
-    override public string JsPluginFileName() { return "plugins/SynqVar_Mgr_Model.js"; }
-    override public string JsPluginCode() {
-      return @"
+      public override JsPluginCode GetJsPluginCode() {
+    return new(
+      klassName: "SynqVar_Mgr_Model",
+      klassCode: @"
         import { Model, View } from '@croquet/croquet';
         //---------- ||||||||||||||||| -------------------
         export class SynqVar_Mgr_Model extends Model {
@@ -52,14 +54,14 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
 
           init(options) {
             super.init(options)
-            this.subscribe('SynqVar', 'setVar', this.syncVarChange) // sent from Unity to JS
+            this.subscribe('SynqVar', 'pleaseSetVar', this.onPleaseSetVar) // sent from Unity to JS
             console.log('### <color=magenta>SynqVar_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>')
           }
 
-          syncVarChange(msg) {
+          onPleaseSetVar(msg) {
             const varIdx = parseInt(msg.split('|')[0])
             this.varValuesAsMessages[varIdx] = msg // store the value in the array at the index specified in the message
-            this.publish('SynqVar', 'varChanged', msg) // sent from JS to Unity
+            this.publish('SynqVar', 'everybodySetVar', msg) // sent from JS to Unity
           }
         }
         SynqVar_Mgr_Model.register('SynqVar_Mgr_Model')
@@ -73,14 +75,21 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
             const messages = model.varValuesAsMessages.map( (msg) => (
               `croquetPub\x01SynqVar\x01varChanged\x01${msg}`
             ))
-            globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SynqVar', 'varChanged', msg)
+            globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SynqVar', 'everybodySetVar', msg)
           }
         }
-      ".LessIndent();
-    }
+      ".LessIndent(),
+      
+      taggedInits: new CodeBlockForATag[] {
+        // new CodeBlockForATag( "ImportStatements", @"import {SynqVar_Mgr_Model} from './SynqVar_Mgr_Model'" ),
+        new CodeBlockForATag( "ModelInits", @"SynqVar_Mgr_Model.create({})",77  ),   
+        new CodeBlockForATag( "ViewInits",  @"SynqVar_Mgr_View.create(this)" )
+      }
+    );
+  }
     //------------------ |||||||||||||||||| -------------------------
     override public void InjectJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
-      if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
+      // if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
       base.InjectJsPluginCode();
     }
   #endregion
@@ -90,7 +99,7 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
     override public void Start() { // SynqVar_Mgr.Start()
       base.Start();
 
-      Croquet.Subscribe("SynqVar", "varChanged", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+      Croquet.Subscribe("SynqVar", "everybodySetVar", ReceiveAsMsg); // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
       #if UNITY_EDITOR
         AttributeHelper.CheckForBadAttrParents<SynqBehaviour, SynqVarAttribute>();
@@ -240,7 +249,7 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
 
-      Croquet.Publish("SynqVar", "setVar", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
+      Croquet.Publish("SynqVar", "pleaseSetVar", msg);  // <<<< Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq Cq
 
     }
 
@@ -416,15 +425,10 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
   #endregion
 
   #region Singleton
-    //---------------------- | -------------------------
-    public static SynqVar_Mgr I { // Usage:   SynqVarMgr.I.JsPluginFileName();
-      get { 
-        _Instance = Singletoner.EnsureInst(_Instance);
-        return _Instance;
-      }
-      private set { _Instance = value; }
-    }
     private static SynqVar_Mgr _Instance;
+    public  static SynqVar_Mgr I { // Usage:   SynqVarMgr.I.JsPluginFileName();
+      get { return _Instance = Singletoner.EnsureInst(_Instance); }
+    }
   #endregion
 }
 

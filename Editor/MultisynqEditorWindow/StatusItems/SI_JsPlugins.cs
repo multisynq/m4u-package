@@ -8,6 +8,7 @@ public class SI_JsPlugins: StatusItem {
   Button AddJsPlugins_Btn;
   Button GotoJsPlugins_Btn;
   Button JsPlugins_Docs_Btn;
+  Button ForceJsPlugins_Btn;
 
   public SI_JsPlugins(MultisynqBuildAssistantEW parent = null) : base(parent) { }
 
@@ -17,6 +18,7 @@ public class SI_JsPlugins: StatusItem {
     SetupButton( "AddJsPlugins_Btn",      ref AddJsPlugins_Btn,   Clk_AddJsPlugins_Btn);
     SetupButton( "GotoJsPlugins_Btn",     ref GotoJsPlugins_Btn,  Clk_GotoJsPlugins);
     SetupButton( "JsPlugins_Docs_Btn",    ref JsPlugins_Docs_Btn, Clk_JsPlugins_Docs);
+    SetupButton( "ForceJsPlugins_Btn",    ref ForceJsPlugins_Btn, Clk_ForceJsPlugins);
   }
 
   override public void InitText() {
@@ -47,12 +49,20 @@ public class SI_JsPlugins: StatusItem {
   }
 
   private void Clk_GotoJsPlugins() {  // JS PLUGINS  ------------- Click
-    Logger.MethodHeader();
+    Logger.MethodHeader(4);
     // CqFile.AppFolder().DeeperFolder("plugins").EnsureExists().SelectAndPing();
     var plFldr = Mq_File.AppFolder().DeeperFolder("plugins");
     if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
     else                            plFldr.SelectAndPing();
     Notify("Selected in Project.\nSee Inspector.");
+  }
+
+  private void Clk_ForceJsPlugins() {  // JS PLUGINS  ------------- Click
+    Logger.MethodHeader(4);
+    if (EditorUtility.DisplayDialog("Force JS Plugins?", "Are you sure you want to force JS Plugins?\nThis will overwrite any existing JS Plugins.", "Yes", "No")) {
+      JsPluginInjecting_Behaviour.InjectAllJsPlugins();
+      Notify("Forced JS Plugins.");
+    }
   }
 
   private void Clk_JsPlugins_Docs() {
@@ -67,7 +77,7 @@ public class SI_JsPlugins: StatusItem {
     bool amMissingPlugins = JsPluginInjecting_Behaviour.LogJsPluginReport(pluginRpt);
     StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
     SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
-    ShowVEs(GotoJsPlugins_Btn);
+    ShowVEs(GotoJsPlugins_Btn, ForceJsPlugins_Btn);
     return amMissingPlugins;
   }
 

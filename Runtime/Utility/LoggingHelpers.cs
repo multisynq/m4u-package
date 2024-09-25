@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using System;
 
-static class TextFormatting {
+static class LoggingHelpers {
     // Reference for Unity text colors: https://docs.unity3d.com/Manual/StyledText.html
 
     public static Dictionary<string, string> unityEditorColorMap = new Dictionary<string, string>() {
@@ -94,8 +93,8 @@ static class TextFormatting {
     // $"%cy%FunctionName()%wh%.%yel%paramName=%blu%{paramValue}%wh%.%yel%anotherParam=%blu%{anotherValue}"
     static public string TagColors(this string inputText) {
         inputText = " " + inputText;
-        var colorMap = Application.isEditor ? TextFormatting.unityEditorColorMap : TextFormatting.consoleColorEscapeCodes;
-        var colorEndTag = Application.isEditor ? "</color>" : TextFormatting.consoleColorEscapeCodes["reset"];
+        var colorMap = Application.isEditor ? LoggingHelpers.unityEditorColorMap : LoggingHelpers.consoleColorEscapeCodes;
+        var colorEndTag = Application.isEditor ? "</color>" : LoggingHelpers.consoleColorEscapeCodes["reset"];
         string formattedText = inputText;
 
         string[] segments = inputText.Split('%').ToArray();
@@ -114,19 +113,4 @@ static class TextFormatting {
         return result;
     }
 
-    static public string[] SplitAndTrimToArray(this string input, string delimiter = "\n") {
-        return input.Split(delimiter).Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();
-    }
-
-    static public string SplitAndTrimToString(this string input, string delimiter = "\n") {
-        return String.Join(delimiter, input.SplitAndTrimToArray(delimiter));
-    }
-
-    static public string ConvertToJsonArray(this string[] stringArray) {
-        return $"[{String.Join(",", stringArray.Select(s => $"\"{s}\"").ToArray())}]";
-    }
-
-    static public string CombinePathsWithSingleSlash(this string path1, string path2) {
-        return $"{path1.TrimEnd('/')}/{path2.TrimStart('/')}";
-    }
 }

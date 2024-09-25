@@ -58,15 +58,10 @@ public class SynqMgr : MonoBehaviour {
     return newGo;
   }   
   #region Singleton
-    //------------------- | -------------------------
-    public static SynqMgr I { // Usage:   SynqMgr.I.JsPluginFileName();
-      get { 
-        _instance = Singletoner.EnsureInst(_instance);
-        return _instance;
-      }
-      private set { _instance = value; }
+    private static SynqMgr _Instance;
+    public  static SynqMgr I { // Usage:   SynqMgr.I.JsPluginFileName();
+      get { return _Instance = Singletoner.EnsureInst(_Instance); }
     }
-    private static SynqMgr _instance;
   #endregion
 
 
