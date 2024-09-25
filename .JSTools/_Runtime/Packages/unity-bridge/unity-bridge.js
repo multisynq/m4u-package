@@ -2167,10 +2167,11 @@ class SessionOffsetEstimator {
   }
 }
 
-let ModelRootClass, ViewRootClass;
-export async function StartSession(model, view) {
+let ModelRootClass, ViewRootClass, BuildIdentifier;
+export async function StartSession(model, view, buildIdentifier) { // buildIdentifier is optional
   ModelRootClass = model;
   ViewRootClass = view;
+  BuildIdentifier = buildIdentifier;
 }
 
 async function unityDrivenStartSession() {
@@ -2215,10 +2216,10 @@ async function unityDrivenStartSession() {
 
   const name = `${sessionName}`;
   const password = "password";
-  // include package version and the scene-definition string as options
-  // just to force sessions with different values to be distinct
-  console.log(`Build identifier: ${globalThis.BUILD_IDENTIFIER}`);
-  const options = { c4uPackageVersion: packageVersion, sceneText, buildIdentifier: globalThis.BUILD_IDENTIFIER };
+  // Include package version and the scene-definition string as options
+  // just to force sessions with different values to be distinct.
+  // Include the BuildIdentifier to force builds with different C# & .js project code to be distinct.
+  const options = { c4uPackageVersion: packageVersion, sceneText, BuildIdentifier };
 
   // To debug Croquet Session start, uncomment  start_croquet button in index-webview_or_node.html
   const startButton = document.getElementById("start_croquet");

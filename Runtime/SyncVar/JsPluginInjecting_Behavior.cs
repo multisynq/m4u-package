@@ -2,17 +2,12 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using PlasticGui.WorkspaceWindow;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Reflection;
-
-
-
+using System.Reflection;              // TODO: move this into the #if UNITY_EDITOR block and wrap dependent code below it
+using System.Text.RegularExpressions; // TODO: include as many of these similarly as we can
 
 
 #if UNITY_EDITOR
 using UnityEditor;
-using System.Text.RegularExpressions;
 #endif
 
 namespace Multisynq {
