@@ -55,11 +55,11 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
 
     static public string template = @"
-      [[ImportStatements]]
+      %[ImportStatements]%
       
       export function init() {
         // each klassName's initCode inserts below here
-        [[ModelInits]]
+        %[ModelInits]%
         // each klassName's initCode inserts above here
       }
       // Usage:

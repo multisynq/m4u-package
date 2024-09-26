@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -97,6 +98,7 @@ public static class Parser
     private static Token[] ParseTokens(string input, string[] delims)
     {
         var pattern = string.Join("|", delims.Select(Regex.Escape));
+        UnityEngine.Debug.Log($"pattern: {pattern}");
         return Regex.Split(input, $"({pattern})")
             .Where(part => !string.IsNullOrEmpty(part))
             .Select((part, index) => new Token { DelimIdx = Array.IndexOf(delims, part), Txt = part })
