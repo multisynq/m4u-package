@@ -125,21 +125,21 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
         // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void InjectJsPluginCode()");
         var jsPlugin = GetJsPluginCode();
         var file = Mq_File.AppFolder().DeeperFile(jsPlugin.GetRelPath());
-        file.WriteAllText(jsPlugin._klassCode);
-        Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin._klassName, $"%ye%{jsPlugin._klassName}%gr%").TagColors());  
+        file.WriteAllText(jsPlugin._pluginCode);
+        Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin._pluginName, $"%ye%{jsPlugin._pluginName}%gr%").TagColors());  
     }
 
     public void CheckIfMyJsCodeIsPresent() {
         var jsPlugin = GetJsPluginCode();
-        var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._klassName}.js");
+        var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._pluginName}.js");
         if (modelClassPath.Exists()) {
-            Debug.Log($"{logPrefix} '{jsPlugin._klassName}.js' already present at '{modelClassPath.longPath}'");
+            Debug.Log($"{logPrefix} '{jsPlugin._pluginName}.js' already present at '{modelClassPath.longPath}'");
         } else {
             modelClassPath.SelectAndPing();
             Debug.LogError($"   v");
             Debug.LogError($"   v");
             Debug.LogError($"   v");
-            Debug.LogError($"MISSING JS FILE {jsPlugin._klassName}.js for {this.GetType().Name}.cs");
+            Debug.LogError($"MISSING JS FILE {jsPlugin._pluginName}.js for {this.GetType().Name}.cs");
             Debug.LogError($"   ^");
             Debug.LogError($"   ^");
             Debug.LogError($"   ^");
@@ -147,17 +147,6 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
         }
     }
 
-    static public void InjectMissingJsPlugins___OLD() {
-      var allPlugins = new List<JsPluginCode>();
-      foreach (var missingJsPluginType in AnalyzeAllJsPlugins().tsMissingSomePart) {
-        Debug.Log($"{logPrefix} EnsuringInstance for {missingJsPluginType.Name}");
-        var jsInjectorInstance = Singletoner.EnsureInstByType(missingJsPluginType) as JsPluginInjecting_Behaviour;
-        Debug.Log($"{logPrefix} Injecting JsPluginCode for {missingJsPluginType.Name}");
-        jsInjectorInstance.InjectJsPluginCode();
-        allPlugins.Add(jsInjectorInstance.GetJsPluginCode());
-      }
-      UpdateIndexPluginsJs(allPlugins);
-    }
 
     public static void InjectAllJsPlugins() {
       var az = AnalyzeAllJsPlugins();
@@ -199,7 +188,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
         return false;
       }
       var jsPlugin = jsInjectorMB.GetJsPluginCode();
-      var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._klassName}.js");
+      var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._pluginName}.js");
       return modelClassPath.Exists();
     }
     //========== |||||||||||||| ====================
@@ -263,7 +252,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
               }
               rpt.haveSceneInstancesOfTs.Add(jsInjectorType);
               // 6. Call JsPluginFileName() method for this class
-              string jsPluginFileName = $"plugins/{jsInjectorInstance.GetJsPluginCode()._klassName}.js";
+              string jsPluginFileName = $"plugins/{jsInjectorInstance.GetJsPluginCode()._pluginName}.js";
               // 7. Check if the file exists
               var modelClassPath = Mq_File.AppFolder().DeeperFile(jsPluginFileName);
               if (modelClassPath.Exists()) {

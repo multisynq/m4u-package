@@ -44,8 +44,8 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
     //-------------------- |||||||||||||||| -------------------------
       public override JsPluginCode GetJsPluginCode() {
     return new(
-      klassName: "SynqVar_Mgr_Model",
-      klassCode: @"
+      pluginName: "SynqVar_Mgr",
+      pluginCode: @"
         import { Model, View } from '@croquet/croquet';
         //---------- ||||||||||||||||| -------------------
         export class SynqVar_Mgr_Model extends Model {
@@ -79,11 +79,12 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
           }
         }
       ".LessIndent(),
-      
-      taggedInits: new CodeBlockForATag[] {
-        // new CodeBlockForATag( "ImportStatements", @"import {SynqVar_Mgr_Model} from './SynqVar_Mgr_Model'" ),
-        new CodeBlockForATag( "ModelInits", @"SynqVar_Mgr_Model.create({})",77  ),   
-        new CodeBlockForATag( "ViewInits",  @"SynqVar_Mgr_View.create(this)" )
+      taggedBlocks: new CodeBlockForATag[] {
+        new CodeBlockForATag( "Import", "{ SynqVar_Mgr_Model, SynqVar_Mgr_View }" ), 
+        new CodeBlockForATag( "Model",   "SynqVar_Mgr_Model",77  ),
+        new CodeBlockForATag( "View",    "SynqVar_Mgr_View" ),
+        // new CodeBlockForATag( "FancyModelCodeBlocks", "SynqVar_Mgr_Model.create({})",77  ),
+        // new CodeBlockForATag( "FancyViewInits",  "new SynqVar_Mgr_View(model)" )
       }
     );
   }

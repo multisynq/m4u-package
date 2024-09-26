@@ -29,8 +29,8 @@ public class SynqCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
   #region JavaScript
   public override JsPluginCode GetJsPluginCode() {
     return new(
-      klassName: "SynqCommand_Mgr_Model",
-      klassCode: @"
+      pluginName: "SynqCommand_Mgr",
+      pluginCode: @"
         import { Model } from '@croquet/croquet';
 
         export class SynqCommand_Mgr_Model extends Model {
@@ -48,8 +48,8 @@ public class SynqCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
         SynqCommand_Mgr_Model.register('SynqCommand_Mgr_Model');
       ".LessIndent(),
       // initModelCode: @"SynqCommand_Mgr_Model.create({})"
-      taggedInits: new CodeBlockForATag[] {
-        new CodeBlockForATag( "ModelInits", @"SynqCommand_Mgr_Model.create({})" ),   
+      taggedBlocks: new CodeBlockForATag[] {
+        new CodeBlockForATag( "ModelCodeBlocks", @"SynqCommand_Mgr_Model.create({})" ),   
         new CodeBlockForATag( "ViewInits",  @"SynqCommand_Mgr_View.create(this)" )
       }
     );
