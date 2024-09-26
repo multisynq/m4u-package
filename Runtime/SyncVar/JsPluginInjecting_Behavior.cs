@@ -55,16 +55,45 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
 
     static public string template = @"
-      %[ImportStatements]%
-      
-      export function init() {
-        // each klassName's initCode inserts below here
-        %[ModelInits]%
-        // each klassName's initCode inserts above here
+      import { GameModelRoot } from '@croquet/game-models';
+      import { GameViewRoot } from '@croquet/unity-bridge';
+
+      // ######## Import:
+      %[Import: import %%CODE%% from './%%PLUGIN%%']%
+      // ########
+
+      export class ModelRootWithPlugins extends GameModelRoot {
+        plugins={}
+        init(options) {
+          // @ts-ignore
+          super.init(options);
+
+          // ######## Model:
+          %[Model: this.plugins['%%PLUGIN%%'] = %%CODE%%.create({})]%
+          // ########
+
+        }
       }
-      // Usage:
-      //   import { init } from './plugins/indexPlugins';
-      //   init();
+      // @ts-ignore
+      ModelRootWithPlugins.register('ModelRootWithPlugins');
+      //--------------------------------------------------------------------------------------------
+      //========== ||||||||||||||||||| =================================================================
+      export class ViewRootWithPlugins extends GameViewRoot {
+        plugins={}
+        constructor(model) {
+          super(model);
+
+          // ######### View:
+          %[View: this.plugins['%%PLUGIN%%'] = new %%CODE%%( model.plugins['%%PLUGIN%%'] )]%
+          // #########
+
+        }
+        detach() { 
+          Object.values(this.plugins).forEach(plugin => plugin.detach());
+          super.detach(); 
+        } 
+      }
+
     ".LessIndent();
     //---------------- |||||||||||||||||||| -------------------------
     static public void UpdateIndexPluginsJs(IEnumerable<JsPluginCode> allPlugins) {
