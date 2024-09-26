@@ -97,7 +97,7 @@ public class ParserTester : MonoBehaviour {
 
       if (token.DelimIdx > -1 & !outsideAllDelims) continue; // skip the delimiters themselves since they are encoded in the DelimDepths
 
-      if (outsideAllDelims) { // outside tags "HERE [[xxx:xxx %xxx% xxx;]] OR HERE"
+      if (outsideAllDelims) { // outside tags "HERE %[xxx:xxx %xxx% xxx;]% OR HERE"
         Debug.Log($"<color=white>{token.Txt.Replace("\n","\\n")}</color> outside pendingMergedCode={pendingMergedCode}"); 
         if (pendingMergedCode) {
           code.Append( string.Join("\n", merged) );
@@ -108,18 +108,18 @@ public class ParserTester : MonoBehaviour {
         code.Append(token.Txt);
         Debug.Log($"<color=cyan>{token.Txt.Replace("\n","\\n")}</color> Append");
       }
-      else if (token.DelimDepths.SequenceEqual(new[] { 1, 0, 0 })) { // "[[HERE: xxx %xx%% xxx %%xx%% xxx;]]"
-        Debug.Log($"<color=cyan>{token.Txt}</color> - [[HERE: xxx %%xx%% xxx %%xx%% xxx;]]"); 
+      else if (token.DelimDepths.SequenceEqual(new[] { 1, 0, 0 })) { // "%[HERE: xxx %xx%% xxx %%xx%% xxx;]%"
+        Debug.Log($"<color=cyan>{token.Txt}</color> - %[HERE: xxx %%xx%% xxx %%xx%% xxx;]%"); 
         pendingMergedCode = true;
         currTagSnips = snips.Where(s => s.tag == token.Txt).ToArray();
         merged.AddRange(Enumerable.Repeat("", currTagSnips.Count())); // blank merged of same length
       }
-      else if (token.DelimDepths.SequenceEqual(new[] { 1, 1, 0 })) { // "[[xxx:HERE %%xxx%% OR HERE;]]"
-        Debug.Log($"<color=cyan>{token.Txt}</color> - [[xxx:HERE %%xxx%% OR HERE;]]");
+      else if (token.DelimDepths.SequenceEqual(new[] { 1, 1, 0 })) { // "%[xxx:HERE %%xxx%% OR HERE;]%"
+        Debug.Log($"<color=cyan>{token.Txt}</color> - %[xxx:HERE %%xxx%% OR HERE;]%");
         AddToAllMerged( (i) => token.Txt );
       }
-      else if (token.DelimDepths.SequenceEqual(new[] { 1, 1, 1 })) { // "[[xxx:xxxx %%HERE%% xxx %%OR_HERE%% xxxx;]]"
-        Debug.Log($"<color=cyan>{token.Txt}</color> - [[xxx:xxxx %%HERE% xxx %%OR_HERE%% xxxx;]]"); 
+      else if (token.DelimDepths.SequenceEqual(new[] { 1, 1, 1 })) { // "%[xxx:xxxx %%HERE%% xxx %%OR_HERE%% xxxx;]%"
+        Debug.Log($"<color=cyan>{token.Txt}</color> - %[xxx:xxxx %%HERE% xxx %%OR_HERE%% xxxx;]%"); 
         if (token.Txt == "CODE") {
           AddToAllMerged( (i) => currTagSnips.ElementAt(i).code );
         }
