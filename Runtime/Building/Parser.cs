@@ -10,7 +10,8 @@ public struct Token
     public string Txt;
 }
 
-public struct DelimPair
+[Serializable]
+public class DelimPair
 {
     public string Start;
     public string End;

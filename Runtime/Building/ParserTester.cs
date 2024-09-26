@@ -3,99 +3,47 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System;
 
+[Serializable]
 public class SnipForATag {
-  public string Tag { get; set; }
-  public string Code { get; set; }
-  public string Plugin { get; set; }
+  public string tag;
+  public string code;
+  public string plugin;
 
-  public SnipForATag(string tag, string code, string plugin) {
-    Tag = tag;
-    Code = code;
-    Plugin = plugin;
-  }
+  public SnipForATag
+    (string tag, string code, string plugin) => 
+    (  this.tag,   this.code,   this.plugin) = 
+    (       tag,        code,        plugin);
 }
 
 public class ParserTester : MonoBehaviour {
   [TextArea(15, 20)]
   public string input = @"
-  woot [[Import: import %%CODE%% from './%%PLUGIN%%';]] boot
-";
+    // ### imports
+    [[Import: import %%CODE%% from './%%PLUGIN%%';]]
+    // ### imports end
+  ".LessIndent();
 
-  [TextArea(15, 20)]
-  public string tokensReport;
+  public SnipForATag[] snips = new[] {
+    new SnipForATag("Import", "{ Cat, Dog }",    "animals"),
+    new SnipForATag("Import", "{ Ant, Beetle }", "animals"),
+  };
+
+  DelimPair[] delimPairs = new DelimPair[] {
+    new DelimPair { Start = "[[", End = "]]" },
+    new DelimPair { Start = ":", End = "]]" },
+    new DelimPair { Start = "%%", End = "%%" }
+  };
 
   [TextArea(15, 20)]
   public string output;
 
-  private DelimPair[] delimPairs = new DelimPair[] {
-  new DelimPair { Start = "[[", End = "]]" },
-  new DelimPair { Start = ":", End = "]]" },
-  new DelimPair { Start = "%%", End = "%%" }
-  };
-  /*
-  Token: 'woot '
-  DelimIdx: -1
-  DelimDepths: [0, 0, 0]
-
-  Token: '[['
-  DelimIdx: 0
-  DelimDepths: [1, 0, 0]
-
-  Token: 'Import'
-  DelimIdx: -1
-  DelimDepths: [1, 0, 0]
-
-  Token: ':'
-  DelimIdx: 2
-  DelimDepths: [1, 1, 0]
-
-  Token: ' import '
-  DelimIdx: -1
-  DelimDepths: [1, 1, 0]
-
-  Token: '%%'
-  DelimIdx: 3
-  DelimDepths: [1, 1, 1]
-
-  Token: 'CODE'
-  DelimIdx: -1
-  DelimDepths: [1, 1, 1]
-
-  Token: '%%'
-  DelimIdx: 3
-  DelimDepths: [1, 1, 0]
-
-  Token: ' from './'
-  DelimIdx: -1
-  DelimDepths: [1, 1, 0]
-
-  Token: '%%'
-  DelimIdx: 3
-  DelimDepths: [1, 1, 1]
-
-  Token: 'PLUGIN'
-  DelimIdx: -1
-  DelimDepths: [1, 1, 1]
-
-  Token: '%%'
-  DelimIdx: 3
-  DelimDepths: [1, 1, 0]
-
-  Token: '';'
-  DelimIdx: -1
-  DelimDepths: [1, 1, 0]
-
-  Token: ']]'
-  DelimIdx: 1
-  DelimDepths: [1, 1, 0]
-
-  Token: ' boot'
-  DelimIdx: -1
-  DelimDepths: [0, 0, 0]
+  [TextArea(15, 20)]
+  public string tokensReport;
 
 
-  */
+
   private void Start() {
     ParseInput();
   }
@@ -123,62 +71,60 @@ public class ParserTester : MonoBehaviour {
   }
 
   private void GenerateOutput(Token[] tokens) {
-    var snips = new[] {
-      new SnipForATag("Import", "{ Cat, Dog }",    "animals"),
-      new SnipForATag("Import", "{ Ant, Beetle }", "animals"),
-  };
-
     output = SwapInManySnips(tokens, snips);
   }
   
-  private string SwapInManySnips(Token[] tokens, SnipForATag[] snips) {
+  static private string SwapInManySnips(Token[] tokens, SnipForATag[] snips) {
+    Debug.Log("<color=#4444ff>============= SWAP IN MANY SNIPS =============</color>");
     var result = new StringBuilder();
     var code = new StringBuilder();
     List<string> merged = new();
     SnipForATag[] currTagSnips = new SnipForATag[0];
-    bool insideTag = false;
+    bool pendingMergedCode = false;
 
+    // helper inline function to AddToAllMerged()
+    void AddToAllMerged( Func<int, string> txtFunc ) {
+      for (int i = 0; i < merged.Count; i++) {
+        merged[i] += txtFunc(i);
+      }
+    }
     foreach (var token in tokens) {
+      bool HasDelimDepths( params int[] depths ) {
+        return token.DelimDepths.SequenceEqual( depths );
+      }
+      // delims are all zero
+      bool outsideAllDelims = HasDelimDepths( 0, 0, 0 ); 
 
-      if (token.DelimIdx > -1) continue; // skip the delimiters themselves since they are encoded in the DelimDepths
+      if (token.DelimIdx > -1 & !outsideAllDelims) continue; // skip the delimiters themselves since they are encoded in the DelimDepths
 
-      if (token.DelimDepths.SequenceEqual(new[] { 0, 0, 0 })) { // outside tags "HERE [[xxx:xxx %xxx% xxx;]] OR HERE"
-        if (!insideTag) {
-          code.Append(token.Txt);
-        } else {
-          // we should have merged to add to the code
-          for (int i = 0; i < merged.Count; i++) {
-            code.Append(merged[i]+"\n");
-          }
-          // clear merged and currTagSnips
+      if (outsideAllDelims) { // outside tags "HERE [[xxx:xxx %xxx% xxx;]] OR HERE"
+        Debug.Log($"<color=white>{token.Txt.Replace("\n","\\n")}</color> outside pendingMergedCode={pendingMergedCode}"); 
+        if (pendingMergedCode) {
+          code.Append( string.Join("\n", merged) );
           merged.Clear();
           currTagSnips = new SnipForATag[0];
-          insideTag = false;
+          pendingMergedCode = false;
         }
+        code.Append(token.Txt);
+        Debug.Log($"<color=cyan>{token.Txt.Replace("\n","\\n")}</color> Append");
       }
       else if (token.DelimDepths.SequenceEqual(new[] { 1, 0, 0 })) { // "[[HERE: xxx %xx%% xxx %%xx%% xxx;]]"
         Debug.Log($"<color=cyan>{token.Txt}</color> - [[HERE: xxx %xx%% xxx %%xx%% xxx;]]"); 
-        insideTag = true;
-        currTagSnips = snips.Where(s => s.Tag == token.Txt).ToArray();
+        pendingMergedCode = true;
+        currTagSnips = snips.Where(s => s.tag == token.Txt).ToArray();
         merged.AddRange(Enumerable.Repeat("", currTagSnips.Count())); // blank merged of same length
       }
       else if (token.DelimDepths.SequenceEqual(new[] { 1, 1, 0 })) { // "[[xxx:HERE %xxx% OR HERE;]]"
         Debug.Log($"<color=cyan>{token.Txt}</color> - [[xxx:HERE %xxx% OR HERE;]]");
-        for (int i = 0; i < merged.Count; i++) {
-          merged[i] += token.Txt;
-        }
+        AddToAllMerged( (i) => token.Txt );
       }
       else if (token.DelimDepths.SequenceEqual(new[] { 1, 1, 1 })) { // "[[xxx:xxxx %HERE% xxx %OR_HERE% xxxx;]]"
         Debug.Log($"<color=cyan>{token.Txt}</color> - [[xxx:xxxx %%HERE% xxx %OR_HERE% xxxx;]]"); 
         if (token.Txt == "CODE") {
-          for (int i = 0; i < merged.Count; i++) {
-            merged[i] += currTagSnips.ElementAt(i).Code;
-          }
+          AddToAllMerged( (i) => currTagSnips.ElementAt(i).code );
         }
         else if (token.Txt == "PLUGIN") {
-          for (int i = 0; i < merged.Count; i++) {
-            merged[i] += currTagSnips.ElementAt(i).Plugin;
-          }
+          AddToAllMerged( (i) => currTagSnips.ElementAt(i).plugin );
         }
       }
     } // end foreach
