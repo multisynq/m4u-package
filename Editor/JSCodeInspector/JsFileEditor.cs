@@ -10,42 +10,43 @@ public class JsFileEditorInspector : Editor {
   private VisualElement root;
   private ScrollView codeScrollView;
   private Label codeLabel;
+  private Label Filename_Lbl;
   private SliderInt fontSizeSlider;
   static public int fontSize = 16;
   private string cachedCode;
 
   public override VisualElement CreateInspectorGUI() {
-    root = new VisualElement();
 
-    // Load UXML
-    var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.multisynq.multiplayer/Editor/JSCodeInspector/JsFileEditorInspector.uxml");
-    visualTree.CloneTree(root);
-
-    // Query elements
-    codeScrollView = root.Q<ScrollView>("code-scroll-view");
-    codeLabel = root.Q<Label>("code-label");
-    fontSizeSlider = root.Q<SliderInt>("font-size-slider");
-
-    // Set up font size slider
-    fontSizeSlider.value = fontSize;
-    fontSizeSlider.RegisterValueChangedCallback(evt => UpdateFontSize(evt.newValue));
-
-    // Load and display code
     string path = AssetDatabase.GetAssetPath(target);
     if (IsValidFileType(path)) {
+
+      root = new VisualElement();
+      // Load UXML
+      var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/io.multisynq.multiplayer/Editor/JSCodeInspector/JsFileEditorInspector.uxml");
+      visualTree.CloneTree(root);
+
+      // Query elements
+      codeScrollView = root.Q<ScrollView>("code-scroll-view");
+      codeLabel = root.Q<Label>("code-label");
+      fontSizeSlider = root.Q<SliderInt>("font-size-slider");
+      Filename_Lbl = root.Q<Label>("Filename_Lbl");
+      Filename_Lbl.text = Path.GetFileName(path);
+
+      // Set up font size slider
+      fontSizeSlider.value = fontSize;
+      fontSizeSlider.RegisterValueChangedCallback(evt => UpdateFontSize(evt.newValue));
+
+      // handlers
+      root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged); // Register callback for layout changes
+      EditorApplication.delayCall += () => FitToInspector(); // Set initial size
+
       LoadAndDisplayCode(path);
+
+      return root;
+
+    } else {
+      return base.CreateInspectorGUI();
     }
-    else {
-      codeLabel.text = "Not a valid file type for this inspector.";
-    }
-
-    // Register callback for layout changes
-    root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-
-    // Set initial size
-    EditorApplication.delayCall += () => FitToInspector();
-
-    return root;
   }
 
   private void LoadAndDisplayCode(string path) {
@@ -104,7 +105,7 @@ public class JsFileEditorInspector : Editor {
   string Cyan(  string s) => ColorWrap(s, "#4EC9B0");
 
   code = Regex.Replace(code, @"color", "c0l0r"); // hide the word "color" from the syntax highlighter
-  code = Regex.Replace(code, @"(\=)",            m => Mag(m.Value));
+  code = Regex.Replace(code, @"(\=)[^>|==]",            m => Mag(m.Value));
   code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
   code = Regex.Replace(code, @"(\(|\))",         m => Mag(m.Value));
   code = Regex.Replace(code, @"(\{|\})",         m => Yellow(m.Value));
