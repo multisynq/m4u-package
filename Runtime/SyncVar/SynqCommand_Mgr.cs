@@ -30,6 +30,7 @@ public class SynqCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
   public override JsPluginCode GetJsPluginCode() {
     return new(
       pluginName: "SynqCommand_Mgr",
+      pluginExports: new[] {"SynqCommand_Mgr_Model"},
       pluginCode: @"
         import { Model } from '@croquet/croquet';
 
@@ -46,12 +47,7 @@ public class SynqCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
           }
         }
         SynqCommand_Mgr_Model.register('SynqCommand_Mgr_Model');
-      ".LessIndent(),
-      // initModelCode: @"SynqCommand_Mgr_Model.create({})"
-      taggedBlocks: new CodeBlockForATag[] {
-        new CodeBlockForATag( "ModelCodeBlocks", @"SynqCommand_Mgr_Model.create({})" ),   
-        new CodeBlockForATag( "ViewInits",  @"SynqCommand_Mgr_View.create(this)" )
-      }
+      ".LessIndent()
     );
   }
   //------------------ |||||||||||||||||| -------------------------

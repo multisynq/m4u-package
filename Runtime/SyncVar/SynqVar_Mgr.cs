@@ -45,6 +45,7 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       public override JsPluginCode GetJsPluginCode() {
     return new(
       pluginName: "SynqVar_Mgr",
+      pluginExports: new[] {"SynqVar_Mgr_Model", "SynqVar_Mgr_View"},
       pluginCode: @"
         import { Model, View } from '@croquet/croquet';
         //---------- ||||||||||||||||| -------------------
@@ -78,14 +79,7 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
             globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SynqVar', 'everybodySetVar', msg)
           }
         }
-      ".LessIndent(),
-      taggedBlocks: new CodeBlockForATag[] {
-        new CodeBlockForATag( "Import", "{ SynqVar_Mgr_Model, SynqVar_Mgr_View }" ), 
-        new CodeBlockForATag( "Model",   "SynqVar_Mgr_Model",77  ),
-        new CodeBlockForATag( "View",    "SynqVar_Mgr_View" ),
-        // new CodeBlockForATag( "FancyModelCodeBlocks", "SynqVar_Mgr_Model.create({})",77  ),
-        // new CodeBlockForATag( "FancyViewInits",  "new SynqVar_Mgr_View(model)" )
-      }
+      ".LessIndent()
     );
   }
     //------------------ |||||||||||||||||| -------------------------

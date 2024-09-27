@@ -9,6 +9,7 @@ public class JsPluginCode {
 
   public string _pluginName;
   public string _pluginCode;
+  public string[] _pluginExports;
   public string _initModelCode;
   public bool codeIsGood = true;
 
@@ -17,7 +18,8 @@ public class JsPluginCode {
 
   //---------|||||||||||| --- constructor
   public     JsPluginCode( 
-    string pluginName, 
+    string pluginName,
+    string[] pluginExports,
     string pluginCode, 
     List<Func<JsPluginCode, bool>> codeCheckers = null
   ) { 
@@ -25,6 +27,7 @@ public class JsPluginCode {
     if (string.IsNullOrWhiteSpace(pluginCode)) throw new ArgumentException("pluginCode cannot be null or whitespace.", nameof(pluginCode));
     _pluginName = pluginName;
     _pluginCode = pluginCode;
+    _pluginExports = pluginExports;
 
     if (codeCheckers != null) { _codeCheckers.AddRange(codeCheckers); }
 

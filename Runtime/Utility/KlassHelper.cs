@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -15,22 +16,11 @@ public static class KlassHelper {
         ? type.GetMethod(methodName, bindingFlags)
         : type.GetMethod(methodName, bindingFlags, null, parameterTypes, null);
 
-      if (method != null) {
-        return method;
-      }
-
+      if (method != null) return method;
       type = type.BaseType;
     }
 
     return null;
-  }
-
-  public static Type[] GetSubclassTypes(Type type) {
-    return Assembly.GetAssembly(type)
-      .GetTypes()
-      .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(type))
-      .ToHashSet() // remove duplicates
-      .ToArray();
   }
 
   public static Type[] GetImplementingTypes(Type interfaceType) {
@@ -46,5 +36,26 @@ public static class KlassHelper {
 
   public static MethodInfo[] GetPublicMethods(Type type) {
     return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+  }
+
+  public static IEnumerable<TResult> InvokeStaticMethodOnSubclasses<TBase, TResult>(string methodName, params object[] parameters) {
+    return GetSubclassTypes(typeof(TBase))
+      .Select(subclass => {
+        var method = subclass.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+        if (method == null) {
+          Console.WriteLine($"Method {methodName} not found in {subclass.Name}");
+          return default;
+        }
+        return (TResult)method.Invoke(null, parameters);
+      })
+      .Where(result => result != null);
+  }
+
+  public static Type[] GetSubclassTypes(Type baseType) {
+    return Assembly.GetAssembly(baseType)
+      .GetTypes()
+      .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(baseType))
+      .ToHashSet()
+      .ToArray(); // remove duplicates;
   }
 }

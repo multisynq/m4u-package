@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;              // TODO: move this into the #if UNITY_EDITOR block and wrap dependent code below it
 using System.Text.RegularExpressions; // TODO: include as many of these similarly as we can
+using System.Text;
+
 
 
 #if UNITY_EDITOR
@@ -12,39 +14,6 @@ using UnityEditor;
 
 namespace Multisynq {
 
-//========== |||||||||||||||| ================
-public class CodeBlockForATag {
-  public string tag;
-  public string code;
-  public int indent;
-  //-------- |||||||||||||||| --- constructor
-  public     CodeBlockForATag(string tag, string code, int indent=2) {
-    this.tag = tag;
-    this.code = code;
-    this.indent = indent;
-  }
-}
-//========== |||||||||||| ================
-public class CodeTemplate {
-  public string template;
-
-  //-------- |||||||||||| --- constructor
-  public     CodeTemplate(string template) {
-    this.template = template;
-  }
-
-  public string MergeCodeBlocks( CodeBlockForATag[] codeBlocksForTags ) {
-    string result = template;
-    var tcsGrouped = codeBlocksForTags.GroupBy(tc => tc.tag);
-    
-    foreach (IGrouping<string, CodeBlockForATag> group in tcsGrouped) {
-      int indent = group.First()?.indent ?? 0;
-      string indentedCodeBlocks = group.Select(cb => cb.code).JoinIndented(indent, "\n");
-      result = Regex.Replace(result, $@"(?<=\n|^)\s*\[\[{Regex.Escape(group.Key)}]]", indentedCodeBlocks);
-    }
-    return result;
-  }
-}
 //=================== ||||||||||||||||||||||||||| ================
 abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
@@ -54,64 +23,173 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
     static public string[] CodeMatchPatterns() => new string[]{"You should define CodeMatchPatterns() in your subclass of JsPluginInjecting_Behaviour"};  
 
 
-    static public string template = @"
-      import { GameModelRoot } from '@croquet/game-models';
-      import { GameViewRoot } from '@croquet/unity-bridge';
+    #if UNITY_EDITOR
+      static public string indexOfPlugins_Template__Code = @"
+        import { GameModelRoot } from '@croquet/game-models';
+        import { GameViewRoot } from '@croquet/unity-bridge';
 
-      // ######## Import:
-      %[Import: import %%CODE%% from './%%PLUGIN%%']%
-      // ########
+        // ######## Import:
+        {{imports}}
+        import {{vars}} from '{{file}}'
+        {{/imports}}
+        // ########
 
-      export class ModelRootWithPlugins extends GameModelRoot {
-        plugins={}
-        init(options) {
-          // @ts-ignore
-          super.init(options);
+        export class ModelRootWithPlugins extends GameModelRoot {
+          plugins={}
+          init(options) {
+            // @ts-ignore
+            super.init(options);
 
-          // ######## Model:
-          %[Model: this.plugins['%%PLUGIN%%'] = %%CODE%%.create({})]%
+            // ######## modelInits from each JsPlugin_Behavior.cs subclass via indexOfPluginsData.js
+            {{#modelInits}}
+            this.plugins['{{modelClass}}'] = {{modelClass}}.create({})
+            {{/modelInits}}
+            // ########
+
+          }
+        }
+        // @ts-ignore
+        ModelRootWithPlugins.register('ModelRootWithPlugins');
+        //--------------------------------------------------------------------------------------------
+        //========== ||||||||||||||||||| =================================================================
+        export class ViewRootWithPlugins extends GameViewRoot {
+          plugins={}
+          constructor(model) {
+            super(model);
+
+            // ######### View:
+            {{#viewInits}}
+            this.plugins['{{viewClass}}'] = new {{viewClass}}(model.plugins['{{modelClass}}'])
+            {{/viewInits}}
+            // #########
+
+          }
+          detach() { 
+            Object.values(this.plugins).forEach(plugin => plugin.detach());
+            super.detach(); 
+          } 
+        }
+      ".LessIndent();
+
+      static public string MakeIndexOfPlugins_JsCode( List<Type> jsPluginTypes ) { 
+        // jsPluginTypes are subclasses of JsPluginInjecting_Behaviour we need
+        // var subclasses = KlassHelper.GetSubclassTypes( typeof(JsPluginInjecting_Behaviour));
+        // pluginExports
+
+        string[] codeForEachSubclass(Func<Type, string> formatter) {
+          return jsPluginTypes.Select(formatter).ToArray();
+        }
+
+        string[] imports = codeForEachSubclass(clz => 
+          // import {{vars}} from '{{file}}'
+          $"import {{ {clz.Name}_Model, {clz.Name}_View }} from './{clz.Name}'"
+        );
+        string[] modelInits  = codeForEachSubclass(clz => 
+          // this.plugins['{{modelClass}}'] = {{modelClass}}.create({})
+          $"this.plugins['{clz.Name}_Model'] = {clz.Name}_Model.create({{}})"
+        );
+        string[] viewInits   = codeForEachSubclass(clz => 
+          // this.plugins['{{viewClass}}'] = new {{viewClass}}(model.plugins['{{modelClass}}'])
+          $"this.plugins['{clz.Name}_View'] = new {clz.Name}_View(model.plugins['{clz.Name}_Model'])"
+        );
+
+        string code =  $@"
+          // DO NOT EDIT THIS GENERATED FILE, please.  =]
+          // This file is generated by M4U's JsPluginInjecting_Behavior.cs
+          import {{ GameModelRoot }} from '@croquet/game-models';
+          import {{ GameViewRoot }} from '@croquet/unity-bridge';
+
+          // ######## imports generated from each JsPlugin_Behavior.cs subclass
+          {string.Join('\n', imports)}
           // ########
 
-        }
+          export class ModelRootWithPlugins extends GameModelRoot {{
+            plugins={{}}
+            init(options) {{
+              // @ts-ignore
+              super.init(options);
+
+              // ######## modelInits
+              {string.Join('\n', modelInits)}
+              // ########
+
+            }}
+          }}
+          // @ts-ignore
+          ModelRootWithPlugins.register('ModelRootWithPlugins');
+          
+          //========== ||||||||||||||||||| =================================================================
+          export class ViewRootWithPlugins extends GameViewRoot {{
+            plugins={{}}
+            constructor(model) {{
+              super(model);
+
+              // ######### viewInits
+              {string.Join('\n', viewInits)}
+              // #########
+
+            }}
+            detach() {{ 
+              Object.values(this.plugins).forEach(plugin => plugin.detach());
+              super.detach(); 
+            }}
+          }}
+        ".LessIndent();
+        return code;
       }
-      // @ts-ignore
-      ModelRootWithPlugins.register('ModelRootWithPlugins');
-      //--------------------------------------------------------------------------------------------
-      //========== ||||||||||||||||||| =================================================================
-      export class ViewRootWithPlugins extends GameViewRoot {
-        plugins={}
-        constructor(model) {
-          super(model);
-
-          // ######### View:
-          %[View: this.plugins['%%PLUGIN%%'] = new %%CODE%%( model.plugins['%%PLUGIN%%'] )]%
-          // #########
-
-        }
-        detach() { 
-          Object.values(this.plugins).forEach(plugin => plugin.detach());
-          super.detach(); 
-        } 
-      }
-
-    ".LessIndent();
-    //---------------- |||||||||||||||||||| -------------------------
-    static public void UpdateIndexPluginsJs(IEnumerable<JsPluginCode> allPlugins) {
-      CodeTemplate indexPluginTemplate = new CodeTemplate(template);
-      var indexPluginFile = Mq_File.AppFolder().DeeperFile("plugins", "indexPlugins.js");
-      // extract the TaggedCode[] from allPlugins
-      CodeBlockForATag[] taggedCodes = allPlugins.SelectMany(jpc => jpc._taggedCodes).ToArray();
-      string code = indexPluginTemplate.MergeCodeBlocks(taggedCodes); // include importStatements and inits
-      indexPluginFile.WriteAllText(code);
-    }
     
-    #if UNITY_EDITOR
-    // static public Dictionary<System.Type, string[]> codeMatchPatternsByJsInjectorsNeeded = new() {
-    //     { typeof(SynqVar_Mgr), new[] { @"\[SynqVar\]" } },
-    //     { typeof(SynqCommand_Mgr), new[] { @"\[SynqCommand\]", @"\[SynqRPC\]" } },
-    //     { typeof(SynqClones_Mgr), new[] {@"SynqClones_Mgr.*SynqClone", @"\[SyncedInstances\]"} },
-    //     // Add more patterns here as needed
-    // };
+      static void GenerateIndexPluginFile(List<Type> jsPluginTypes) {
+        var plugFldr = Mq_File.AppPluginsFolder();
+        var outp = plugFldr.DeeperFile("indexOfPlugins.js");
+        outp.WriteAllText(MakeIndexOfPlugins_JsCode(jsPluginTypes));
+      }
+
+      //------------------ |||||||||||||||||||||||||||||| -------------------------
+      public static string MakeTemplateDataFromSubclasses() {
+
+        var subclasses = KlassHelper.GetSubclassTypes( typeof(JsPluginInjecting_Behaviour));
+
+        string[] varsForType(Func<Type, string> formatter) {
+          return subclasses.Select(formatter).ToArray();
+        }
+
+        string[] imports = varsForType(clz => 
+          $"{{ vars: '{{ {clz.Name}_Model, {clz.Name}_View }}', file: './{clz.Name}' }},"
+        );
+        string[] models  = varsForType(clz => 
+          $"{{ modelClass: '{clz.Name}_Model' }},"
+        );
+        string[] views   = varsForType(clz => 
+          $"{{ viewClass: '{clz.Name}_View', modelClass: '{clz.Name}_Model' }},"
+        );
+
+        string templateDataJsCode = $@"
+          const templateData = {{
+
+            imports: [
+              // data here:  {{ vars: '{{ SynqClones_Mgr_Model }}', file: './SynqClones_Mgr' }},
+              // becomes:    import {{SynqClones_Mgr_Model}} from './SynqClones_Mgr'
+              {string.Join('\n', imports)}
+            ],
+
+            modelInits: [
+              // data here: {{modelClass: 'SynqCommand_Mgr_Model'}},
+              // becomes:  this.plugins['{{modelClass}}'] = {{modelClass}}.create({{}})
+              {string.Join('\n', models)}
+            ],
+
+            viewInits: [
+              // data here: {{ viewClass: 'SynqVar_Mgr_View', modelClass: 'SynqVar_Mgr_Model' }},
+              // becomes:   this.plugins['{{viewClass}}'] = new {{viewClass}}(model.plugins['{{modelClass}}'])
+              {string.Join('\n', views)}
+            ]
+
+          }};
+          module.exports = {{ templateData }};
+        ";
+        return templateDataJsCode;
+      }
+
       static public Dictionary<Type, string[]> _codeMatchPatternsByJsInjectorsNeeded = null;
       static public Dictionary<Type, string[]> codeMatchPatternsByJsInjectorsNeeded { 
         get { 
@@ -189,9 +267,10 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
       InjectJsPluginsList( missingPluginTypes.ToList() );
     }
 
+
     public static void InjectJsPluginsList(List<Type> jsPluginTypes) {
       var jpcs = jsPluginTypes.Select(jcp => InjectOneJsPlugin(jcp).GetJsPluginCode());
-      UpdateIndexPluginsJs(jpcs);
+      GenerateIndexPluginFile(jsPluginTypes);
     }
 
     static public JsPluginInjecting_Behaviour InjectOneJsPlugin( Type jsPluginType ) {

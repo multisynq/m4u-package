@@ -21,6 +21,7 @@ public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
     public override JsPluginCode GetJsPluginCode() {
       return new(
         pluginName: "SynqClones_Mgr",
+        pluginExports: new[] {"SynqClones_Mgr_Model", "SynqClones_Mgr_View"},
         pluginCode: @"
           import { Model, View } from '@croquet/croquet';
 
@@ -44,12 +45,7 @@ public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
               this.model = model;
             }
           }
-        ".LessIndent(),
-        // initModelCode: @"SynqClones_Mgr_Model.create({})"
-        taggedBlocks: new CodeBlockForATag[] {
-          new CodeBlockForATag( "ModelCodeBlocks", @"SynqClones_Mgr_Model.create({})"  ),   
-          new CodeBlockForATag( "ViewInits",  @"SynqClones_Mgr_View.create(this)" )
-        }
+        ".LessIndent()
       );
     }
   #endregion
