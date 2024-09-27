@@ -1,8 +1,8 @@
 {
-  "name": "croquet-for-unity-template",
+  "name": "m4u-template",
   "description": "Multisynq for Unity Template",
   "private": true,
-  "author": "Croquet Labs",
+  "author": "Multisynq",
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.24.8",
