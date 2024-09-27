@@ -556,6 +556,23 @@ public class Mq_Builder {
     }
   }
 
+  public static int SimpleRunProcess( string executable, string arguments ) {
+    ProcessStartInfo startInfo = new() {
+        FileName = executable,         Arguments = arguments,
+        UseShellExecute = false,       CreateNoWindow = true,
+        RedirectStandardOutput = true, RedirectStandardError = true,
+    };
+    Process process = new() { StartInfo = startInfo };
+    process.Start();
+    string output = process.StandardOutput.ReadToEnd();
+    string errors = process.StandardError.ReadToEnd();
+    process.WaitForExit();
+    string[] stdoutLines = output.Split('\n');
+    string[] errorLines  = errors.Split('\n');
+    LogProcessOutput( stdoutLines, errorLines, executable );
+    return errorLines.Length;
+  }
+
   private static async void WatchLogFile(string filePath, long initialLength) {
     string appName = EditorPrefs.GetString(ProjectSpecificKey(APP_PROP), "");
     string target = EditorPrefs.GetString(ProjectSpecificKey(TARGET_PROP));
