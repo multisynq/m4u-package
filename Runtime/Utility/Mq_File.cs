@@ -52,6 +52,10 @@ static public class Mq_File {
     return new FolderThing("Assets/MultisynqJS/" + GetAppNameForOpenScene(), canBeMissing);
   }
 
+  static public FolderThing AppPluginsFolder(bool canBeMissing = false) {
+    return new FolderThing("Assets/MultisynqJS/" + GetAppNameForOpenScene() + "/plugins", canBeMissing);
+  }
+
   static public FolderThing AppStreamingAssetsOutputFolder(bool canBeMissing = false) {
     return new FolderThing(Application.streamingAssetsPath + "/" + GetAppNameForOpenScene(), canBeMissing);
   }
