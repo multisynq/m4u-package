@@ -31,6 +31,9 @@ public class  Mq_Bridge : MonoBehaviour {
   [Tooltip("Single-token name (no spaces) for the Croquet session if not otherwise specified at runtime through a menu.  Users entering the same named session of the same named Croquet app will find themselves playing together.")]
   public string defaultSessionName = "ABCDE";
 
+  [Tooltip("If true, the Croquet session will ignore any differences between the code from build to build. This is useful for debugging, but can lead to unexpected behavior if builds are out of sync.")]
+  public bool ignoreCodeDiffsForSession = true;
+
   [Tooltip("Optionally, the name of a scene in this project.  If blank, pressing Play in the current scene will immediately launch Croquet with the app name and session name specified above.  If a scene name is provided, the current scene is assumed to act as a menu for selecting the session name; once selected, Croquet is then launched to run the named scene.")]
   public string launchViaMenuIntoScene = "";
 

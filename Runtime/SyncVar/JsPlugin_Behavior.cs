@@ -47,7 +47,8 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 {imports.Trim('\n')}
         // ########
 
-        export class ModelRootWithPlugins extends GameModelRoot {{
+        //========== |||||||||||||||| =================================================================
+        export class PluginsModelRoot extends GameModelRoot {{
           plugins={{}}
           init(options) {{
             // @ts-ignore
@@ -60,10 +61,10 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
           }}
         }}
         // @ts-ignore
-        ModelRootWithPlugins.register('ModelRootWithPlugins');
+        PluginsModelRoot.register('PluginsModelRoot');
         
-        //========== ||||||||||||||||||| =================================================================
-        export class ViewRootWithPlugins extends GameViewRoot {{
+        //========== ||||||||||||||| =================================================================
+        export class PluginsViewRoot extends GameViewRoot {{
           plugins={{}}
           constructor(model) {{
             super(model);
