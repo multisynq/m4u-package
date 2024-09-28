@@ -24,74 +24,25 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
 
     #if UNITY_EDITOR
-      static public string indexOfPlugins_Template__Code = @"
-        import { GameModelRoot } from '@croquet/game-models';
-        import { GameViewRoot } from '@croquet/unity-bridge';
-
-        // ######## Import:
-        {{imports}}
-        import {{vars}} from '{{file}}'
-        {{/imports}}
-        // ########
-
-        export class ModelRootWithPlugins extends GameModelRoot {
-          plugins={}
-          init(options) {
-            // @ts-ignore
-            super.init(options);
-
-            // ######## modelInits from each JsPlugin_Behavior.cs subclass via indexOfPluginsData.js
-            {{#modelInits}}
-            this.plugins['{{modelClass}}'] = {{modelClass}}.create({})
-            {{/modelInits}}
-            // ########
-
-          }
-        }
-        // @ts-ignore
-        ModelRootWithPlugins.register('ModelRootWithPlugins');
-        //--------------------------------------------------------------------------------------------
-        //========== ||||||||||||||||||| =================================================================
-        export class ViewRootWithPlugins extends GameViewRoot {
-          plugins={}
-          constructor(model) {
-            super(model);
-
-            // ######### View:
-            {{#viewInits}}
-            this.plugins['{{viewClass}}'] = new {{viewClass}}(model.plugins['{{modelClass}}'])
-            {{/viewInits}}
-            // #########
-
-          }
-          detach() { 
-            Object.values(this.plugins).forEach(plugin => plugin.detach());
-            super.detach(); 
-          } 
-        }
-      ".LessIndent();
-
-      static public string MakeIndexOfPlugins_JsCode( List<Type> jsPluginTypes ) { 
+      //------------------ ||||||||||||||||||||||||| -------------------------
+      static public string MakeIndexOfPlugins_JsCode( List<JsPluginCode> jsPluginCodes ) { 
         // jsPluginTypes are subclasses of JsPluginInjecting_Behaviour we need
         // var subclasses = KlassHelper.GetSubclassTypes( typeof(JsPluginInjecting_Behaviour));
-        // pluginExports
+        string imports = "";
+        string modelInits = "";
+        string viewInits = "";
+        foreach( JsPluginCode plugCode in jsPluginCodes) {
+          string[] expts    = plugCode._pluginExports;
+          string exptsStr   = string.Join(", ", expts);
+          string plugNm     = plugCode._pluginName;
+          bool typeHasView  = expts.Contains(plugNm+"_View");
+          bool typeHasModel = expts.Contains(plugNm+"_Model");
 
-        string[] codeForEachSubclass(Func<Type, string> formatter) {
-          return jsPluginTypes.Select(formatter).ToArray();
+          imports                      += $"          import {{ {exptsStr} }} from './{plugNm}'\n";
+          if (typeHasModel) modelInits += $"              this.plugins['{plugNm}_Model'] = {plugNm}_Model.create({{}})\n";
+          if (typeHasView) viewInits   += $"              this.plugins['{plugNm}_View'] = new {plugNm}_View(model.plugins['{plugNm}_Model'])\n";
+
         }
-
-        string[] imports = codeForEachSubclass(clz => 
-          // import {{vars}} from '{{file}}'
-          $"import {{ {clz.Name}_Model, {clz.Name}_View }} from './{clz.Name}'"
-        );
-        string[] modelInits  = codeForEachSubclass(clz => 
-          // this.plugins['{{modelClass}}'] = {{modelClass}}.create({})
-          $"this.plugins['{clz.Name}_Model'] = {clz.Name}_Model.create({{}})"
-        );
-        string[] viewInits   = codeForEachSubclass(clz => 
-          // this.plugins['{{viewClass}}'] = new {{viewClass}}(model.plugins['{{modelClass}}'])
-          $"this.plugins['{clz.Name}_View'] = new {clz.Name}_View(model.plugins['{clz.Name}_Model'])"
-        );
 
         string code =  $@"
           // DO NOT EDIT THIS GENERATED FILE, please.  =]
@@ -100,7 +51,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
           import {{ GameViewRoot }} from '@croquet/unity-bridge';
 
           // ######## imports generated from each JsPlugin_Behavior.cs subclass
-          {string.Join('\n', imports)}
+{imports}
           // ########
 
           export class ModelRootWithPlugins extends GameModelRoot {{
@@ -110,7 +61,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
               super.init(options);
 
               // ######## modelInits
-              {string.Join('\n', modelInits)}
+{modelInits}
               // ########
 
             }}
@@ -125,7 +76,7 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
               super(model);
 
               // ######### viewInits
-              {string.Join('\n', viewInits)}
+{viewInits}
               // #########
 
             }}
@@ -137,11 +88,29 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
         ".LessIndent();
         return code;
       }
-    
-      static void GenerateIndexPluginFile(List<Type> jsPluginTypes) {
+      //---------------- ||||||||||||||||||||||| -------------------------
+      public static void GenerateIndexPluginFile(List<JsPluginCode> jsPluginCodes) {
         var plugFldr = Mq_File.AppPluginsFolder();
         var outp = plugFldr.DeeperFile("indexOfPlugins.js");
-        outp.WriteAllText(MakeIndexOfPlugins_JsCode(jsPluginTypes));
+        outp.WriteAllText(MakeIndexOfPlugins_JsCode(jsPluginCodes));
+      }
+
+      //---------------- ||||||||||||||||||||||| -------------------------
+      public static bool CheckIndexJsForPluginsImport() {
+        var idxFile = Mq_File.AppFolder().DeeperFile("index.js");
+        var code = idxFile.ReadAllText();
+        // expect these to be in the file: "PluginsModelRoot", "PluginsViewRoot"
+        bool isOk = code.Contains("PluginsModelRoot") && code.Contains("PluginsViewRoot");
+        if (!isOk) {
+          Debug.LogError(@$"{logPrefix} Missing the 'PluginsModelRoot' and 'PluginsViewRoot' in {idxFile.shortPath} Needed code: --->
+            import {{ StartSession }} from '@croquet/unity-bridge'
+            import {{ PluginsModelRoot, PluginsViewRoot }} from './plugins/indexOfPlugins'
+            import {{ BUILD_IDENTIFIER }} from './buildIdentifier'
+            StartSession(PluginsModelRoot, PluginsViewRoot, BUILD_IDENTIFIER)
+            "+"\n\n\n"
+          );
+        }
+        return isOk;
       }
 
       //------------------ |||||||||||||||||||||||||||||| -------------------------
@@ -269,8 +238,8 @@ abstract public class JsPluginInjecting_Behaviour : MonoBehaviour {
 
 
     public static void InjectJsPluginsList(List<Type> jsPluginTypes) {
-      var jpcs = jsPluginTypes.Select(jcp => InjectOneJsPlugin(jcp).GetJsPluginCode());
-      GenerateIndexPluginFile(jsPluginTypes);
+      var jpcs = jsPluginTypes.Select(jcp => InjectOneJsPlugin(jcp).GetJsPluginCode()).ToList();
+      GenerateIndexPluginFile(jpcs);
     }
 
     static public JsPluginInjecting_Behaviour InjectOneJsPlugin( Type jsPluginType ) {

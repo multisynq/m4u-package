@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -49,6 +50,21 @@ public static class KlassHelper {
         return (TResult)method.Invoke(null, parameters);
       })
       .Where(result => result != null);
+  }
+
+  public static TResult InvokeStaticMethod<TBase, TResult>(string methodName, params object[] parameters) {
+    return (TResult)typeof(TBase)
+      .GetMethod(methodName, BindingFlags.Public | BindingFlags.Static)
+      .Invoke(null, parameters);
+  }
+  public static TResult InvokeStaticMethod<TResult>(Type type, string methodName, params object[] parameters) {
+    UnityEngine.Debug.Log($"InvokeStaticMethod {type.Name}.{methodName}");
+    var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+    if (method != null) {
+      return (TResult)method.Invoke(null, parameters);
+    } else {
+      throw new Exception($"Method {methodName} not found in {type.Name}");
+    }
   }
 
   public static Type[] GetSubclassTypes(Type baseType) {

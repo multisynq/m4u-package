@@ -42,46 +42,46 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
   
   #region JavaScript
     //-------------------- |||||||||||||||| -------------------------
-      public override JsPluginCode GetJsPluginCode() {
-    return new(
-      pluginName: "SynqVar_Mgr",
-      pluginExports: new[] {"SynqVar_Mgr_Model", "SynqVar_Mgr_View"},
-      pluginCode: @"
-        import { Model, View } from '@croquet/croquet';
-        //---------- ||||||||||||||||| -------------------
-        export class SynqVar_Mgr_Model extends Model {
-          varValuesAsMessages = []
-          get gamePawnType() { return '' }
+    public override JsPluginCode GetJsPluginCode() {
+      return new(
+        pluginName: "SynqVar_Mgr",
+        pluginExports: new[] {"SynqVar_Mgr_Model", "SynqVar_Mgr_View"},
+        pluginCode: @"
+          import { Model, View } from '@croquet/croquet';
+          //---------- ||||||||||||||||| -------------------
+          export class SynqVar_Mgr_Model extends Model {
+            varValuesAsMessages = []
+            get gamePawnType() { return '' }
 
-          init(options) {
-            super.init(options)
-            this.subscribe('SynqVar', 'pleaseSetVar', this.onPleaseSetVar) // sent from Unity to JS
-            console.log('### <color=magenta>SynqVar_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>')
-          }
+            init(options) {
+              super.init(options)
+              this.subscribe('SynqVar', 'pleaseSetVar', this.onPleaseSetVar) // sent from Unity to JS
+              console.log('### <color=magenta>SynqVar_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>')
+            }
 
-          onPleaseSetVar(msg) {
-            const varIdx = parseInt(msg.split('|')[0])
-            this.varValuesAsMessages[varIdx] = msg // store the value in the array at the index specified in the message
-            this.publish('SynqVar', 'everybodySetVar', msg) // sent from JS to Unity
+            onPleaseSetVar(msg) {
+              const varIdx = parseInt(msg.split('|')[0])
+              this.varValuesAsMessages[varIdx] = msg // store the value in the array at the index specified in the message
+              this.publish('SynqVar', 'everybodySetVar', msg) // sent from JS to Unity
+            }
           }
-        }
-        SynqVar_Mgr_Model.register('SynqVar_Mgr_Model')
-              
-        //---------- |||||||||||||||| -------------------
-        export class SynqVar_Mgr_View extends View {
-          constructor(model) {
-            super(model)
-            this.model = model
-            console.log('### <color=green>SynqVar_Mgr_View.constructor() <<<<<<<<<<<<<<<<<<<<< </color>')
-            const messages = model.varValuesAsMessages.map( (msg) => (
-              `croquetPub\x01SynqVar\x01varChanged\x01${msg}`
-            ))
-            globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SynqVar', 'everybodySetVar', msg)
+          SynqVar_Mgr_Model.register('SynqVar_Mgr_Model')
+                
+          //---------- |||||||||||||||| -------------------
+          export class SynqVar_Mgr_View extends View {
+            constructor(model) {
+              super(model)
+              this.model = model
+              console.log('### <color=green>SynqVar_Mgr_View.constructor() <<<<<<<<<<<<<<<<<<<<< </color>')
+              const messages = model.varValuesAsMessages.map( (msg) => (
+                `croquetPub\x01SynqVar\x01varChanged\x01${msg}`
+              ))
+              globalThis.theGameEngineBridge.sendBundleToUnity(messages) // MIMICS  model.publish('SynqVar', 'everybodySetVar', msg)
+            }
           }
-        }
-      ".LessIndent()
-    );
-  }
+        ".LessIndent()
+      );
+    }
     //------------------ |||||||||||||||||| -------------------------
     override public void InjectJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
       // if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
