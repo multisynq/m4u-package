@@ -75,8 +75,8 @@ public class SI_JsPlugins: StatusItem {
 
   override public bool Check() { // JS PLUGINS
     var pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
-    //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
-    // lambda function for report from list of types
+    if (pluginRpt.neededTs.Count>0) JsPlugin_Behaviour.CheckIndexJsForPluginsImport();
+    
     bool amMissingPlugins = JsPlugin_Behaviour.LogJsPluginReport(pluginRpt);
     StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
     SetVEViz(amMissingPlugins, AddJsPlugins_Btn);

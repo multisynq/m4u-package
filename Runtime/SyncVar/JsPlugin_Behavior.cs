@@ -87,6 +87,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
       var outp = plugFldr.DeeperFile("indexOfPlugins.js");
       outp.WriteAllText(MakeIndexOfPlugins_JsCode(jsPluginCodes));
     }
+    //------------------ ||||||||||| -------------------------
     public static string IndexJsCode = @$"
       import {{ StartSession }} from '@croquet/unity-bridge'
       import {{ PluginsModelRoot, PluginsViewRoot }} from './plugins/indexOfPlugins'
@@ -94,9 +95,17 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
       StartSession(PluginsModelRoot, PluginsViewRoot, BUILD_IDENTIFIER)
       ".LessIndent();
     //---------------- |||||||||||||||||||||||||||| -------------------------
-    public static bool CheckIndexJsForPluginsImport() {
+    public static void PrependPluginCodeAndWrapExistingCodeInCommentMarkers() {
       var idxFile = Mq_File.AppFolder().DeeperFile("index.js");
       var code = idxFile.ReadAllText();
+      code = IndexJsCode + "\n\n\n" + code;
+      code = "/*\n" + code + "\n*/";
+      idxFile.WriteAllText(code);
+    }
+    //---------------- |||||||||||||||||||||||||||| -------------------------
+    public static bool CheckIndexJsForPluginsImport() {
+      var idxFile = Mq_File.AppFolder().DeeperFile("index.js");
+      var code = (idxFile.Exists()) ? idxFile.ReadAllText() : "";
       // expect these to be in the file: "PluginsModelRoot", "PluginsViewRoot"
       bool isOk = code.Contains("PluginsModelRoot") && code.Contains("PluginsViewRoot");
       if (!isOk) {
@@ -170,7 +179,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
     virtual public void WriteJsPluginCode() {
         // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteJsPluginCode()");
         var jsPlugin = GetJsPluginCode();
-        var file = Mq_File.AppFolder().DeeperFile(jsPlugin.GetRelPath());
+        var file = Mq_File.AppPluginsFolder().EnsureExists().DeeperFile(jsPlugin._pluginName+".js");
         file.WriteAllText(jsPlugin._pluginCode);
         Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin._pluginName, $"%ye%{jsPlugin._pluginName}%gr%").TagColors());  
     }

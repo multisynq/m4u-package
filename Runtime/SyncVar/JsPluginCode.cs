@@ -35,8 +35,6 @@ public class JsPluginCode {
       codeIsGood &= checker(this);
     }
   }
-  //----------- |||||||||| -------------------------
-  public string GetRelPath() { return $"plugins/{_pluginName}.js"; }
 
 }
 

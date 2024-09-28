@@ -50,6 +50,7 @@ public class SI_ReadyTotal: StatusItem {
 
   public void AllAreReady(bool really = true) {
     if (really) {
+      Debug.Log("<color=#55ff55>====== All Multisynq Checks Show Ready! ======</color>");
       StatusSetMgr.ready.success.Set();
       ShowVEs(Awesome_Btn);
       MultisynqBuildAssistantEW.Instance.countdown_ToConvertSuccesses = 3f;

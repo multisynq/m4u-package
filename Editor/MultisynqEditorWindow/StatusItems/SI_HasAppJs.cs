@@ -79,6 +79,26 @@ public class SI_HasAppJs: StatusItem {
 
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
+    if (Mq_File.AppPluginsFolder().Exists()) {
+      var indexJs = Mq_File.AppFolder(true).DeeperFile("index.js");
+      if (indexJs.Exists()) {
+        if (JsPlugin_Behaviour.CheckIndexJsForPluginsImport()) {
+          Notify("index.js already exists and is ready to go!");
+          return;
+        } else {
+          var msg = "index.js already exists, \nbut is missing the import \nstatement for the plugins folder.";
+          Notify(msg);
+          // dialog ask
+          if (EditorUtility.DisplayDialog(
+            "Add Import Statement?",
+            $"{indexJs.shortPath} already exists, \nbut is MISSING needed \nJsPlugin imports.\nExisting code kept, but commented out for you to merge.\n\nReplace code there to fix?",
+            "Yes", "No"
+          )) {
+            JsPlugin_Behaviour.PrependPluginCodeAndWrapExistingCodeInCommentMarkers();
+          }
+        }
+      }
+    }
     string fromDir = Mq_File.StarterTemplateFolder().longPath;
     string toDir   = Mq_File.AppFolder(true).longPath; // here true means log no error if missing
     Mq_Builder.CopyDirectory(fromDir, toDir);
