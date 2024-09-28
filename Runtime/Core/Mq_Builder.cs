@@ -479,10 +479,10 @@ public class Mq_Builder {
     }
 
     // Check that the Js Pulgins are all present
-    var pluginRpt = JsPluginInjecting_Behaviour.AnalyzeAllJsPlugins();
+    var pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
     // bail if any are missing
     if (pluginRpt.tsMissingSomePart.Count > 0) {
-      JsPluginInjecting_Behaviour.LogJsPluginReport(pluginRpt);
+      JsPlugin_Behaviour.LogJsPluginReport(pluginRpt);
       Debug.Log("<color=#ff7777>  --- BUILD HALT --- </color>");
       Debug.LogError("HALT: Cannot build JS because some JS plugins are missing. See guidance in logs above.");
       return;

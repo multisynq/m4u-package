@@ -39,7 +39,7 @@ public static class KlassHelper {
     return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
   }
 
-  public static IEnumerable<TResult> InvokeStaticMethodOnSubclasses<TBase, TResult>(string methodName, params object[] parameters) {
+  public static IEnumerable<TResult> ResultsListOfInvokeStaticMethodOnSubclasses<TBase, TResult>(string methodName, params object[] parameters) {
     return GetSubclassTypes(typeof(TBase))
       .Select(subclass => {
         var method = subclass.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
@@ -50,6 +50,19 @@ public static class KlassHelper {
         return (TResult)method.Invoke(null, parameters);
       })
       .Where(result => result != null);
+  }
+  public static Dictionary<Type, TResult> MapSubclassStaticMethodResults<TBase, TResult>(string methodName, params object[] parameters) {
+    Dictionary<Type, TResult> results = new();
+    
+    foreach (var subclass in GetSubclassTypes(typeof(TBase))) {
+      var method = subclass.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+      if (method == null) {
+        Console.WriteLine($"Method {methodName} not found in {subclass.Name}");
+        continue;
+      }
+      results.Add(subclass, (TResult)method.Invoke(null, parameters));
+    }
+    return results;
   }
 
   public static TResult InvokeStaticMethod<TBase, TResult>(string methodName, params object[] parameters) {

@@ -39,7 +39,7 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_AddJsPlugins_Btn() { // JS PLUGINS  ------------- Click
     Logger.MethodHeader();
-    JsPluginInjecting_Behaviour.InjectMissingJsPlugins();
+    JsPlugin_Behaviour.WriteMissingJsPlugins();
     // Update Asset DB
     AssetDatabase.Refresh();
     
@@ -60,7 +60,7 @@ public class SI_JsPlugins: StatusItem {
   private void Clk_ForceJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader(4);
     if (EditorUtility.DisplayDialog("Force JS Plugins?", "Are you sure you want to force JS Plugins?\nThis will overwrite any existing JS Plugins.", "Yes", "No")) {
-      JsPluginInjecting_Behaviour.InjectAllJsPlugins();
+      JsPlugin_Behaviour.WriteAllJsPlugins();
       Notify("Forced JS Plugins.");
     }
   }
@@ -71,10 +71,10 @@ public class SI_JsPlugins: StatusItem {
   }
 
   override public bool Check() { // JS PLUGINS
-    var pluginRpt = JsPluginInjecting_Behaviour.AnalyzeAllJsPlugins();
+    var pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
     //string report = string.Join(", ", missingJsInjects.Select(x => x.Name));
     // lambda function for report from list of types
-    bool amMissingPlugins = JsPluginInjecting_Behaviour.LogJsPluginReport(pluginRpt);
+    bool amMissingPlugins = JsPlugin_Behaviour.LogJsPluginReport(pluginRpt);
     StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
     SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
     ShowVEs(GotoJsPlugins_Btn, ForceJsPlugins_Btn);

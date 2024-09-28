@@ -29,7 +29,7 @@ namespace Multisynq {
 #endregion
 
 //========== ||||||||||| ====================================================== ||||||||||| ================
-public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class SynqVar_Mgr <<<<<<<<<<<<
+public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mgr <<<<<<<<<<<<
 
   #region Fields
     [SerializeField] private Dictionary<string, SynqVarInfo> syncVars;
@@ -83,9 +83,9 @@ public class SynqVar_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class S
       );
     }
     //------------------ |||||||||||||||||| -------------------------
-    override public void InjectJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
+    override public void WriteJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
       // if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
-      base.InjectJsPluginCode();
+      base.WriteJsPluginCode();
     }
   #endregion
 

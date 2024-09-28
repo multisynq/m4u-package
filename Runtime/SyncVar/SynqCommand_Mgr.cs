@@ -16,7 +16,7 @@ public class SynqCommandAttribute : Attribute {
 }
 
 //========== ||||||||||||||| ===================================================== ||||||||||||||| ============
-public class SynqCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< class SynqCommand_Mgr <<<<<<<<<<<<
+public class SynqCommand_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqCommand_Mgr <<<<<<<<<<<<
   #region Fields
     private Dictionary<string, SynqCommandInfo> SynqCommands;
     private SynqCommandInfo[] SynqCommandsArr;
@@ -51,9 +51,9 @@ public class SynqCommand_Mgr : JsPluginInjecting_Behaviour { // <<<<<<<<<<<< cla
     );
   }
   //------------------ |||||||||||||||||| -------------------------
-  override public void InjectJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
+  override public void WriteJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
     // if (dbg)  Debug.Log($"{logPrefix} override public void OnInjectJsPluginCode()");
-    base.InjectJsPluginCode();
+    base.WriteJsPluginCode();
   }
   #endregion
 

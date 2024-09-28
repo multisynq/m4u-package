@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Multisynq {
 
 //========== |||||||||||||| ==================================
-public class SynqClones_Mgr : JsPluginInjecting_Behaviour {
+public class SynqClones_Mgr : JsPlugin_Behaviour {
   #region Fields
     private Dictionary<int, SynqBehaviour> sbsByNetId = new();
     new static public string[] CodeMatchPatterns() => new[] {@"SynqClones_Mgr.*SynqClone", @"\[SyncedInstances\]"}; 
