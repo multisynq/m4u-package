@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System;
 [CustomEditor(typeof(DefaultAsset))]
-public class JsFileEditorInspector : Editor {
+public class JsFile_Inspector : Editor {
   private VisualElement root;
   private ScrollView codeScrollView;
   private Label codeLabel;

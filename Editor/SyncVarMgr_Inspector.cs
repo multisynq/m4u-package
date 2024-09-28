@@ -3,13 +3,13 @@ using UnityEditor;
 using Multisynq;
 
 [CustomEditor(typeof(SynqVar_Mgr))]
-public class CroquetSynqVarMgrEditor : Editor {
+public class SynqVar_Mgr_Editor : Editor {
 
   public override void OnInspectorGUI() {
     DrawDefaultInspector();
     SynqVar_Mgr manager = (SynqVar_Mgr)target;
     if (GUILayout.Button("Inject JS Plugin Code")) {
-      InjectCode(manager);
+      WriteCode(manager);
     }
     if (GUILayout.Button("Select JS Plugins Folder")) {
       var plFldr = Mq_File.AppFolder().DeeperFolder("plugins").EnsureExists();
@@ -18,8 +18,8 @@ public class CroquetSynqVarMgrEditor : Editor {
     }
   }
 
-  private void InjectCode(SynqVar_Mgr manager) {
-    manager.InjectJsPluginCode();
+  private void WriteCode(SynqVar_Mgr manager) {
+    manager.WriteJsPluginCode();
     AssetDatabase.Refresh();
   }
 }
