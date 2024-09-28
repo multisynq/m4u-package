@@ -59,7 +59,10 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_ForceJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader(4);
-    if (EditorUtility.DisplayDialog("Force JS Plugins?", "Are you sure you want to force JS Plugins?\nThis will overwrite any existing JS Plugins.", "Yes", "No")) {
+    if (EditorUtility.DisplayDialog(
+      "Force JS Plugins?", 
+      $"Are you sure you want to force JS Plugins?\nThis will overwrite JS Plugins in: \n\n{Mq_File.AppPluginsFolder().shortPath}", "Yes", "No"
+    )) {
       JsPlugin_Behaviour.WriteAllJsPlugins();
       Notify("Forced JS Plugins.");
     }

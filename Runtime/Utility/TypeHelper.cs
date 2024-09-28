@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-public static class KlassHelper {
+public static class TypeHelper {
 
   public static MethodInfo FindMethod(
-    Type type, 
+    this Type type, 
     string methodName, 
     BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, 
     Type[] parameterTypes = null
@@ -24,37 +24,25 @@ public static class KlassHelper {
     return null;
   }
 
-  public static Type[] GetImplementingTypes(Type interfaceType) {
+  public static Type[] GetImplementingTypes(this Type interfaceType) {
     return Assembly.GetAssembly(interfaceType)
       .GetTypes()
       .Where(t => t.IsClass && !t.IsAbstract && interfaceType.IsAssignableFrom(t))
       .ToArray();
   }
 
-  public static PropertyInfo[] GetPublicProperties(Type type) {
+  public static PropertyInfo[] GetPublicProperties(this Type type) {
     return type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
   }
 
-  public static MethodInfo[] GetPublicMethods(Type type) {
+  public static MethodInfo[] GetPublicMethods(this Type type) {
     return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
   }
 
-  public static IEnumerable<TResult> ResultsListOfInvokeStaticMethodOnSubclasses<TBase, TResult>(string methodName, params object[] parameters) {
-    return GetSubclassTypes(typeof(TBase))
-      .Select(subclass => {
-        var method = subclass.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
-        if (method == null) {
-          Console.WriteLine($"Method {methodName} not found in {subclass.Name}");
-          return default;
-        }
-        return (TResult)method.Invoke(null, parameters);
-      })
-      .Where(result => result != null);
-  }
-  public static Dictionary<Type, TResult> MapSubclassStaticMethodResults<TBase, TResult>(string methodName, params object[] parameters) {
+  public static Dictionary<Type, TResult> DictOfSubclassStaticMethodResults<TResult>(this Type type, string methodName, params object[] parameters) {
     Dictionary<Type, TResult> results = new();
     
-    foreach (var subclass in GetSubclassTypes(typeof(TBase))) {
+    foreach (var subclass in type.GetSubclassTypes()) {
       var method = subclass.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
       if (method == null) {
         Console.WriteLine($"Method {methodName} not found in {subclass.Name}");
@@ -80,7 +68,7 @@ public static class KlassHelper {
     }
   }
 
-  public static Type[] GetSubclassTypes(Type baseType) {
+  public static Type[] GetSubclassTypes(this Type baseType) {
     return Assembly.GetAssembly(baseType)
       .GetTypes()
       .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(baseType))

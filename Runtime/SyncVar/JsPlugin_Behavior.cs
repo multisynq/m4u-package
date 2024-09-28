@@ -21,9 +21,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
   #if UNITY_EDITOR
     //------------------ ||||||||||||||||||||||||| -------------------------
-    static public string MakeIndexOfPlugins_JsCode( List<JsPluginCode> jsPluginCodes ) { 
-      // jsPluginTypes are subclasses of JsPlugin_Behaviour we need
-      // var subclasses = KlassHelper.GetSubclassTypes( typeof(JsPlugin_Behaviour));
+    static public string MakeIndexOfPlugins_JsCode( List<JsPluginCode> jsPluginCodes ) {
       string imports = "";
       string modelInits = "";
       string viewInits = "";
@@ -112,7 +110,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
     //------------------ |||||||||||||||||||||||||||||| -------------------------
     public static string MakeTemplateDataFromSubclasses() {
 
-      var subclasses = KlassHelper.GetSubclassTypes( typeof(JsPlugin_Behaviour));
+      var subclasses = typeof(JsPlugin_Behaviour).GetSubclassTypes();
 
       string[] varsForType(Func<Type, string> formatter) {
         return subclasses.Select(formatter).ToArray();
@@ -258,7 +256,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
       // 0. For each SynqBehavior
       // 1. Read the script file
-      // 2. Check if it contains a pattern with a needed JsPlugin
+      // 2. Check if it contains a pattern that needs a JsPlugin
       // 3. If it does, add the JsPlugin to the neededPlugins list
       // 4. Check if the class has an instance in the scene
       // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance
@@ -268,26 +266,26 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
       // 0. For each SynqBehavior
       foreach (var behaviour in FindObjectsOfType<SynqBehaviour>(false)){ // false means we skip inactives
         // 1. Read the SynqBehavior script file
-        MonoScript sbScript = MonoScript.FromMonoBehaviour(behaviour);
-        string sbPath = AssetDatabase.GetAssetPath(sbScript);
-        if (sbScript.text == null) {
+        MonoScript synqBehScript = MonoScript.FromMonoBehaviour(behaviour);
+        string            sbPath = AssetDatabase.GetAssetPath(synqBehScript);
+        string       synqBehCode = synqBehScript.text;
+        if (synqBehCode == null) {
           Debug.LogError($"{logPrefix} FindMissingJsPluginTypes() found a SynqBehaviour with no script: {behaviour.name}");
           continue;
         }
-        Dictionary<Type, string[]> codeMatchPatternsByJsPlugin = 
-          KlassHelper.MapSubclassStaticMethodResults<JsPlugin_Behaviour, string[]>(
-            "CodeMatchPatterns"
-          );
-        // 2. Check if it contains a pattern with a needed JsPlugin
-        foreach (var (jsPluginType, codeMatchPatterns) in codeMatchPatternsByJsPlugin) {
-          foreach (string pattern in codeMatchPatterns) {
-            if (Regex.IsMatch(sbScript.text, pattern)) {
+        Dictionary<Type, string[]> codeMatchesByJsPlugin = 
+          typeof(JsPlugin_Behaviour).DictOfSubclassStaticMethodResults<string[]>( "CodeMatchPatterns" );
+
+        // 2. Check if it contains a pattern that needs a JsPlugin
+        foreach (var (jsPluginType, codeMatches) in codeMatchesByJsPlugin) {
+          foreach (string codeMatchRegex in codeMatches) {
+            if (Regex.IsMatch(synqBehCode, codeMatchRegex)) {
               // 2.5 ensure it is not inside a comment
               // if (Regex.IsMatch(sbScript.text, @"//.*" + pattern)) continue; // TODO: add this and test it
 
               // 3. If it does, add the JsPlugin to the neededPlugins list
               rpt.neededTs.Add(jsPluginType);
-              string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsPluginType}</color> for: <color=white>{(pattern.Replace("\\",""))}</color>";
+              string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsPluginType}</color> for: <color=white>{(codeMatchRegex.Replace("\\",""))}</color>";
               rpt.filesThatNeedPlugins.Add(sbPathAndPattern);
               // 4. Check if the class has an instance in the scene
               var jsPluginInstance = (JsPlugin_Behaviour)FindObjectOfType(jsPluginType);
