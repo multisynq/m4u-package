@@ -117,52 +117,6 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
       return isOk;
     }
 
-    //------------------ |||||||||||||||||||||||||||||| -------------------------
-    public static string MakeTemplateDataFromSubclasses() {
-
-      var subclasses = typeof(JsPlugin_Behaviour).GetSubclassTypes();
-
-      string[] varsForType(Func<Type, string> formatter) {
-        return subclasses.Select(formatter).ToArray();
-      }
-
-      string[] imports = varsForType(clz => 
-        $"{{ vars: '{{ {clz.Name}_Model, {clz.Name}_View }}', file: './{clz.Name}' }},"
-      );
-      string[] models  = varsForType(clz => 
-        $"{{ modelClass: '{clz.Name}_Model' }},"
-      );
-      string[] views   = varsForType(clz => 
-        $"{{ viewClass: '{clz.Name}_View', modelClass: '{clz.Name}_Model' }},"
-      );
-
-      string templateDataJsCode = $@"
-        const templateData = {{
-
-          imports: [
-            // data here:  {{ vars: '{{ SynqClones_Mgr_Model }}', file: './SynqClones_Mgr' }},
-            // becomes:    import {{SynqClones_Mgr_Model}} from './SynqClones_Mgr'
-            {string.Join('\n', imports)}
-          ],
-
-          modelInits: [
-            // data here: {{modelClass: 'SynqCommand_Mgr_Model'}},
-            // becomes:  this.plugins['{{modelClass}}'] = {{modelClass}}.create({{}})
-            {string.Join('\n', models)}
-          ],
-
-          viewInits: [
-            // data here: {{ viewClass: 'SynqVar_Mgr_View', modelClass: 'SynqVar_Mgr_Model' }},
-            // becomes:   this.plugins['{{viewClass}}'] = new {{viewClass}}(model.plugins['{{modelClass}}'])
-            {string.Join('\n', views)}
-          ]
-
-        }};
-        module.exports = {{ templateData }};
-      ";
-      return templateDataJsCode;
-    }
-
   #endif
 
   #if !UNITY_EDITOR
@@ -295,7 +249,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
               // 3. If it does, add the JsPlugin to the neededPlugins list
               rpt.neededTs.Add(jsPluginType);
-              string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsPluginType}</color> for: <color=white>{(codeMatchRegex.Replace("\\",""))}</color>";
+              string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsPluginType}</color> for: <color=white>{codeMatchRegex.Replace("\\","")}</color>";
               rpt.filesThatNeedPlugins.Add(sbPathAndPattern);
               // 4. Check if the class has an instance in the scene
               var jsPluginInstance = (JsPlugin_Behaviour)FindObjectOfType(jsPluginType);
@@ -364,7 +318,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
         // Debug.Log(pluginRpt.missingPartOnesTxt);
         Debug.Log($"| <color=#ff5555>MISSING</color>  <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(pluginRpt.tsMissingSomePart)} in {fldr}");
         Debug.Log($"|    To Add Missing JS Plugin Files, in Menu:");
-        Debug.Log($"|    <color=white>Croquet > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
+        Debug.Log($"|    <color=white>Multisynq > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
       }
       else {
         Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(pluginRpt.neededTs)}");

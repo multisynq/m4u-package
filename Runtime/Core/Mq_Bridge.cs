@@ -288,7 +288,9 @@ public class  Mq_Bridge : MonoBehaviour {
     bool success = haveTools && haveBuild;
     if (!success) {
       // report each flag's failure
-      Debug.LogError( $" STOPPING PLAY.  ==>  Have JS tools: {haveTools}, Have JS build: {haveBuild}.");
+      Debug.LogError( $"|>  STOPPING PLAY.  ==>  Have JS tools: {haveTools}, Have JS build: {haveBuild}.");
+      Debug.Log(  "|>  Use menu: | <color=#5555ff>Multisynq</color> <color=white> | Open Build Assistant | [ Check if Ready ]</color> to fix.");
+
       // error(s) will have already been reported
       EditorApplication.ExitPlaymode();
       return;
