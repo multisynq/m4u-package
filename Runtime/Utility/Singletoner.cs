@@ -65,6 +65,12 @@ public static class Singletoner {
     singleton.transform.SetParent(singletons.transform);
     var instance = singleton.GetComponent(compType);
     Debug.Log($"%mg%[Singletoner]%gy% An instance of {compType.Name} is needed in the scene, so '{singleton.name}' was created.".TagColors(), instance);
+    #if UNITY_EDITOR
+      if (!Application.isPlaying) {
+        // mark scene dirty
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(singleton.scene);
+      }
+    #endif
     return instance as MonoBehaviour;
   }
 
