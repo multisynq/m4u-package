@@ -68,7 +68,7 @@ public class SI_JsBuild: StatusItem {
     }
     Mq_Builder.StartBuild(false); // false => no watcher
     AssetDatabase.Refresh();
-    Mq_File.StreamingAssetsAppFolder().SelectAndPing(false);
+    Mq_File.StreamingAssetsAppFolder().EnsureExists().SelectAndPing(false);
     Check(); // recheck (this SI_JsBuild)
   }
 

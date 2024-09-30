@@ -78,7 +78,7 @@ static public class Mq_File {
       Debug.LogError("Could not find App Name in Mq_Bridge!");
       return MakeBlank();
     }
-    var ft = new FolderThing(Path.Combine(Application.streamingAssetsPath, appNm));
+    var ft = new FolderThing(Path.Combine(Application.streamingAssetsPath, appNm), true);
     // Debug.Log($"StreamingAssetsAppFolder: {ft.shortPath}");
     return ft;
   }
