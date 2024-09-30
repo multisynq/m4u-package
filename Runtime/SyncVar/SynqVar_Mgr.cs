@@ -36,7 +36,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
     [SerializeField] private SynqVarInfo[]                   syncVarsArr;
     static char msgSeparator = '|';
     static public string svLogPrefix = "<color=#5555FF>[SynqVar]</color> ";
-    static bool dbg = true;
+    static bool dbg = false;
     new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVar\]"};
   #endregion
   

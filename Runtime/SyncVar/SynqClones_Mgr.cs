@@ -60,7 +60,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
   static public (GameObject, SynqBehaviour) SynqClone(SynqBehaviour sb=null) {
     int      cloneMeNetId = sb.netId;
     GameObject      clone = Instantiate(sb.gameObject);
-    SynqBehaviour newSb = clone.EnsureComp<SynqBehaviour>();
+    SynqBehaviour   newSb = clone.EnsureComp<SynqBehaviour>();
     int      madeOneNetId = newSb.MakeNewId();
 
     Vector3    position = clone.transform.position;
