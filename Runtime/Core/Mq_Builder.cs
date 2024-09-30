@@ -544,6 +544,8 @@ public class Mq_Builder {
       bool success = webpackExit == 0 && errorCount == 0;
       Debug.Log($"recording JS build state: app={appName}, target={target}, success={success}");
       if (success) Debug.Log("<color=#55ff55> >>> SUCCESS <<< </color>  <color=#11cc11>JS build succeeded</color>");
+      else         Debug.Log("<color=#ff5555> >>> BUILD FAILED <<< </color>  <color=#cc1111>JS build failed</color>");
+
       RecordJSBuildState(appName, target, success);
     }
     else {
