@@ -227,7 +227,7 @@ public class MultisynqMenu {
 
   [MenuItem(OpenPackageItem, false, 300)]
   private static void OpenPackage() {
-    Application.OpenURL("https://github.com/croquet/croquet-for-unity-package");
+    Application.OpenURL("https://github.com/multisynq/m4u-package");
   }
 }
 
