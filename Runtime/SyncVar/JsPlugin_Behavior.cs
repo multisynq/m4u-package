@@ -2,7 +2,6 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;              // TODO: move this into the #if UNITY_EDITOR block and wrap dependent code below it
 using System.Text.RegularExpressions; // TODO: include as many of these similarly as we can
 
 #if UNITY_EDITOR
@@ -15,7 +14,7 @@ namespace Multisynq {
 abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
   static public string logPrefix = "[%ye%Js%cy%Plugin%gy%]".TagColors();
-  static bool dbg = true;
+  // static bool dbg = true;
   abstract public JsPluginCode GetJsPluginCode(); // not static since this must find scene MonoBehaviours
   static public string[] CodeMatchPatterns() => new string[]{"You should define CodeMatchPatterns() in your subclass of JsPlugin_Behaviour"};  
 
@@ -51,7 +50,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
         export class PluginsModelRoot extends GameModelRoot {{
           plugins={{}}
           init(options) {{
-            // @ts-ignore
+            //@ts-expect-error: init() missing
             super.init(options);
 
             // ######## modelInits
@@ -60,7 +59,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
           }}
         }}
-        // @ts-ignore
+        //@ts-expect-error: register() missing
         PluginsModelRoot.register('PluginsModelRoot');
         
         //========== ||||||||||||||| =================================================================
@@ -76,7 +75,8 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
           }}
           detach() {{ 
             Object.values(this.plugins).forEach(plugin => plugin.detach());
-            super.detach(); 
+            //@ts-expect-error: detach() missing
+            super.detach();
           }}
         }}
       ".LessIndent();
@@ -150,6 +150,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
             Debug.LogError($"   v");
             Debug.LogError($"   v");
             Debug.LogError($"MISSING JS FILE {jsPlugin._pluginName}.js for {this.GetType().Name}.cs");
+            Debug.Log(      "  FIX  in Menu: <color=white>Multisynq > Open Build Assistant > [Check if Ready]</color>");
             Debug.LogError($"   ^");
             Debug.LogError($"   ^");
             Debug.LogError($"   ^");
