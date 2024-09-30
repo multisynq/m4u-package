@@ -57,7 +57,7 @@ For platforms other than Windows, including any deployed applications, the packa
 
 Now that all dependencies are in place, add the `Croquet Multiplayer` package using this git URL:
 ```
-https://github.com/croquet/croquet-for-unity-package.git
+https://github.com/multisynq/m4u-package.git
 ```
 
 #### Install the Tools
