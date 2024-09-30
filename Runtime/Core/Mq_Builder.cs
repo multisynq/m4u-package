@@ -226,7 +226,7 @@ public class Mq_Builder {
       bridgeComp = bridge;
       runnerComp = bridge.gameObject.GetComponent<Mq_Runner>();
     } else {
-      Debug.LogWarning("No Mq_Bridge component found in the scene of name: '" + scene.name + "'");
+      Debug.LogWarning("Mq_Bridge MISSING. Fix in Menu: <color=white>Multisynq > Open Build Assistant > [Check if Ready]</color>");
     }
 
     sceneName = scene.name;

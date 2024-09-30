@@ -25,11 +25,11 @@ public class SI_JsPlugins: StatusItem {
     string t_js  = "<b><color=#FFFF44>JS</color></b>";
     StatusSetMgr.jsPlugins = new StatusSet( messageLabel, statusImage,
       // (ready, warning, error, success, blank )
-      $"All needed C#-to-{t_js}-Proxy-Plugins found!",
-      $"Missing some C#-to-{t_js}-Proxy-Plugins!",
-      $"Missing some C#-to-{t_js}-Proxy-Plugins!",
-      $"All needed C#-to-{t_js}-Proxy-Plugins found!  Well done!",
-      "C#-to-JS-Proxy-Plugins"
+      $"All needed C#-to-{t_js}-Plugins found!",
+      $"Missing some C#-to-{t_js}-Plugins!",
+      $"Missing some C#-to-{t_js}-Plugins!",
+      $"All needed C#-to-{t_js}-Plugins found!  Well done!",
+      "C#-to-JS-Plugins"
     );
     statusSet = StatusSetMgr.jsPlugins;
   }
