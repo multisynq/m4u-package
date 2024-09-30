@@ -79,6 +79,7 @@ public class SI_HasAppJs: StatusItem {
 
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
+    Notify("Please wait. \n\nImporting node_modules\nand copying starter\ntemplate files...");
     if (Mq_File.AppPluginsFolder().Exists()) {
       var indexJs = Mq_File.AppFolder(true).DeeperFile("index.js");
       if (indexJs.Exists()) {
