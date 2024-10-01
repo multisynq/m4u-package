@@ -14,14 +14,17 @@ NODE=$1
 APPNAME=$2
 TARGET=$3
 
+# echo "Node: $NODE"
+# echo "Running webpack for $APPNAME, target $TARGET"
+
 if [ $# -eq 4 ]; then
 	LOGFILE=$4
-	"$NODE" node_modules/.bin/webpack --config webpack.config.js --watch --mode development --env appName=$APPNAME --env buildTarget=$TARGET --no-color > $LOGFILE 2>&1 &
+	"$NODE" node_modules/.bin/webpack --config webpack.config.js --watch --mode development --env appName="$APPNAME" --env buildTarget="$TARGET" --no-color > $LOGFILE 2>&1 &
 
 	# this output will be read by Mq_Builder, to keep a record of the webpack process id
 	echo "webpack=$!"
 else
-	"$NODE" node_modules/.bin/webpack --config webpack.config.js --mode development --env appName=$APPNAME --env buildTarget=$TARGET --no-color
+	"$NODE" node_modules/.bin/webpack --config webpack.config.js --mode development --env appName="$APPNAME" --env buildTarget="$TARGET" --no-color
 
 	echo "webpack-exit=$?"
 fi

@@ -473,7 +473,7 @@ public class Mq_Builder {
     // 2. app name
     // 3. build target: 'node' or 'webview' or 'webgl'
     // 4. (iff starting a watcher) path to a temporary file to be used for output
-    arguments += $"{nodeExecPath} {appName} {target} ";
+    arguments += $"\"{nodeExecPath}\" \"{appName}\" \"{target}\" ";
     Debug.Log($"<color=yellow>Building JS:</color> {executable} {arguments}");
     if (startWatcher) {
       logFile = Path.GetTempFileName();
