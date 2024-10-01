@@ -32,8 +32,8 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
         bool hasModel = expts.Contains(plugNm+"_Model");
 
         imports                  += $"        import {{ {exptsStr} }} from './{plugNm}'\n";
-        if (hasModel) modelInits += $"            this.plugins['{plugNm}_Model'] = {plugNm}_Model.create({{}})\n";
-        if (hasView) viewInits   += $"            this.plugins['{plugNm}_View'] = new {plugNm}_View(model.plugins['{plugNm}_Model'])\n";
+        if (hasModel) modelInits += $"            this.pluginModels['{plugNm}_Model'] = {plugNm}_Model.create({{}})\n";
+        if (hasView) viewInits   += $"            this.pluginViews['{plugNm}_View'] = new {plugNm}_View(model.pluginModels['{plugNm}_Model'])\n";
       }
 
       string code =  $@"
@@ -48,7 +48,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
         //========== |||||||||||||||| =================================================================
         export class PluginsModelRoot extends GameModelRoot {{
-          plugins={{}}
+          pluginModels={{}}
           init(options) {{
             //@ts-expect-error: init() missing
             super.init(options);
@@ -64,7 +64,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
         
         //========== ||||||||||||||| =================================================================
         export class PluginsViewRoot extends GameViewRoot {{
-          plugins={{}}
+          pluginViews={{}}
           constructor(model) {{
             super(model);
 
@@ -74,7 +74,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
           }}
           detach() {{ 
-            Object.values(this.plugins).forEach(plugin => plugin.detach());
+            Object.values(this.pluginViews).forEach(vPlug => vPlug.detach());
             //@ts-expect-error: detach() missing
             super.detach();
           }}
