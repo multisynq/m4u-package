@@ -236,7 +236,7 @@ public class Mq_Builder {
     #if UNITY_WEBGL //# # # # # # # # # # # # # # # # # # # # # # #
       if (Object.FindObjectOfType<Mq_FileReader>() == null) {
         var cqBridge = Object.FindObjectOfType<Mq_Bridge>();
-        Debug.LogError("Missing required Mq_FileReader in scene: '" + scene.name + "' Add one to your Croquet object!", cqBridge);
+        Debug.LogError("Missing required Mq_FileReader in scene: '" + scene.name + "' Add one to your Multisynq object!", cqBridge);
       }
     #endif //# # # # # # # # # # # # # # # # # # # # # # #
   }
