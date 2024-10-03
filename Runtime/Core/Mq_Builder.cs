@@ -877,12 +877,23 @@ public class Mq_Builder {
       // "postinstall": "npm link <CroquetJSPackageInPackage>"
       string packageJsonPath = Path.Combine(mqJSFolder, "package.json");
       string packageJson = File.ReadAllText(packageJsonPath);
-      string newPackageJson = Regex.Replace(packageJson,
-        "\"postinstall\":.*",
-        $"\"postinstall\": \"npm link {CroquetJSPackageInPackage}\"");
+      string oldPostInstall = Regex.Match(packageJson, "\"postinstall\":.*").Value;
+      // string linkToPath = Path.GetRelativePath(packageJsonPath, CroquetJSPackageInPackage);
+      string linkToPath = CroquetJSPackageInPackage;
+      string newPostInstall = $"\"postinstall\": \"npm link {linkToPath}\"";
+      string newPackageJson = Regex.Replace(packageJson, "\"postinstall\":.*", newPostInstall);
+
       if (newPackageJson != packageJson) {
-        Debug.Log("Patched package.json to link to local m4u-package");
+        Debug.Log("Patched package.json to link to local m4u-package: " + newPostInstall);
         File.WriteAllText(packageJsonPath, newPackageJson);
+      } else {
+        if (oldPostInstall == newPostInstall) {
+          Debug.Log($"{packageJsonPath}' already patched.  =]");
+        } else {
+          Debug.LogError($" Patching of '{packageJsonPath}' failed!");
+          Debug.Log($"We want:   \"postinstall\": \"npm link {CroquetJSPackageInPackage}\"");
+          Debug.Log($"But we have: {newPostInstall}");
+        }
       }
 
       int errorCount = 0; // look for errors in logging from npm i
