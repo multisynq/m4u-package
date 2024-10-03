@@ -95,7 +95,7 @@ public class SI_HasAppJs: StatusItem {
             $"{indexJs.shortPath} already exists, \nbut is MISSING needed \nJsPlugin imports.\nExisting code kept, but commented out for you to merge.\n\nReplace code there to fix?",
             "Yes", "No"
           )) {
-            JsPlugin_Behaviour.PrependPluginCodeAndWrapExistingCodeInCommentMarkers();
+            JsPlugin_Writer.PrependPluginCodeAndWrapExistingCodeInCommentMarkers();
           }
         }
       }
