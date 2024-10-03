@@ -74,7 +74,7 @@ public class MultisynqMenu {
 
   private const string InstallJSToolsItem = "Multisynq/Install JS Build Tools";
 
-  private const string OpenDiscordItem = "Multisynq/Join Croquet Discord...";
+  private const string OpenDiscordItem = "Multisynq/Join Multisynq Discord...";
   private const string OpenPackageItem = "Multisynq/Open package on Github...";
 
   [MenuItem(BuildNowItem, false, 100)]
@@ -222,7 +222,7 @@ public class MultisynqMenu {
 
   [MenuItem(OpenDiscordItem, false, 300)]
   private static void OpenDiscord() {
-    Application.OpenURL("https://croquet.io/discord");
+    Application.OpenURL("https://multisynq.io/discord");
   }
 
   [MenuItem(OpenPackageItem, false, 300)]
