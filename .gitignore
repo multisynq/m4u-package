@@ -64,3 +64,4 @@ $RECYCLE.BIN/
 
 # GitHub pages
 /_site/
+node_modules.meta

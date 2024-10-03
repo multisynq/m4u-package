@@ -132,7 +132,7 @@ Set the **App Name** to the `your_app_name` part of the path, illustrated above,
 In the app's directory create a file called `index.js`, that will be responsible for importing both the model- and view-side code that your app requires.  Here is an example:
 
 ```javascript
-import { StartSession, GameViewRoot } from "@croquet/unity-bridge";
+import { StartSession, GameViewRoot } from "@multisynq/m4u-package";
 import { MyModelRoot } from "./Models";
 
 StartSession(MyModelRoot, GameViewRoot);
@@ -144,7 +144,7 @@ To get started, you can copy any Models file from under the `MultisynqJS` folder
 
 ```javascript
 import { Actor, mix, AM_Spatial } from "@croquet/worldcore-kernel";
-import { GameModelRoot } from "@croquet/game-models";
+import { GameModelRoot } from "@multisynq/m4u-package";
 
 class TestActor extends mix(Actor).with(AM_Spatial) {
     get gamePawnType() { return "basicCube" }

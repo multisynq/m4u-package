@@ -1,4 +1,3 @@
-/* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const RemovePlugin = require('remove-files-webpack-plugin');
@@ -61,6 +60,10 @@ module.exports = env => {
             }
         },
         resolve: {
+            alias: {
+                // force all croquet imports to use the same instance
+                "@croquet/croquet": require.resolve("@croquet/croquet/cjs/croquet-croquet.js"),
+            },
             fallback: {
                 "crypto": false,
                 ...(isWebGL ? {

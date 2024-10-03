@@ -4,7 +4,12 @@
 .last-installed-tools
 .last-build-state
 
+# * for .meta files
+buildIdentifier.js*
 scene-definitions.txt*
 
 node_modules
+node_modules.meta
+
 dist
+dist.meta
