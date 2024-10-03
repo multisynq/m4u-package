@@ -61,8 +61,10 @@ module.exports = env => {
         },
         resolve: {
             alias: {
-                // force all croquet imports to use the same instance
+                // force all croquet imports to use the same package instance
+                // this is specifically to avoid needing node_modules in m4u-package
                 "@croquet/croquet": require.resolve("@croquet/croquet/cjs/croquet-croquet.js"),
+                "@croquet/worldcore-kernel": require.resolve("@croquet/worldcore-kernel"),
             },
             fallback: {
                 "crypto": false,
