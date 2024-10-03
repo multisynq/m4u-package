@@ -2,6 +2,9 @@ using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+#if UNITY_EDITOR
+  using UnityEditor;
+#endif
 
 namespace Multisynq {
 
@@ -58,6 +61,20 @@ static public class Mq_File {
 
   static public FolderThing AppStreamingAssetsOutputFolder(bool canBeMissing = false) {
     return new FolderThing(Application.streamingAssetsPath + "/" + GetAppNameForOpenScene(), canBeMissing);
+  }
+
+  static public FolderThing WebGL_BuildOutputFolder( bool canBeMissing = false) {
+    return new FolderThing( Application.dataPath + "/WebGLTemplates/MultisynqLoader/", canBeMissing);
+  }
+
+  static public FolderThing BuildOutputFolder(bool canBeMissing = false) {
+    #if UNITY_EDITOR
+      return (EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL)
+              ? WebGL_BuildOutputFolder(canBeMissing) 
+              : AppStreamingAssetsOutputFolder(canBeMissing);
+    #else
+      return AppStreamingAssetsOutputFolder(canBeMissing);
+    #endif
   }
 
   static public FileThing AppIndexJs() {

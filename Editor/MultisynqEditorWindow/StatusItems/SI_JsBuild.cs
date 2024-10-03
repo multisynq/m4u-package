@@ -83,11 +83,11 @@ public class SI_JsBuild: StatusItem {
     }
     boF.SelectAndPing();
     EditorApplication.delayCall += ()=>{
-      var ixdF = Mq_File.AppStreamingAssetsOutputFolder(false).DeeperFile("index.html");
-      if (ixdF.Exists()) ixdF.SelectAndPing(false);
-      else {
-        NotifyAndLogWarning("Could not find\nindex.html in\nJS Build output folder");
-      }
+        var ixdF = Mq_File.BuildOutputFolder(false).DeeperFile("index.html");
+        if (ixdF.Exists()) ixdF.SelectAndPing(false);
+        else {
+          NotifyAndLogWarning("Could not find\nindex.html in\nJS Build output folder");
+        }
     };
   }
 
