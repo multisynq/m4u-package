@@ -262,11 +262,11 @@ For example in the file:
 
 Change the line:
 
-`"io.multisynq.multiplayer": "https://github.com/multisynq/m4u-package.git",`
+    "io.multisynq.multiplayer": "https://github.com/multisynq/m4u-package.git",
 
 To:
 
-`"io.multisynq.multiplayer": "file:../../../m4u-package",`
+    "io.multisynq.multiplayer": "file:../../../m4u-package",
 
 Of course, this folder path assumes you have a particular file structure with sibling project and package folders. Your path may vary a bit. Let the Unity Editor console log messages be your guide to get this wired up correctly.
 
