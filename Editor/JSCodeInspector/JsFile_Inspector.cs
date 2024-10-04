@@ -1,10 +1,10 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System;
+
 [CustomEditor(typeof(DefaultAsset))]
 public class JsFile_Inspector : Editor {
   private VisualElement root;
@@ -48,12 +48,13 @@ public class JsFile_Inspector : Editor {
       return base.CreateInspectorGUI();
     }
   }
-
+  int MAX_CODE = 15000;
   private void LoadAndDisplayCode(string path) {
     if (string.IsNullOrEmpty(cachedCode)) {
-      cachedCode = ApplySyntaxHighlighting(File.ReadAllText(path));
+      string code = File.ReadAllText(path);
+      if (code.Length > MAX_CODE) code = code[..MAX_CODE] + "\n...";
+      cachedCode = ApplySyntaxHighlighting(code);
     }
-
     codeLabel.text = cachedCode;
     UpdateFontSize(fontSizeSlider.value);
   }
