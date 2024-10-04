@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Linq;
 
+//================= ||||||||||| ==================
 public static class Singletoner {
 
+  //------------- |||||||||| -----------------------------------------------------------
   public static T EnsureInst<T>(T instance, bool dontDestroyOnLoad = true) where T : MonoBehaviour {
     if (instance == null) {
       var instances = Object.FindObjectsOfType<T>(true);
@@ -27,13 +29,12 @@ public static class Singletoner {
     // Debug.Log($"%mg%[Singletoner]%gy% Instance {typeof(T).Name}.".TagColors(), instance);
     return instance;
   }
-
+  //------------------------- |||||||||||||||| -----------------------------------------------------------
   public static MonoBehaviour EnsureInstByType(System.Type type) {//}, bool dontDestroyOnLoad = true) {
     if (!typeof(MonoBehaviour).IsAssignableFrom(type)) {
       Debug.LogError($"[Singletoner] EnsureInstByType called with a non-MonoBehaviour type: {type.Name}");
       return null;
     }
-
     var instances = Object.FindObjectsOfType(type, true) as MonoBehaviour[];
     var instance = instances.FirstOrDefault(i => i.enabled);
     if (instance == null && instances.Length > 0) {
@@ -54,13 +55,10 @@ public static class Singletoner {
     // Debug.Log($"%mg%[Singletoner]%gy% ByType Instance {type.Name}.".TagColors(), instance);
     return instance;
   }
-
-  private static MonoBehaviour EnsureInstanceInternal(System.Type compType) {//}, bool dontDestroyOnLoad) {
+  //------------------------- ||||||||||||||||||||||| ------------------------------------------------------
+  private static MonoBehaviour EnsureInstanceInternal(System.Type compType) {
     // Ensure a GameObject _Singletons is present
     GameObject singletons = GameObject.Find("_Singletons") ?? new GameObject("_Singletons");
-    // if (dontDestroyOnLoad) {
-    //   Object.DontDestroyOnLoad(singletons);
-    // }
     // Add a new GameObject with the desired component
     GameObject singleton = new GameObject($"[{compType.Name}]", compType);
     singleton.transform.SetParent(singletons.transform);
@@ -74,7 +72,7 @@ public static class Singletoner {
     #endif
     return instance as MonoBehaviour;
   }
-
+  //----------------- ||||||||||||||||||||| -----------------------------------------------------------
   private static void CleanupExtraInstances(MonoBehaviour[] instances, MonoBehaviour keepInstance) {
     // Debug.LogWarning($"[Singletoner] Multiple instances of {keepInstance.GetType().Name} found. Keeping one instance and destroying others.");
     foreach (var instance in instances) {
