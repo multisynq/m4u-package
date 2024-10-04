@@ -63,7 +63,7 @@ public class SI_JsPlugins: StatusItem {
       "Force JS Plugins?", 
       $"Are you sure you want to force JS Plugins?\nThis will overwrite JS Plugins in: \n\n{Mq_File.AppPluginsFolder().shortPath}", "Yes", "No"
     )) {
-      JsPlugin_Behaviour.WriteAllJsPlugins();
+      JsPlugin_Writer.WriteNeededJsPluginFiles();
       Notify("Forced JS Plugins.");
     }
   }
@@ -74,14 +74,17 @@ public class SI_JsPlugins: StatusItem {
   }
 
   override public bool Check() { // JS PLUGINS
-    var pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
-    if (pluginRpt.neededTs.Count>0) JsPlugin_Behaviour.CheckIndexJsForPluginsImport();
-    
+    var         pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
+    var   hasPluginImport = JsPlugin_Writer.IndexJsHasPluginsImport();
+    bool needsSomePlugins = pluginRpt.neededTs.Count>0;
     bool amMissingPlugins = JsPlugin_Writer.LogJsPluginReport(pluginRpt);
-    StatusSetMgr.jsPlugins.SetIsGood(!amMissingPlugins);
-    SetVEViz(amMissingPlugins, AddJsPlugins_Btn);
+    bool  puglinProblems  = amMissingPlugins || (needsSomePlugins && !hasPluginImport);
+    if (puglinProblems) Debug.Log($"[SI_JsPlugins] amMissingPlugins: {amMissingPlugins}  needsSomePlugins: {needsSomePlugins}  hasPluginImport: {hasPluginImport}  puglinProblems: {puglinProblems}\npuglinProblems   = amMissingPlugins || (needsSomePlugins && !hasPluginImport)");
+
+    StatusSetMgr.jsPlugins.SetIsGood(!puglinProblems);
+    SetVEViz(puglinProblems, AddJsPlugins_Btn);
     ShowVEs(GotoJsPlugins_Btn, ForceJsPlugins_Btn);
-    return amMissingPlugins;
+    return puglinProblems;
   }
 
 

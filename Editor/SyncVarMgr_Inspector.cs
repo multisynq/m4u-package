@@ -19,7 +19,7 @@ public class SynqVar_Mgr_Editor : Editor {
   }
 
   private void WriteCode(SynqVar_Mgr manager) {
-    manager.WriteJsPluginCode();
+    manager.WriteMyJsPluginFile();
     AssetDatabase.Refresh();
   }
 }

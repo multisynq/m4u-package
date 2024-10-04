@@ -10,6 +10,7 @@ public static class Singletoner {
       if (instance == null && instances.Length > 0) {
         instance = instances[0];
         instance.enabled = true;
+        instance.gameObject.SetActive(true);
         // Debug.Log($"[Singletoner] Enabled the only existing instance of {typeof(T).Name}.");
       }
       if (instance == null) {

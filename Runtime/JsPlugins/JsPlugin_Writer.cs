@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 namespace Multisynq {
 
-public class JsPlugin_Writer {
+public class JsPlugin_Writer: MonoBehaviour {
   static public string logPrefix = "[%ye%Js%cy%Plugin_Writer%gy%]".TagColors();
     #if UNITY_EDITOR
     //------------------ ||||||||||||||||||||||||| -------------------------
@@ -72,48 +72,43 @@ public class JsPlugin_Writer {
       return code;
     }
     //---------------- ||||||||||||||||||||||| -------------------------
-    public static void GenerateIndexOfPluginsFile(List<JsPluginCode> jsPluginCodes) {
+    public static void WriteIndexOfPluginsFile(List<JsPluginCode> jsPluginCodes) {
       var plugFldr = Mq_File.AppPluginsFolder();
       var outp = plugFldr.DeeperFile("indexOfPlugins.js");
       outp.WriteAllText(MakeIndexOfPlugins_JsCode(jsPluginCodes));
     }
-    //------------------ ||||||||||| -------------------------
-    public static string IndexJsCode = @$"
-      import {{ StartSession }} from '@multisynq/m4u-package'
-      import {{ PluginsModelRoot, PluginsViewRoot }} from './plugins/indexOfPlugins'
-      import {{ BUILD_IDENTIFIER }} from './buildIdentifier'
-      StartSession(PluginsModelRoot, PluginsViewRoot, BUILD_IDENTIFIER)
-      ".LessIndent();
-    //---------------- |||||||||||||||||||||||||||| -------------------------
-    public static void PrependPluginCodeAndWrapExistingCodeInCommentMarkers() {
+
+    //---------------- |||||||||||||||||||||||||||||||||||||||||||||||||||| -------------------------
+    public static void PrependPluginCodeAndWrapExistingCodeInCommentMarkers(bool needsPlugins) {
       var idxFile = Mq_File.AppFolder().DeeperFile("index.js");
       var code = idxFile.ReadAllText();
-      code = IndexJsCode + "\n\n\n" + code;
-      code = "/*\n" + code + "\n*/";
+      code = IndexJsCode(needsPlugins, code);
       idxFile.WriteAllText(code);
     }
-    //---------------- |||||||||||||||||||||||||||| -------------------------
-    public static bool CheckIndexJsForPluginsImport() {
+    //---------------- ||||||||||||||||||||||| -------------------------
+    public static bool IndexJsHasPluginsImport() {
       var idxFile = Mq_File.AppFolder().DeeperFile("index.js");
       var code = (idxFile.Exists()) ? idxFile.ReadAllText() : "";
       // expect these to be in the file: "PluginsModelRoot", "PluginsViewRoot"
-      bool isOk = code.Contains("PluginsModelRoot") && code.Contains("PluginsViewRoot");
+      // use RegExp so we know if they are on a commented comment of // or not
+      bool isOk = Regex.IsMatch(code, "[^//]*PluginsModelRoot") && Regex.IsMatch(code, "[^//]*PluginsViewRoot");
       if (!isOk) {
         Debug.LogError(@$"{logPrefix} Missing the 'PluginsModelRoot' and 'PluginsViewRoot' in {idxFile.shortPath} Needed code: --->
-          {IndexJsCode}" + "\n\n\n"
+          {IndexJsCode(true)}" + "\n\n\n"
         );
       }
       return isOk;
     }
-    static public void WriteJsPluginCode(JsPluginCode jsPlugin) {
-        // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteJsPluginCode()");
-        var file = Mq_File.AppPluginsFolder().EnsureExists().DeeperFile(jsPlugin._pluginName+".js");
-        file.WriteAllText(jsPlugin._pluginCode);
-        Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin._pluginName, $"%ye%{jsPlugin._pluginName}%gr%").TagColors());
+    //---------------- |||||||||||||||||||| ----------------------------
+    static public void WriteOneJsPluginFile(JsPluginCode jsPlugin) {
+      // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteOneJsPlugin()");
+      var file = Mq_File.AppPluginsFolder().EnsureExists().DeeperFile(jsPlugin._pluginName+".js");
+      file.WriteAllText(jsPlugin._pluginCode);
+      Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin._pluginName, $"%ye%{jsPlugin._pluginName}%gr%").TagColors());
     }
 
-
-    static public void CheckIfMyJsCodeIsPresent(JsPluginCode jsPlugin, string className) {
+    //---------------- |||||||||||||||||| ------------------------------
+    static public void JsPluginFileExists(JsPluginCode jsPlugin, string className) {
         var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._pluginName}.js");
         if (modelClassPath.Exists()) {
             Debug.Log($"{logPrefix} '{jsPlugin._pluginName}.js' already present at '{modelClassPath.longPath}'");
@@ -130,28 +125,31 @@ public class JsPlugin_Writer {
             EditorApplication.isPlaying = false;
         }
     }
-
-    public static void WriteAllJsPlugins() {
-      var az = AnalyzeAllJsPlugins();
-      var allPluginTypes = az.neededTs;
-      Debug.Log($"%mag%WRITE ALL%gy%{az.neededOnesTxt}".TagColors());
-      WriteJsPlugins( allPluginTypes.ToList() );
+    //---------------- |||||||||||||||||||||||| -------------------------------
+    public static void WriteNeededJsPluginFiles(JsPluginReport jsPluginRpt =  null) {
+      var rpt = jsPluginRpt ?? AnalyzeAllJsPlugins();
+      if (!rpt.needsSomePlugins) return;
+      Debug.Log($"%mag%WRITE ALL%gy%{rpt.neededOnesTxt}".TagColors());
+      WriteJsPluginsAndTheirIndex(   rpt.neededTs.ToList(), jsPluginRpt );
     }
-    public static void WriteMissingJsPlugins() {
-      var missingPluginTypes = AnalyzeAllJsPlugins().tsMissingSomePart;
-      WriteJsPlugins( missingPluginTypes.ToList() );
+    //---------------- ||||||||||||||||||||| ---------------------------
+    public static void WriteMissingJsPlugins( JsPluginReport jsPluginRpt = null) {
+      var rpt = jsPluginRpt ?? AnalyzeAllJsPlugins();
+      WriteJsPluginsAndTheirIndex( rpt.tsMissingSomePart.ToList(), jsPluginRpt );
     }
-
-    public static void WriteJsPlugins(List<Type> jsPluginTypes) {
-      var jpcs = jsPluginTypes.Select(jcp => InjectOneJsPlugin(jcp).GetJsPluginCode()).ToList();
-      GenerateIndexOfPluginsFile(jpcs); // Also sync the indexOfPlugins file
+    //---------------- ||||||||||||||||||||||||||| ----------------------------------
+    public static void WriteJsPluginsAndTheirIndex(List<Type> jsPluginTypes, JsPluginReport jsPluginRpt = null) {
+      var jpcs = jsPluginTypes.Select(jpt => JsPlugin_ToSceneAndFile(jpt).GetJsPluginCode()).ToList();
+      if (jpcs.Count == 0) return;
+      var rpt = jsPluginRpt ?? AnalyzeAllJsPlugins();
+      var allNeededJsPlugins = rpt.neededTs.Select(jpt => JsPlugin_ToSceneAndFile(jpt).GetJsPluginCode()).ToList();
+      WriteIndexOfPluginsFile( allNeededJsPlugins );
     }
-
-
-    static public JsPlugin_Behaviour InjectOneJsPlugin( Type jsPluginType ) {
+    //------------------------------ ||||||||||||||||||||||| ----------------------------------
+    static public JsPlugin_Behaviour JsPlugin_ToSceneAndFile( Type jsPluginType ) {
       var jsPluginMB = Singletoner.EnsureInstByType(jsPluginType) as JsPlugin_Behaviour;
       Debug.Log($"{logPrefix} Ensured GameObject with a '%ye%{jsPluginType.Name}%gy%' on it.".TagColors(), jsPluginMB.gameObject);
-      jsPluginMB.WriteJsPluginCode();
+      jsPluginMB.WriteMyJsPluginFile();
       return jsPluginMB;
     }
 
@@ -185,12 +183,9 @@ public class JsPlugin_Writer {
       public string haveInstOnesTxt;
       public string haveJsFileOnesTxt;
       public string missingPartOnesTxt;
-
+      public bool   needsSomePlugins = false;
     }
     
-    // static public SynqBehaviour[] activeSyncBehaviours = new SynqBehaviour[0];
-    public static Func<bool, SynqBehaviour[]> FindSynqBehObjects;
-    public static Func<Type, bool, UnityEngine.Object> CopyOf_FindObjectOfType;
 
     //-------------------------- ||||||||||||||||||| ----------------------------------------
     static public JsPluginReport AnalyzeAllJsPlugins() {
@@ -207,7 +202,7 @@ public class JsPlugin_Writer {
       // 7. Check if the file exists
 
       // 0. For each SynqBehavior
-      foreach (var behaviour in FindSynqBehObjects(false)){ // false means we skip inactives
+      foreach (var behaviour in FindObjectsOfType<SynqBehaviour>(false)){ // false means we skip inactives
         // 1. Read the SynqBehavior script file
         MonoScript synqBehScript = MonoScript.FromMonoBehaviour(behaviour);
         string            sbPath = AssetDatabase.GetAssetPath(synqBehScript);
@@ -231,7 +226,7 @@ public class JsPlugin_Writer {
               string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsPluginType}</color> for: <color=white>{codeMatchRegex.Replace("\\","")}</color>";
               rpt.filesThatNeedPlugins.Add(sbPathAndPattern);
               // 4. Check if the class has an instance in the scene
-              var jsPluginInstance = (JsPlugin_Behaviour)CopyOf_FindObjectOfType(jsPluginType, false);
+              var jsPluginInstance = (JsPlugin_Behaviour)FindObjectOfType(jsPluginType, false);
               // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance.
               // Also continue if it is disabled
               if (jsPluginInstance == null || !jsPluginInstance.enabled) {
@@ -269,6 +264,7 @@ public class JsPlugin_Writer {
       rpt.haveInstOnesTxt        = $"{logPrefix} {countOfCount(rpt.haveSceneInstancesOfTs, rpt.neededTs)} JsPlugins %gre%have%gy% an instance in scene: {rptHaves}".TagColors();
       rpt.haveJsFileOnesTxt      = $"{logPrefix} {countOfCount(rpt.tsThatAreReady,         rpt.neededTs)} JsPlugins are %gre%ready%gy% to go: {rptAOKs}".TagColors();
       rpt.missingPartOnesTxt     = $"{logPrefix} {countOfCount(rpt.tsMissingSomePart,      rpt.neededTs)} JsPlugins are %red%MISSING%gy% a part: {rptList(rpt.tsMissingSomePart)}".TagColors();
+      rpt.needsSomePlugins = rpt.neededTs.Count > 0;
       return rpt;
     }
     //---------------- ||||||||||||||||| ----------------------------------------
@@ -305,6 +301,68 @@ public class JsPlugin_Writer {
 
       return amMissingPlugins;
     }
+
+    public static string IndexJsCode(bool usesPlugins, string existingCode=null) => @$"
+      import {{ BUILD_IDENTIFIER }} from './buildIdentifier'
+      import {{ StartSession }}     from '@multisynq/m4u-package'
+
+      // ==== Choice A: ==== If you are using any JsPlugins like [SynqVar] or [SynqRPC]
+      {(usesPlugins?"":"//")} import {{ PluginsModelRoot as _ModelRoot, PluginsViewRoot as _ViewRoot }} from './plugins/indexOfPlugins'
+
+      // ==== Choice B: ==== If you want to use the default base classes
+      {(usesPlugins?"//":"")} import {{ GameModelRoot as _ModelRoot, GameViewRoot as _ViewRoot }} from '@multisynq/m4u-package'
+
+      //=== ||||||||||| =================================== ||||||| ||||||  ========
+      class MyModelRoot extends _ModelRoot {{ // Learn about Croquet Models: https://croquet.io/dev/docs/croquet/Model.html
+        init(options) {{
+          // @ts-expect-error: init() missing
+          super.init(options)
+        }}
+      }}
+      // @ts-expect-error: register() missing
+      MyModelRoot.register('MyModelRoot')
+
+      //=== |||||||||| ================================== ||||||| |||||  ========
+      class MyViewRoot extends _ViewRoot {{ // Learn about Croquet Views: https://croquet.io/dev/docs/croquet/View.html
+        constructor(model) {{ // calling StartSession() will pass an instance of the model above to tie them together
+          super(model)
+        }}
+      }}
+
+      //============ ||||||| ||||||||  ========
+      // Learn about Croquet Sessions: https://croquet.io/dev/docs/croquet/Session.html
+      StartSession(MyModelRoot, MyViewRoot, BUILD_IDENTIFIER)
+
+      {RelegatedCode(existingCode)}
+      ".LessIndent();
+
+    public static string RelegatedCode(string existingCode=null) => (existingCode==null) ? "" : @$"
+      /*
+        NOTICE:
+        In order to get you up and running, your code has been relegated down here as a comment.
+        You can uncomment and merge the logic you desire into the code above.
+        Primarily this occurs when you are using JsPlugins that require the import of PluginsModelRoot and PluginsViewRoot.
+        If you want JsPlugins, make sure to keep references to PluginsModelRoot and PluginsViewRoot referenced.
+        If you do not want JsPlugins, then hunt through your in-scene *.cs code to remove use of the SynqBehaviour classes.
+
+        {existingCode.Replace("*/", "* /")}
+
+      */
+    ".LessIndent();
+
+    static public void WriteIndexJsFile(bool usesPlugins, string existingCode=null) {
+      var idxFile = Mq_File.AppIndexJs();
+      var code = IndexJsCode(usesPlugins, existingCode);
+      idxFile.WriteAllText(code);
+    }
+
+    //------------------ ||||||||||| -------------------------
+    // public static string IndexJsCode = @$"
+    //   import {{ StartSession }} from '@multisynq/m4u-package'
+    //   import {{ PluginsModelRoot, PluginsViewRoot }} from './plugins/indexOfPlugins'
+    //   import {{ BUILD_IDENTIFIER }} from './buildIdentifier'
+    //   StartSession(PluginsModelRoot, PluginsViewRoot, BUILD_IDENTIFIER)
+    //   ".LessIndent();
 
 
   #endif

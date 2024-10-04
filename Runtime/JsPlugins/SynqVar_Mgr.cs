@@ -83,9 +83,9 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       );
     }
     //------------------ |||||||||||||||||| -------------------------
-    override public void WriteJsPluginCode() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
+    override public void WriteMyJsPluginFile() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
       // if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
-      base.WriteJsPluginCode();
+      base.WriteMyJsPluginFile();
     }
   #endregion
 

@@ -20,46 +20,29 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 
   virtual public void Start() {
     #if UNITY_EDITOR
-      CheckIfMyJsCodeIsPresent();
+      JsPluginFileExists();
     #endif
   }
 
   #if UNITY_EDITOR
-    virtual public void WriteJsPluginCode() {
-        // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteJsPluginCode()");
+    virtual public void WriteMyJsPluginFile() {
+        // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteMyJsPluginFile()");
         var jsPlugin = GetJsPluginCode();
-        JsPlugin_Writer.WriteJsPluginCode(jsPlugin);
+        JsPlugin_Writer.WriteOneJsPluginFile(jsPlugin);
     }
   #else
-      virtual public void WriteJsPluginCode() { }
+      virtual public void WriteMyJsPluginFile() { }
   #endif
 
   #if UNITY_EDITOR
-    public void CheckIfMyJsCodeIsPresent() {
-      var jsPlugin = GetJsPluginCode();
-      JsPlugin_Writer.CheckIfMyJsCodeIsPresent(jsPlugin, this.GetType().Name);
+    public void JsPluginFileExists() {
+      JsPlugin_Writer.JsPluginFileExists(GetJsPluginCode(), this.GetType().Name);
     }
     //---------------- |||||||||||||||||||||||||||| -------------------------
-    public static bool CheckIndexJsForPluginsImport() {
-      return JsPlugin_Writer.CheckIndexJsForPluginsImport();
-    }
-
-    public static void EnsureFinders() {
-      // JsPlugin_Writer.activeSyncBehaviours = FindObjectsOfType<SynqBehaviour>(false);
-      JsPlugin_Writer.FindSynqBehObjects      = FindObjectsOfType<SynqBehaviour>;
-      JsPlugin_Writer.CopyOf_FindObjectOfType = FindObjectOfType;
-    }
-
-    public static void WriteAllJsPlugins() {
-      EnsureFinders();
-      JsPlugin_Writer.WriteAllJsPlugins();
-    }
     public static void WriteMissingJsPlugins() {
-      EnsureFinders();
       JsPlugin_Writer.WriteMissingJsPlugins();
     }
     static public JsPlugin_Writer.JsPluginReport AnalyzeAllJsPlugins() {
-      EnsureFinders();
       return JsPlugin_Writer.AnalyzeAllJsPlugins();
     }
   #endif

@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Multisynq;
+using Codice.Client.Common.GameUI;
 
 public class SI_HasAppJs: StatusItem {
 
@@ -76,47 +77,53 @@ public class SI_HasAppJs: StatusItem {
       };
     }
   }
-
+  //---------- ||||||||||||||||| -------------------------
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
     Notify("Please wait. \n\nImporting node_modules\nand copying starter\ntemplate files...");
-    if (Mq_File.AppPluginsFolder().Exists()) {
-      var indexJs = Mq_File.AppFolder(true).DeeperFile("index.js");
-      if (indexJs.Exists()) {
-        if (JsPlugin_Behaviour.CheckIndexJsForPluginsImport()) {
-          Notify("index.js already exists and is ready to go!");
-          return;
-        } else {
-          var msg = "index.js already exists, \nbut is missing the import \nstatement for the plugins folder.";
-          Notify(msg);
-          // dialog ask
-          if (EditorUtility.DisplayDialog(
-            "Add Import Statement?",
-            $"{indexJs.shortPath} already exists, \nbut is MISSING needed \nJsPlugin imports.\nExisting code kept, but commented out for you to merge.\n\nReplace code there to fix?",
-            "Yes", "No"
-          )) {
-            JsPlugin_Writer.PrependPluginCodeAndWrapExistingCodeInCommentMarkers();
-          }
-        }
+    // in a moment, run MakeAppJsFile()
+    EditorApplication.delayCall += ()=>{ MakeAppJsFile(); };
+  }
+  private void                           MakeAppJsFile() {
+    // See if we need plugins
+    var jsPluginRpt = JsPlugin_Writer.AnalyzeAllJsPlugins();
+    var indexJs = Mq_File.AppIndexJs();
+    if ( ! indexJs.Exists() ) {
+      Debug.Log($" {indexJs.shortPath} missing.  Creating it.");
+      Mq_File.AppFolder().EnsureExists();
+      JsPlugin_Writer.WriteIndexJsFile( jsPluginRpt.needsSomePlugins );
+      if (jsPluginRpt.needsSomePlugins) {
+        JsPlugin_Writer.WriteNeededJsPluginFiles(jsPluginRpt);
       }
+    } else {
+        var msg = "index.js already exists, \nbut is missing the import \nstatement for the plugins folder.";
+        Notify(msg);
+        // dialog ask
+        if (EditorUtility.DisplayDialog(
+          "Add Import Statement?",
+          $"{indexJs.shortPath} already exists, \nbut is MISSING needed \nJsPlugin imports.\nYes to & prepend needed code, but keep your code (commented out) for merging.\n\nNo to cancel.",
+          "Yes", "No"
+        )) {
+          JsPlugin_Writer.WriteIndexJsFile( jsPluginRpt.needsSomePlugins, indexJs.ReadAllText());
+        }
     }
-    string fromDir = Mq_File.StarterTemplateFolder().longPath;
-    string toDir   = Mq_File.AppFolder(true).longPath; // here true means log no error if missing
-    Mq_Builder.CopyDirectory(fromDir, toDir);
+    // string fromDir = Mq_File.StarterTemplateFolder().longPath;
+    // string toDir   = Mq_File.AppFolder(true).longPath; // here true means log no error if missing
+    // Mq_Builder.CopyDirectory(fromDir, toDir);
     AssetDatabase.Refresh();
     Check(); // recheck (this SI_HasAppJs)
     edWin.CheckAllStatusForReady();
   }
-
+  //---------- ||||||||||||||||| -------------------------
   private void Clk_HasAppJs_Docs() {// HAS APP JS  ------------- Click
     Logger.MethodHeaderAndOpenUrl();
   }
-
+  //---------- ||||||||||||||||||| -------------------------
   private void Clk_GotoAppJsFolder() {// HAS APP JS  ------------- Click
     Logger.MethodHeader();
     Mq_File.AppFolder().DeeperFile("index.js").SelectAndPing();
   }
-
+  //---------- ||||||||||||||||| -------------------------
   private void Clk_GotoAppJsFile() {// HAS APP JS  ------------- Click
     Logger.MethodHeader();
     Mq_File.AppFolder().DeeperFile("index.js").SelectAndPing();
