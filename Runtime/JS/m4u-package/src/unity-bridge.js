@@ -2192,7 +2192,7 @@ async function unityDrivenStartSession() {
     socketPortStr,
     manualStart,
   } = theGameEngineBridge;
-  
+
   console.log({ manualStart });
 
   const sceneFileName = "scene-definitions.txt";

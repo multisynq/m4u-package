@@ -42,7 +42,7 @@ public class Mq_Runner : MonoBehaviour {
     private static string nodeExecPath = ""; // provided by Mq_Bridge
 
   #endregion
-  
+
   struct CroquetNodeProcess : IJob {
     public int port;
 
@@ -216,7 +216,9 @@ public class Mq_Runner : MonoBehaviour {
         JobHandle jobHandle = job.Schedule();
       } else {
         // cases (d), (f)
-        TimedLog($"ready to run 'node node-main.js {port}' in {appSourcePath}");
+        TimedLog($"ready to run '{pathToNode} node-main.js {port}' in {appSourcePath}\n" +
+                 $"    cd {appSourcePath}\n" +
+                 $"    {pathToNode} node-main.js {port}");
       }
     }
 

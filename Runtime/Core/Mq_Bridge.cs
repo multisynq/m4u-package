@@ -736,13 +736,13 @@ public class  Mq_Bridge : MonoBehaviour {
 
     if (bridgeState == "foundJSBuild") {
       SetBridgeState("waitingForConnection");
+      Debug.Log($"==== [1] bridgeState==waitingForConnection | WebSocket is {( (clientSock == null)? "awaiting OnOpen()" : "<color=#44ff44>OPEN!</color>" )}");
       if (INTEROP_BRIDGE) {
         // nothing special to do; connection is already available
       } else {
         StartWS(); // will move on when socket has been set up
       }
     } else if (bridgeState == "waitingForConnection") {
-      Debug.Log($"==== [1] bridgeState==waitingForConnection | WebSocket is {( (clientSock == null)? "awaiting OnOpen()" : "<color=#44ff44>OPEN!</color>" )}");
       if (!INTEROP_BRIDGE && clientSock == null) return; // not ready yet
 
       // configure which logs are forwarded
@@ -1271,7 +1271,7 @@ public class  Mq_Bridge : MonoBehaviour {
     string argString = args.Length > 2 ? args[2] : "";
     string topic = $"{scope}:{eventName}";
     if (croquetSubscriptions.ContainsKey(topic)) {
-      foreach ((GameObject gameObject, Action<string> handler) sub in croquetSubscriptions[topic].ToArray()) { // take copy in case some mutating happens 
+      foreach ((GameObject gameObject, Action<string> handler) sub in croquetSubscriptions[topic].ToArray()) { // take copy in case some mutating happens
         sub.handler(argString);
       }
     }
