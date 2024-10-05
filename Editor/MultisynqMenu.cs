@@ -238,7 +238,7 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
     BuildTarget target = report.summary.platform;
     bool isWindowsBuild = target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64;
     string jsTarget = isWindowsBuild ? "node" : (target == BuildTarget.WebGL ? "webgl" : "webview");
-    
+
     Debug.LogWarning($"Building for target {jsTarget}");
 
     Scene activeScene = EditorSceneManager.GetActiveScene();
@@ -256,7 +256,7 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
       readyToBuild = false;
     }
 
-    if (readyToBuild) { // ok so far 
+    if (readyToBuild) { // ok so far
       // find all the appNames that are going into the build
       HashSet<string> appNames = new HashSet<string>();
       string previousScenePath = activeScene.path;
@@ -291,8 +291,16 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
 
     // everything seems fine.  copy the tools record into the StreamableAssets folder
     CopyJSToolsRecord();
-    // and on Windows, copy our pre-supplied node.exe too.
-    if (isWindowsBuild) CopyNodeExe();
+    //
+    // and on Windows, copy our pre-supplied node.exe too,
+    // as well as the node_datachannel.node library
+    if (isWindowsBuild) {
+      CopyNodeExe();
+      CopyNodeDataChannelLib();
+    } else {
+      // on other platforms, delete the the library to save space
+      FileUtil.DeleteFileOrDirectory(Mq_Builder.NodeDataChannelLibInBuild);
+    }
   }
 
   private void CopyJSToolsRecord() {
@@ -303,10 +311,19 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
     FileUtil.ReplaceFile(src, dest);
   }
 
-
   private void CopyNodeExe() {
     string src = Mq_Builder.NodeExeInPackage;
     string dest = Mq_Builder.NodeExeInBuild;
+    string destDir = Path.GetDirectoryName(dest);
+    Directory.CreateDirectory(destDir);
+    FileUtil.ReplaceFile(src, dest);
+  }
+  public static void CopyNodeDataChannelLib() {
+    // copy node_datachannel.node from node_modules to StreamingAssets
+    // so that the relative link "../build/Release/node_datachannel.node"
+    // works (relative to the bundled StreamingAssets/<app>/node-main.js)
+    string src = Mq_Builder.NodeDataChannelLibInNodeModules;
+    string dest = Mq_Builder.NodeDataChannelLibInBuild;
     string destDir = Path.GetDirectoryName(dest);
     Directory.CreateDirectory(destDir);
     FileUtil.ReplaceFile(src, dest);
@@ -322,6 +339,9 @@ class Mq_BuildPostprocess : IPostprocessBuildWithReport {
       string dest = Mq_Builder.NodeExeInBuild;
       FileUtil.DeleteFileOrDirectory(dest);
       FileUtil.DeleteFileOrDirectory(dest + ".meta");
+    } else {
+      // if we temporarily deleted node_datachannel.node (see above), restore it
+      Mq_BuildPreprocess.CopyNodeDataChannelLib();
     }
   }
 }

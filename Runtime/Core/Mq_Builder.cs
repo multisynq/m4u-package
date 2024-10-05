@@ -288,6 +288,22 @@ public class Mq_Builder {
     get { return Path.GetFullPath("Packages/io.multisynq.multiplayer/.JSTools/_Runtime/Platforms/Node/node.exe"); }
   }
 
+
+  // node-datachannel dynamically loads the node_datachannel.node library
+  // from "../build/Release/node_datachannel.node"
+  // relative to the bundled StreamingAssets/<app>/node-main.js)
+
+  public static string NodeDataChannelLibInNodeModules {
+    get {
+      string nodeModulesFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "MultisynqJS", "node_modules"));
+      return Path.Combine(nodeModulesFolder, "node-datachannel", "build", "Release", "node_datachannel.node");
+    }
+  }
+
+  public static string NodeDataChannelLibInBuild {
+    get { return Path.Combine(Application.streamingAssetsPath, "build", "Release", "node_datachannel.node"); }
+  }
+
   public struct JSBuildDetails {
     public JSBuildDetails(string name, bool useNode, string pathToNode) {
       appName = name;
@@ -916,6 +932,14 @@ public class Mq_Builder {
             await Task.Delay(100);
           }
         }
+
+        // copy the node_datachannel.node library file to StreamingAssets
+        // this is only needed when running on Node, but we don't know that yet
+        if (File.Exists(NodeDataChannelLibInNodeModules)) {
+          if (File.Exists(NodeDataChannelLibInBuild)) File.Delete(NodeDataChannelLibInBuild);
+          File.Copy(NodeDataChannelLibInNodeModules, NodeDataChannelLibInBuild);
+        }
+        else throw new Exception("node_datachannel.node not found in node_modules");
       }
       else Debug.Log("package-lock.json has not changed; skipping npm install");
 
@@ -1071,7 +1095,7 @@ Then select Assets/Settings/Mq_Settings.asset in Unity Editor & set the 'Path To
 
   public static void CopyDirectory(string sourceDir, string destinationDir, bool template = false) {
     var ftSource = new FolderThing(sourceDir);
-    var ftDest = new FolderThing(destinationDir);
+    var ftDest = new FolderThing(destinationDir, true);
     if (template) Debug.Log($"Copying '{ftSource.shortPath}' to '{ftDest.shortPath}'");
     if (!Directory.Exists(destinationDir)) {
       Directory.CreateDirectory(destinationDir);
