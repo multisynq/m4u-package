@@ -567,6 +567,13 @@ public class  Mq_Bridge : MonoBehaviour {
       debugFlags = debugFlags == "" ? "offline" : $"{debugFlags},offline";
     }
 
+    // manualStart can only be used in the editor
+    #if UNITY_EDITOR
+      bool manualStart = (croquetRunner.manualStart && croquetRunner.showWebview);
+    #else
+      bool manualStart = false;
+    #endif
+
     ReadyForSessionProps props = new ReadyForSessionProps() {
       apiKey = appProperties.apiKey,
       appId = appProperties.appPrefix + "." + appName,
@@ -575,7 +582,7 @@ public class  Mq_Bridge : MonoBehaviour {
       sessionName = sessionName,
       debugFlags = debugFlags,
       isEditor = Application.isEditor,
-      manualStart = (croquetRunner.manualStart && croquetRunner.showWebview)
+      manualStart = manualStart,
     };
 
     string propsJson = JsonUtility.ToJson(props);
