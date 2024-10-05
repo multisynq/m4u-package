@@ -12,4 +12,4 @@ export PATH="$1:$PATH"
 # which node
 
 # this expects npm to be available in the Mq_Settings.pathToNode
-npm i
+npm ci

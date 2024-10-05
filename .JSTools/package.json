@@ -22,6 +22,7 @@
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
+    "@croquet/croquet": "^2.0.0-35",
     "@croquet/worldcore-kernel": "^2.0.0-alpha",
     "@multisynq/m4u-package": "file:../../../../m4u-package/Runtime/JS/m4u-package",
     "assert": "^2.1.0",
