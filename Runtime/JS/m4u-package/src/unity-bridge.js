@@ -2221,8 +2221,8 @@ async function unityDrivenStartSession() {
   // Include the BuildIdentifier to force builds with different C# & .js project code to be distinct.
   const options = { c4uPackageVersion: packageVersion, sceneText, BuildIdentifier };
 
-  // To debug Croquet Session start, uncomment  start_croquet button in index-webview_or_node.html
-  const startButton = document.getElementById("start_croquet");
+  // To debug Croquet Session start, uncomment  start_croquet button in webview.html
+  const startButton = PLATFORM_WEBVIEW && document.getElementById("start_croquet");
   if (startButton && manualStart) {
     console.log("Waiting for start button to be pressed within the WebView instance");
     await new Promise((resolve) => startButton.onclick = resolve); // hangs here until the button is clicked
