@@ -874,26 +874,25 @@ public class Mq_Builder {
       CopyDirectory(toolsRoot, mqJSFolder, true);
 
       // patch copied package.json to point m4u-package to the local package
-      // "postinstall": "npm link <CroquetJSPackageInPackage>"
+      // "@multisynq/m4u-package": "<CroquetJSPackageInPackage>"
       string packageJsonPath = Path.Combine(mqJSFolder, "package.json");
       string packageJson = File.ReadAllText(packageJsonPath);
-      string oldPostInstall = Regex.Match(packageJson, "\"postinstall\":.*").Value;
-      // string linkToPath = Path.GetRelativePath(packageJsonPath, CroquetJSPackageInPackage);
-      string linkToPath = CroquetJSPackageInPackage;
-      string newPostInstall = $"\"postinstall\": \"npm link {linkToPath}\"";
-      string newPackageJson = Regex.Replace(packageJson, "\"postinstall\":.*", newPostInstall);
+      string oldPackageLine = Regex.Match(packageJson, "\"@multisynq/m4u-package\":.*\"").Value;
+      string relativePath = Path.GetRelativePath(mqJSFolder, CroquetJSPackageInPackage);
+      string newPackageLine = $"\"@multisynq/m4u-package\": \"file:{relativePath}\"";
+      string newPackageJson = Regex.Replace(packageJson, oldPackageLine, newPackageLine);
 
       if (newPackageJson != packageJson) {
-        Debug.Log("Patched package.json to link to local m4u-package: " + newPostInstall);
+        Debug.Log("Patched package.json to use local package: " + newPackageLine);
         File.WriteAllText(packageJsonPath, newPackageJson);
+      } else if (oldPackageLine == newPackageLine) {
+        Debug.Log($"'{packageJsonPath}' already has local m4u-package.  =]");
+      } else if (String.IsNullOrEmpty(oldPackageLine)) {
+        Debug.LogError($"Could not find '@multisynq/m4u-package' in '{packageJsonPath}'");
       } else {
-        if (oldPostInstall == newPostInstall) {
-          Debug.Log($"{packageJsonPath}' already patched.  =]");
-        } else {
-          Debug.LogError($" Patching of '{packageJsonPath}' failed!");
-          Debug.Log($"We want:   \"postinstall\": \"npm link {CroquetJSPackageInPackage}\"");
-          Debug.Log($"But we have: {newPostInstall}");
-        }
+        Debug.LogError($" Patching of '{packageJsonPath}' failed!");
+        Debug.Log($"We want:     {newPackageLine}");
+        Debug.Log($"But we have: {oldPackageLine}");
       }
 
       int errorCount = 0; // look for errors in logging from npm i
