@@ -143,12 +143,6 @@ module.exports = env => {
                 inject: 'body',
                 chunks: ['lobby'],
             }),
-            isWebGL && new webpack.ProvidePlugin({
-                Buffer: ['buffer', 'Buffer'],
-            }),
-            isWebGL && new webpack.ProvidePlugin({
-                process: 'process/browser',
-            }),
         ].filter(x => x), // removes any undefined by the && predicate being false
         externals: env.buildTarget !== 'node' ? [] :
             {
