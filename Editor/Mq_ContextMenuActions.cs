@@ -24,9 +24,9 @@ public class Mq_ContextMenuActions
         }
 
         string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "Mq_DefaultSettings.asset");
-        Debug.Log("Loading Mq_Bridge prefab from path: Packages/com.croquet.multiplayer/Prefabs/Mq_Bridge.prefab");
+        Debug.Log("Loading Mq_Bridge prefab from path: Packages/com.multisynq.multiplayer/Prefabs/Mq_Bridge.prefab");
 
-        Debug.Log($"Attempting to load Mq_DefaultSettings asset from path: /Packages/com.croquet.multiplayer/Runtime/Settings/Mq_DefaultSettings.asset");
+        Debug.Log($"Attempting to load Mq_DefaultSettings asset from path: /Packages/com.multisynq.multiplayer/Runtime/Settings/Mq_DefaultSettings.asset");
 
         //Find the Mq_DefaultSettings asset in the package
         var allAssetPaths = AssetDatabase.GetAllAssetPaths();
