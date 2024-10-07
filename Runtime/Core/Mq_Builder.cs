@@ -318,7 +318,7 @@ public class Mq_Builder {
 
   public static JSBuildDetails GetSceneBuildDetails() {
     Scene activeScene = SceneManager.GetActiveScene();
-    if (activeScene.name != sceneName) {
+    if (activeScene.name != sceneName || sceneBridgeComponent == null) {
       // look in the scene for an object with a Mq_Bridge component,
       // and if found cache its build details
       CacheSceneComponents(activeScene);
