@@ -4,9 +4,9 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System;
-
+//========== |||||||||||||||| ====================================================
 [CustomEditor(typeof(DefaultAsset))]
-public class JsFile_Inspector : Editor {
+public class JsFile_Inspector : Editor { //====================
   private VisualElement root;
   private ScrollView codeScrollView;
   private Label codeLabel;
@@ -14,7 +14,9 @@ public class JsFile_Inspector : Editor {
   private SliderInt fontSizeSlider;
   static public int fontSize = 16;
   private string cachedCode;
+  readonly int MAX_CODE = 15000;
 
+  //--------------------------- |||||||||||||||||| --------------------------
   public override VisualElement CreateInspectorGUI() {
 
     string path = AssetDatabase.GetAssetPath(target);
@@ -48,7 +50,7 @@ public class JsFile_Inspector : Editor {
       return base.CreateInspectorGUI();
     }
   }
-  int MAX_CODE = 15000;
+  // --------- |||||||||||||||||| --------------------------
   private void LoadAndDisplayCode(string path) {
     if (string.IsNullOrEmpty(cachedCode)) {
       string code = File.ReadAllText(path);
@@ -58,17 +60,17 @@ public class JsFile_Inspector : Editor {
     codeLabel.text = cachedCode;
     UpdateFontSize(fontSizeSlider.value);
   }
-
+  // --------- |||||||||||||| -------------------------------
   private void UpdateFontSize(int _fontSize) {
     codeLabel.style.fontSize = _fontSize;
     fontSize = _fontSize;
     FitToInspector();
   }
-
+  // --------- ||||||||||||||||| -------------------------------
   private void OnGeometryChanged(GeometryChangedEvent evt) {
     FitToInspector();
   }
-
+  // --------- |||||||||||||| -------------------------------
   private void FitToInspector() {
     if (root == null) return;
 
@@ -88,40 +90,41 @@ public class JsFile_Inspector : Editor {
     codeLabel.style.width = new StyleLength(StyleKeyword.Auto);
     codeLabel.style.flexShrink = 0;
   }
-
+  // --------- ||||||||||||||| -------------------------------
   private bool IsValidFileType(string path) {
     string[] validExtensions = { ".js", ".ts", ".jsx", ".tsx", ".jslib" };
     return System.Array.Exists(validExtensions, ext => path.ToLower().EndsWith(ext));
   }
   
+  // ----------- ||||||||||||||||||||||| -------------------------------
   private string ApplySyntaxHighlighting(string code) {
-  string ColorWrap(string s, string color) => $"<color={color}>{s}</color>";
-  string Yellow(string s) => ColorWrap(s, "#FFD702");
-  string Tan(   string s) => ColorWrap(s, "#E8E890");
-  string Green( string s) => ColorWrap(s, "#6B9955");
-  string Blue(  string s) => ColorWrap(s, "#569CD6");
-  string Orange(string s) => ColorWrap(s, "#FFA500");
-  string White( string s) => ColorWrap(s, "white");
-  string Mag(   string s) => ColorWrap(s, "#DB70D6");
-  string Cyan(  string s) => ColorWrap(s, "#4EC9B0");
+    string ColorWrap(string s, string color) => $"<color={color}>{s}</color>";
+    string Yellow(string s) => ColorWrap(s, "#FFD702");
+    string Tan(   string s) => ColorWrap(s, "#E8E890");
+    string Green( string s) => ColorWrap(s, "#6B9955");
+    string Blue(  string s) => ColorWrap(s, "#569CD6");
+    string Orange(string s) => ColorWrap(s, "#FFA500");
+    string White( string s) => ColorWrap(s, "white");
+    string Mag(   string s) => ColorWrap(s, "#DB70D6");
+    string Cyan(  string s) => ColorWrap(s, "#4EC9B0");
 
-  code = Regex.Replace(code, @"color", "c0l0r"); // hide the word "color" from the syntax highlighter
-  code = Regex.Replace(code, @"(\=)[^>|==]",            m => Mag(m.Value));
-  code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
-  code = Regex.Replace(code, @"(\(|\))",         m => Mag(m.Value));
-  code = Regex.Replace(code, @"(\{|\})",         m => Yellow(m.Value));
-  code = Regex.Replace(code, @"(\;)",            m => Blue(m.Value));
-  code = Regex.Replace(code, @"(\,)",            m => White(m.Value));
-  code = Regex.Replace(code, @"(//.*)",          m => Green(m.Value));
-  code = Regex.Replace(code, "c0l0r", "color"); // restore the word "color"
+    code = Regex.Replace(code, @"color", "c0l0r"); // hide the word "color" from the syntax highlighter
+    code = Regex.Replace(code, @"(\=)[^>|==]",            m => Mag(m.Value));
+    code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
+    code = Regex.Replace(code, @"(\(|\))",         m => Mag(m.Value));
+    code = Regex.Replace(code, @"(\{|\})",         m => Yellow(m.Value));
+    code = Regex.Replace(code, @"(\;)",            m => Blue(m.Value));
+    code = Regex.Replace(code, @"(\,)",            m => White(m.Value));
+    code = Regex.Replace(code, @"(//.*)",          m => Green(m.Value));
+    code = Regex.Replace(code, "c0l0r", "color"); // restore the word "color"
 
-  var keywordColors = new Dictionary<string, Func<string, string>> { { @"\bclass\s+(\w+)\b", Cyan }, { @"\b(if|else|for|while|return|class)\b", Orange }, { @"\b(from|import|export)\b", Mag }, { @"\b(function|var|let|const|extends)\b", Blue }
-  };
+    var keywordColors = new Dictionary<string, Func<string, string>> { { @"\bclass\s+(\w+)\b", Cyan }, { @"\b(if|else|for|while|return|class)\b", Orange }, { @"\b(from|import|export)\b", Mag }, { @"\b(function|var|let|const|extends)\b", Blue }
+    };
 
-  foreach (var kvp in keywordColors) {
-      code = Regex.Replace(code, kvp.Key, m => kvp.Value(m.Value));
-  }
+    foreach (var kvp in keywordColors) {
+        code = Regex.Replace(code, kvp.Key, m => kvp.Value(m.Value));
+    }
 
-  return White(code);
+    return White(code);
   }
 }

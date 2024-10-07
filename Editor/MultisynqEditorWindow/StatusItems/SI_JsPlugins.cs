@@ -39,7 +39,7 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_AddJsPlugins_Btn() { // JS PLUGINS  ------------- Click
     Logger.MethodHeader();
-    JsPlugin_Behaviour.WriteMissingJsPlugins();
+    JsPlugin_Writer.WriteMissingJsPlugins();
     // Update Asset DB
     AssetDatabase.Refresh();
     
@@ -74,7 +74,7 @@ public class SI_JsPlugins: StatusItem {
   }
 
   override public bool Check() { // JS PLUGINS
-    var         pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
+    var         pluginRpt = JsPlugin_Writer.AnalyzeAllJsPlugins();
     var   hasPluginImport = JsPlugin_Writer.IndexJsHasPluginsImport();
     bool needsSomePlugins = pluginRpt.neededTs.Count>0;
     bool amMissingPlugins = JsPlugin_Writer.LogJsPluginReport(pluginRpt);
