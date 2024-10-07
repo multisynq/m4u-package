@@ -8,10 +8,10 @@
         "com.unity.addressables": "1.19.19",
         "com.unity.inputsystem": "1.5.0"
     },
-    "keywords": ["multiplayer", "croquet", "networking"],
+    "keywords": ["multiplayer", "networking", "croquet", "multisynq"],
     "author":{
-        "name":"Croquet Labs",
-        "email":"support@croquet.io",
-        "url":"https://croquet.io"
+        "name":"Multisynq",
+        "email":"support@multisynq.io",
+        "url":"https://multisynq.io"
     }
 }
