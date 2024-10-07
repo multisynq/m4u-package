@@ -504,7 +504,7 @@ public class Mq_Builder {
     }
 
     // Check that the Js Pulgins are all present
-    var pluginRpt = JsPlugin_Behaviour.AnalyzeAllJsPlugins();
+    var pluginRpt = JsPlugin_Writer.AnalyzeAllJsPlugins();
     // bail if any are missing
     if (pluginRpt.tsMissingSomePart.Count > 0) {
       JsPlugin_Writer.LogJsPluginReport(pluginRpt);

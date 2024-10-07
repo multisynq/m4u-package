@@ -315,7 +315,7 @@ public class JsPlugin_Writer: MonoBehaviour {
       //=== ||||||||||| =================================== ||||||| ||||||  ========
       class MyModelRoot extends _ModelRoot {{ // Learn about Croquet Models: https://croquet.io/dev/docs/croquet/Model.html
         init(options) {{
-          // @ts-expect-error: init() missing
+          // @ts-ignore-error: init() missing
           super.init(options)
         }}
       }}
