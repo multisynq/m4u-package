@@ -51,6 +51,7 @@ public class SI_JsPlugins: StatusItem {
   private void Clk_GotoJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader(4);
     // CqFile.AppFolder().DeeperFolder("plugins").EnsureExists().SelectAndPing();
+    Mq_File.AppPluginsFolder().EnsureExists();
     var plFldr = Mq_File.AppFolder().DeeperFolder("plugins");
     if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
     else                            plFldr.SelectAndPing();
@@ -63,6 +64,7 @@ public class SI_JsPlugins: StatusItem {
       "Force JS Plugins?", 
       $"Are you sure you want to force JS Plugins?\nThis will overwrite JS Plugins in: \n\n{Mq_File.AppPluginsFolder().shortPath}", "Yes", "No"
     )) {
+      Mq_File.AppPluginsFolder().EnsureExists();
       JsPlugin_Writer.WriteNeededJsPluginFiles();
       Notify("Forced JS Plugins.");
     }

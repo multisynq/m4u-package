@@ -5,7 +5,7 @@ using Unity.Jobs;
 using System.Diagnostics;
 using System.IO;
 using Debug = UnityEngine.Debug;
-
+using System.Text.RegularExpressions;
 
 namespace Multisynq {
 
@@ -123,7 +123,20 @@ public class Mq_Runner : MonoBehaviour {
 
     // figure out the web url, whatever is going to happen
     // Use the port number determined by the bridge
+
+    // TODO: Remove appName from webURL as it is not needed. We also need to change the server.
+
+    // if appName has any characters that are not alphanumeric _ or - then we need to through an error\
+    // We don't want to allow spaces either
+    if (!Regex.IsMatch(appName, @"^[a-zA-Z0-9._-]+$")) {
+      Debug.LogError("Invalid appName. appName can only contain alphanumeric words separated by \".\", \"_\", \"-\" ]");
+      yield break;
+    }
+
     string webURL = $"http://localhost:{port}/{appName}/index.html";
+    // string escapedAppName = Uri.EscapeDataString(appName);
+    // string webURL = $"http://localhost:{port}/{escapedAppName}/index.html";
+
     localReflector = PlayerPrefs.GetString("sessionIP", "");
     if (localReflector != "") {
       webURL += $"?reflector=ws://{localReflector}/reflector&files=http://{localReflector}/files/";

@@ -874,7 +874,7 @@ public class Mq_Builder {
     string nodeModulesFolder = Path.Combine(mqJSFolder, "node_modules");
     string installRecord = JSToolsRecordInEditor;
 
-    try {
+    // try {
       bool needsNPMInstall;
       if (FindJSToolsRecord() == null) needsNPMInstall = true; // nothing installed; run the whole process
       else if (!Directory.Exists(nodeModulesFolder)) needsNPMInstall = true; // node_modules folder is missing
@@ -935,8 +935,17 @@ public class Mq_Builder {
 
         // copy the node_datachannel.node library file to StreamingAssets
         // this is only needed when running on Node, but we don't know that yet
+        //Application.streamingAssetsPath, "build", "Release"
+        // extract path of filename:
+        string tgtDir = Path.GetDirectoryName(NodeDataChannelLibInBuild);
+        Debug.Log($"Copying node_datachannel.node to {tgtDir}");
+        var nodeDataChLibInBuild = new FolderThing( tgtDir );
+
+        nodeDataChLibInBuild.EnsureExists();
         if (File.Exists(NodeDataChannelLibInNodeModules)) {
           if (File.Exists(NodeDataChannelLibInBuild)) File.Delete(NodeDataChannelLibInBuild);
+          Debug.Log($"Copying {NodeDataChannelLibInNodeModules} ");
+          Debug.Log($"     to {NodeDataChannelLibInBuild}");
           File.Copy(NodeDataChannelLibInNodeModules, NodeDataChannelLibInBuild);
         }
         else throw new Exception("node_datachannel.node not found in node_modules");
@@ -967,10 +976,10 @@ public class Mq_Builder {
 
         return true; // success!
       }
-    }
-    catch (Exception e) {
-      Debug.LogError(e);
-    }
+    // }
+    // catch (Exception e) {
+    //   Debug.LogError(e);
+    // }
 
     // failed
     if (File.Exists(installRecord)) File.Delete(installRecord); // make clear that the installation failed

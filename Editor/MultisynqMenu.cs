@@ -299,7 +299,8 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
       CopyNodeDataChannelLib();
     } else {
       // on other platforms, delete the the library to save space
-      FileUtil.DeleteFileOrDirectory(Mq_Builder.NodeDataChannelLibInBuild);
+      Debug.Log("Deleting node_datachannel.node");
+      if (File.Exists(Mq_Builder.NodeDataChannelLibInBuild)) FileUtil.DeleteFileOrDirectory(Mq_Builder.NodeDataChannelLibInBuild);
     }
   }
 
@@ -322,6 +323,8 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
     // copy node_datachannel.node from node_modules to StreamingAssets
     // so that the relative link "../build/Release/node_datachannel.node"
     // works (relative to the bundled StreamingAssets/<app>/node-main.js)
+    Debug.Log("CopyNodeDataChannelLib");
+
     string src = Mq_Builder.NodeDataChannelLibInNodeModules;
     string dest = Mq_Builder.NodeDataChannelLibInBuild;
     string destDir = Path.GetDirectoryName(dest);
