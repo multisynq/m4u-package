@@ -72,7 +72,7 @@ public class SI_JsPlugins: StatusItem {
 
   private void Clk_JsPlugins_Docs() {
     Logger.MethodHeader();
-    Application.OpenURL("https://multisynq.io/docs/unity/");
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#js-plugins");
   }
 
   override public bool Check() { // JS PLUGINS

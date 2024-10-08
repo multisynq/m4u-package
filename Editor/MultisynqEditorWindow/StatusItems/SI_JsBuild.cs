@@ -93,5 +93,6 @@ public class SI_JsBuild: StatusItem {
 
   void Clk_JsBuild_Docs() {
     Logger.MethodHeaderAndOpenUrl();
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#js-build");
   }
 }

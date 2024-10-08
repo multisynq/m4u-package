@@ -84,6 +84,7 @@ public class SI_Bridge: StatusItem {
 
   private void Clk_Bridge_Docs() {
     Logger.MethodHeaderAndOpenUrl();
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#bridge-gameobject");
   }
 
 }

@@ -74,5 +74,6 @@ public class SI_BuiltOutput: StatusItem {
 
   void Clk_BuiltOutput_Docs() { // Built Output Docs  -  BUILT OUTPUT  ------------- Click
     Logger.MethodHeaderAndOpenUrl();
+    UnityEngine.Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#built-output");
   }
 }

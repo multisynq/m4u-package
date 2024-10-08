@@ -80,7 +80,7 @@ public class SI_HasAppJs: StatusItem {
   //---------- ||||||||||||||||| -------------------------
   private void Clk_MakeAppJsFile() { // HAS APP JS  ------------- Click
     Logger.MethodHeader();
-    Notify("Please wait. \n\nImporting node_modules\nand copying starter\ntemplate files...");
+    Notify("Please wait. \n\nImporting the _many_\nnode_modules files...");
     // in a moment, run MakeAppJsFile()
     EditorApplication.delayCall += ()=>{ MakeAppJsFile(); };
   }
@@ -117,6 +117,7 @@ public class SI_HasAppJs: StatusItem {
   //---------- ||||||||||||||||| -------------------------
   private void Clk_HasAppJs_Docs() {// HAS APP JS  ------------- Click
     Logger.MethodHeaderAndOpenUrl();
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#has-app-js");
   }
   //---------- ||||||||||||||||||| -------------------------
   private void Clk_GotoAppJsFolder() {// HAS APP JS  ------------- Click

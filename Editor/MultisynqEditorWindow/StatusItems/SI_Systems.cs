@@ -79,9 +79,9 @@ public class SI_Systems: StatusItem {
     string critRpt = "";
     critRpt += (Object.FindObjectOfType<Mq_Runner>()         == null) ? "CroquetRunner\n"         : "";
     critRpt += (Object.FindObjectOfType<Mq_FileReader>()     == null) ? "Mq_FileReader\n"     : "";
-    critRpt += (Object.FindObjectOfType<Mq_Entity_System>()   == null) ? "Mq_Entity_System\n"   : "";
-    critRpt += (Object.FindObjectOfType<Mq_Spatial_System>()  == null) ? "Mq_Spatial_System\n"  : "";
     string optRpt = "";
+    optRpt += (Object.FindObjectOfType<Mq_Entity_System>()   == null) ? "Mq_Entity_System\n"   : "";
+    optRpt += (Object.FindObjectOfType<Mq_Spatial_System>()  == null) ? "Mq_Spatial_System\n"  : "";
     optRpt += (Object.FindObjectOfType<Mq_Material_System>() == null) ? "Mq_Material_System\n" : "";
     return (critRpt, optRpt);
   }
@@ -104,6 +104,7 @@ public class SI_Systems: StatusItem {
 
   private void Clk_Systems_Docs() {
     Logger.MethodHeaderAndOpenUrl();
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#multisynq-systems");
   }
 
 }

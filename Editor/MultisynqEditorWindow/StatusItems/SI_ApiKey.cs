@@ -50,8 +50,7 @@ public class SI_ApiKey: StatusItem {
 
   private void Clk_ApiKey_Docs() {
     Logger.MethodHeader();
-    Application.OpenURL("https://croquet.io/account/");
-    // Application.OpenURL("https://multisynq.io/docs/unity/");
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#api-key");
   }
 
   override public bool Check() { // API KEY

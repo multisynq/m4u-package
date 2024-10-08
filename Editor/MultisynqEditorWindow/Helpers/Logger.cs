@@ -28,7 +28,7 @@ static public class Logger {
   static public void MethodHeader(int depth=4) {
     Header(GetClassAndMethod(depth), spacer, spacer);
   }
-  static public void MethodHeaderAndOpenUrl(int depth=0) {
+  static public void MethodHeaderAndOpenUrl(int depth=4) {
     var shortNm = Regex.Replace(GetMethodName(), @"^Clk_(.+)_Docs$", "$1");
     string url = $"{docsRootUrl}{shortNm}";
     Header(GetClassAndMethod(depth), spacer, spacer, null, null, "\n   " + url);

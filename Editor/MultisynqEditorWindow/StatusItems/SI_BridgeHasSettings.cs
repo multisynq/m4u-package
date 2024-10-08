@@ -78,6 +78,7 @@ public class SI_BridgeHasSettings: StatusItem {
 
   void Clk_BridgeHasSettings_Docs() {
     Logger.MethodHeaderAndOpenUrl();
+    Application.OpenURL("https://multisynq.io/docs/unity/build_assistant-assistant_steps.html#bridge-has-settings");
   }
 
 }
