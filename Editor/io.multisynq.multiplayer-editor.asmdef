@@ -1,5 +1,5 @@
 {
-    "name": "com.multisynq.multiplayer-editor",
+    "name": "io.multisynq.multiplayer-editor",
     "rootNamespace": "",
     "references": [
         "GUID:3aa7154a88ca14d19866f3b098beb163"
