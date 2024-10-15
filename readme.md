@@ -9,7 +9,7 @@ Easy for simple projects, but scales to enable traffic-reducing, deterministic, 
 
 Let's go. [Installing M4U](https://multisynq.io/docs/unity/build_assistant-installation.html)
 
-Migrating over from Photon? Check out our [Migration Guide](https://multisynq.io/docs/unity/photon_migration_guide.html)
+Migrating over from Photon? Check out our [Migration Guide](https://multisynq.io/docs/unity/migration-photon.html)
 
 ## Questions
 Ask questions on our [discord](https://multisynq.io/discord)!
