@@ -881,8 +881,9 @@ public class  Mq_Bridge : MonoBehaviour {
   }
 
   void SendDefineScene() {
+    if (Mq_Entity_System.Instance==null) return;
+    
     // Debug.Log($"sending defineScene for {SceneManager.GetActiveScene().name}");
-
     // args to the command across the bridge are
     //   scene name - if different from model's existing scene, init will always be accepted
     //   earlySubscriptionTopics
