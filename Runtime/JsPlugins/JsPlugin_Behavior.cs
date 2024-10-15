@@ -29,4 +29,4 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
 }
 
 
-} // namespace MultisynqNS
+} // namespace Multisynq

@@ -325,7 +325,7 @@ class Mq_BuildPreprocess : IPreprocessBuildWithReport {
     // works (relative to the bundled StreamingAssets/<app>/node-main.js)
     Debug.Log("CopyNodeDataChannelLib");
 
-    string src = Mq_Builder.NodeDataChannelLibInNodeModules;
+    string src  = Mq_Builder.NodeDataChannelLibInNodeModules;
     string dest = Mq_Builder.NodeDataChannelLibInBuild;
     string destDir = Path.GetDirectoryName(dest);
     Directory.CreateDirectory(destDir);
