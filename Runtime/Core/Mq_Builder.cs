@@ -12,7 +12,6 @@ using UnityEditor;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 using System.Text.RegularExpressions;
-using UnityEngine.InputSystem.EnhancedTouch;
 
 
 namespace Multisynq {
@@ -276,8 +275,8 @@ public class Mq_Builder {
     set { EditorPrefs.SetString(ProjectSpecificKey(HARVEST_SCENES), value); }
   }
 
-  public static string CroquetJSPackageInPackage {
-    get { return Path.GetFullPath("Packages/io.multisynq.multiplayer/Runtime/JS/m4u-package"); }
+  public static string M4uNpmPackageSrc_Folder {
+    get { return Path.GetFullPath("Packages/io.multisynq.multiplayer/.JSTools/m4u-package"); }
   }
 
   public static string CroquetBuildToolsInPackage {
@@ -894,7 +893,7 @@ public class Mq_Builder {
       string packageJsonPath = Path.Combine(mqJSFolder, "package.json");
       string packageJson = File.ReadAllText(packageJsonPath);
       string oldPackageLine = Regex.Match(packageJson, "\"@multisynq/m4u-package\":.*\"").Value;
-      string relativePath = Path.GetRelativePath(mqJSFolder, CroquetJSPackageInPackage);
+      string relativePath = Path.GetRelativePath(mqJSFolder, M4uNpmPackageSrc_Folder);
       string newPackageLine = $"\"@multisynq/m4u-package\": \"file:{relativePath}\"";
       string newPackageJson = Regex.Replace(packageJson, oldPackageLine, newPackageLine);
 
