@@ -323,7 +323,7 @@ public class  Mq_Bridge : MonoBehaviour {
     // immediately deactivate all Croquet objects, but keep a record of those that were active
     // in case we're asked to provide a scene definition
     sceneDefinitionManifests.Clear();
-    Mq_ActorManifest[] croquetObjects = FindObjectsByType<Mq_ActorManifest>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID);
+    Mq_ActorManifest[] croquetObjects = FindObjectsOfType<Mq_ActorManifest>();
     foreach (Mq_ActorManifest manifest in croquetObjects) {
       GameObject go = manifest.gameObject;
       if (go.activeSelf) {
