@@ -44,21 +44,21 @@ public class DeleteM4uSupportFiles: EditorWindow {
 
   static void DeleteFile(string path) {
     if (File.Exists(path)) {
-      //File.Delete(path);
+      File.Delete(path);
       Debug.Log($"Deleted file: {path}");
     }
   }
 
   static void DeleteDirectory(string path) {
     if (Directory.Exists(path)) {
-      //Directory.Delete(path, true);
+      Directory.Delete(path, true);
       Debug.Log($"Deleted directory: {path}");
     }
   }
 
   static void DeleteFilesByWildcard(string directory, string searchPattern) {
     foreach (string file in Directory.GetFiles(directory, searchPattern, SearchOption.AllDirectories)) {
-      //File.Delete(file);
+      File.Delete(file);
       Debug.Log($"Deleted file: {file}");
     }
 
