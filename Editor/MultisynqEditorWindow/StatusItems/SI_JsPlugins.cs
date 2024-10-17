@@ -86,7 +86,7 @@ public class SI_JsPlugins: StatusItem {
     StatusSetMgr.jsPlugins.SetIsGood(!puglinProblems);
     SetVEViz(puglinProblems, AddJsPlugins_Btn);
     ShowVEs(GotoJsPlugins_Btn, ForceJsPlugins_Btn);
-    return puglinProblems;
+    return !puglinProblems;
   }
 
 

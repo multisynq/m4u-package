@@ -74,18 +74,20 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   public void CheckAllStatusForReady() {
     bool allRdy = true;
     // NEVER: allRdy &= Statuses.ready.IsOk() // NEVER want this
-    allRdy &= siSettings.Check();
-    allRdy &= siNode.Check();
-    allRdy &= siApiKey.Check();
-    allRdy &= siBridge.Check();
-    allRdy &= siSystems.Check();
-    allRdy &= siBridgeHasSettings.Check();
-    allRdy &= siJsBuildTools.Check();
-    allRdy &= siHasAppJs.Check();
-    allRdy &= siJsBuild.Check();
-    allRdy &= siJbtVersionMatch.Check();
-    allRdy &= siBuiltOutput.Check();
-    allRdy &= siJsPlugins.Check();
+    bool setChk  = siSettings.Check();   allRdy &= setChk;
+    bool nodeChk = siNode.Check();       allRdy &= nodeChk;
+    bool apiChk  = siApiKey.Check();     allRdy &= apiChk;
+    bool brdgChk = siBridge.Check();     allRdy &= brdgChk;
+    bool sysChk  = siSystems.Check();    allRdy &= sysChk;
+    bool brdgSetChk = siBridgeHasSettings.Check(); allRdy &= brdgSetChk;
+    bool jbtChk  = siJsBuildTools.Check(); allRdy &= jbtChk;
+    bool appJsChk = siHasAppJs.Check();  allRdy &= appJsChk;
+    bool jsBldChk = siJsBuild.Check();   allRdy &= jsBldChk;
+    bool jbtVerChk = siJbtVersionMatch.Check(); allRdy &= jbtVerChk;
+    bool bldOutChk = siBuiltOutput.Check(); allRdy &= bldOutChk;
+    bool jsPlgChk = siJsPlugins.Check(); allRdy &= jsPlgChk;
+    Debug.Log($"setChk={setChk} nodeChk={nodeChk} apiChk={apiChk} brdgChk={brdgChk} sysChk={sysChk} brdgSetChk={brdgSetChk} jbtChk={jbtChk} appJsChk={appJsChk} jsBldChk={jsBldChk} jbtVerChk={jbtVerChk} bldOutChk={bldOutChk} jsPlgChk={jsPlgChk}");
+    Debug.Log($"<color=#ffff44>allRdy={allRdy}</color>");
     siNode.NodePathsToDropdownAndCheck();
 
     siReadyTotal.AllAreReady(allRdy);
