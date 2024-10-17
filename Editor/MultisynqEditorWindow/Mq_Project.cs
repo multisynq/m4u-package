@@ -1,5 +1,6 @@
 
 
+using System.Net;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -77,7 +78,20 @@ static public class Mq_Project {
     Debug.Log($"Copying from '{path}' to '{Mq_File.cqSettingsAssetOutputPath}'");
     bool sourceFileExists = File.Exists(path);
     bool targFolderExists = Directory.Exists(Path.GetDirectoryName(Mq_File.cqSettingsAssetOutputPath));
-    AssetDatabase.CopyAsset(path, Mq_File.cqSettingsAssetOutputPath);
+
+    #if UNITY_EDITOR_WIN
+      try {
+        string outputPath = Path.GetFullPath(Mq_File.cqSettingsAssetOutputPath);
+        File.Copy(path, outputPath, true);
+        AssetDatabase.Refresh();
+      } catch (System.Exception e) {
+        Debug.LogError($"Error copying file: {e.Message}");
+        return null;
+      }
+    #else
+      AssetDatabase.CopyAsset(path, Mq_File.cqSettingsAssetOutputPath);
+    #endif
+
     bool copiedFileExists = File.Exists(Mq_File.cqSettingsAssetOutputPath);
     Debug.Log($"Source file exists: {sourceFileExists}  Target folder exists: {targFolderExists}, Copied file exists: {copiedFileExists}");
     return AssetDatabase.LoadAssetAtPath<Mq_Settings>(Mq_File.cqSettingsAssetOutputPath);

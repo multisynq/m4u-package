@@ -15,11 +15,18 @@ static public class Mq_File {
     return new FileThing(Path.Combine(Application.streamingAssetsPath, "..", "MultisynqJS", appNm, "scene-definitions.txt"));
   }
 
-  static public string cqSettingsAssetOutputPath = "Assets/Multisynq/Mq_Settings.asset";
-  static public string pkgRootFolder = "Packages/io.multisynq.multiplayer";
+  #if UNITY_EDITOR_WIN
+    static public string cqSettingsAssetOutputPath = "Assets\\Multisynq\\Mq_Settings.asset";
+    static public string pkgRootFolder = "Packages\\io.multisynq.multiplayer";
+    public static string ewFolder = pkgRootFolder + "\\Editor\\MultisynqEditorWindow\\";
+    public static string img_root = pkgRootFolder + "\\Editor\\MultisynqEditorWindow\\Images\\";
+  #else
+    static public string cqSettingsAssetOutputPath = "Assets/Multisynq/Mq_Settings.asset";
+    static public string pkgRootFolder = "Packages/io.multisynq.multiplayer";
+    public static string ewFolder = pkgRootFolder + "/Editor/MultisynqEditorWindow/";
+    public static string img_root = pkgRootFolder + "/Editor/MultisynqEditorWindow/Images/";
+  #endif
 
-  public static string ewFolder = pkgRootFolder + "/Editor/MultisynqEditorWindow/";
-  public static string img_root = pkgRootFolder + "/Editor/MultisynqEditorWindow/Images/";
 
   static public string GetAppNameForOpenScene() {
     Mq_Bridge cb = Object.FindObjectOfType<Mq_Bridge>();

@@ -26,19 +26,24 @@ public class SI_Node: StatusItem {
     SetupButton( "Node_Docs_Btn",    ref Docs_Btn,         Clk_Node_Docs);
 
     Node_Dropdown = FindElement<DropdownField>("Node_Dropdown");
-    Node_Dropdown.RegisterValueChangedCallback( (evt) => {
-      string nodePath = evt.newValue.Replace(" ∕ ", "/");
-      string nodeVer = TryNodePath(nodePath);
-      if (nodeVer == null) StatusSetMgr.node.error.Set();
-      else {
-        StatusSetMgr.node.success.Set();
-        // set the CroquetSetting.nodePath
-        var cqStgs = StatusSetMgr.FindProjectCqSettings();
-        cqStgs.pathToNode = nodePath;
-      }
-      edWin.CheckAllStatusForReady();
-    });
-    HideVEs(Node_Dropdown);
+    #if UNITY_EDITOR_WIN
+      // just hide the dropdown on windows
+      HideVEs(Node_Dropdown);
+    #else
+      Node_Dropdown.RegisterValueChangedCallback( (evt) => {
+        string nodePath = evt.newValue.Replace(" ∕ ", "/");
+        string nodeVer = TryNodePath(nodePath);
+        if (nodeVer == null) StatusSetMgr.node.error.Set();
+        else {
+          StatusSetMgr.node.success.Set();
+          // set the CroquetSetting.nodePath
+          var cqStgs = StatusSetMgr.FindProjectCqSettings();
+          cqStgs.pathToNode = nodePath;
+        }
+        edWin.CheckAllStatusForReady();
+      });
+      HideVEs(Node_Dropdown);
+    #endif
   }
 
   override public void InitText() {
@@ -55,16 +60,21 @@ public class SI_Node: StatusItem {
   }
 
   override public bool Check() {
-    var cqStgs = StatusSetMgr.FindProjectCqSettings();
-    if (cqStgs == null) {
-      StatusSetMgr.node.error.Set();
-      HideVEs(TryAuto_Btn);
-      return false;
-    }
-    string nodeVer  = TryNodePath(cqStgs.pathToNode);
-    bool nodeIsGood = (nodeVer != null);
+    #if UNITY_EDITOR_WIN
+      bool nodeIsGood = true;
+    #else
+      var cqStgs = StatusSetMgr.FindProjectCqSettings();
+      if (cqStgs == null) {
+        StatusSetMgr.node.error.Set();
+        HideVEs(TryAuto_Btn);
+        return false;
+      }
+      string nodeVer  = TryNodePath(cqStgs.pathToNode);
+      bool nodeIsGood = (nodeVer != null);
+      SetVEViz( nodeIsGood, GotoNodePath_Btn );
+    #endif
+
     StatusSetMgr.node.SetIsGood(nodeIsGood);
-    SetVEViz( nodeIsGood, GotoNodePath_Btn );
     SetVEViz(!nodeIsGood, TryAuto_Btn); // bad, so show the TryAuto button
     return nodeIsGood;
   }
@@ -174,6 +184,10 @@ public class SI_Node: StatusItem {
   }
 
   public void NodePathsToDropdownAndCheck() {
+    #if UNITY_EDITOR_WIN
+      return;
+    #endif
+
     var nps = FindAllNodeIntances().Select( f => (f+"/node").Replace("/"," ∕ ") ).ToList();
     Node_Dropdown.choices = nps;
     ShowVEs(Node_Dropdown);

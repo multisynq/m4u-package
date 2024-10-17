@@ -476,7 +476,7 @@ public class Mq_Builder {
         executable = Path.Combine(builderPath, "runwebpack.sh");
         break;
       case RuntimePlatform.WindowsEditor:
-        nodeExecPath = "\"" + details.nodeExecutable + "\"";
+        nodeExecPath = details.nodeExecutable;
         executable = "cmd.exe";
         arguments = $"/c runwebpack.bat ";
         break;
@@ -890,12 +890,27 @@ public class Mq_Builder {
 
       // patch copied package.json to point m4u-package to the local package
       // "@multisynq/unity-js": "<CroquetJSPackageInPackage>"
+
+
       string packageJsonPath = Path.Combine(MultisynqJS_Dir, "package.json");
       string packageJson = File.ReadAllText(packageJsonPath);
+      // Debug.Log($"freshly read: {packageJson}");
       string oldPackageLine = Regex.Match(packageJson, "\"@multisynq/unity-js\":.*\"").Value;
+      // Debug.Log($"MultisynqJS_Dir: {MultisynqJS_Dir}");
+      // Debug.Log($"UnityJsNpmPackage_Folder: {UnityJsNpmPackage_Folder}");
       string relativePath = Path.GetRelativePath(MultisynqJS_Dir, UnityJsNpmPackage_Folder);
       string newPackageLine = $"\"@multisynq/unity-js\": \"file:{relativePath}\"";
+
+      #if UNITY_EDITOR_WIN
+        // any \ that has no second \ after, will be replaced by \\
+        newPackageLine = Regex.Replace(newPackageLine, @"\\(?=[^\\])", @"\\");
+      #endif
+
+
       string newPackageJson = Regex.Replace(packageJson, oldPackageLine, newPackageLine);
+
+      // Debug.Log($"oldPackage: {packageJson}");
+      // Debug.Log($"newPackage: {newPackageJson}");
 
       if (newPackageJson != packageJson) {
         Debug.Log("Patched package.json to use local package: " + newPackageLine);
@@ -909,6 +924,8 @@ public class Mq_Builder {
         Debug.Log($"We want:     {newPackageLine}");
         Debug.Log($"But we have: {oldPackageLine}");
       }
+
+      Debug.Log($"Current generated package.json:\n\n{newPackageJson}");
 
       // workspace package.json
       string workspacePackageJsonPath = Path.Combine(aboveAssets_Dir, "package.json");
@@ -1054,7 +1071,7 @@ Then select Assets/Settings/Mq_Settings.asset in Unity Editor & set the 'Path To
     Process p = new Process();
     p.StartInfo.UseShellExecute = true;
     p.StartInfo.FileName = "cmd.exe";
-    p.StartInfo.Arguments = $"/c npm ci 1>\"{stdoutFile}\" 2>\"{stderrFile}\" ";
+    p.StartInfo.Arguments = $"/c npm i 1>\"{stdoutFile}\" 2>\"{stderrFile}\" ";
     p.StartInfo.WorkingDirectory = installDir;
     p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
