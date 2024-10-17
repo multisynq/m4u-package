@@ -50,6 +50,9 @@ static public class Mq_File {
   static public FolderThing MultisynqJS() {
     return new FolderThing("Assets/MultisynqJS/");
   }
+  static public FolderThing RootFolder() {
+    return new FolderThing("Assets/../");
+  }
 
   static public FolderThing AppFolder(bool canBeMissing = false) {
     return new FolderThing("Assets/MultisynqJS/" + GetAppNameForOpenScene(), canBeMissing);
@@ -89,6 +92,9 @@ static public class Mq_File {
     return new FileThing( PkgPrefabFolder().shortPath + "/Mq_Settings_Template.asset");
   }
 
+  static public FolderThing StreamingAssets_Dir() {
+    return new FolderThing(Application.streamingAssetsPath);
+  }
   static public FolderThing StreamingAssetsAppFolder(string _appNm = null) {
     string appNm = (_appNm != null) ? _appNm : GetAppNameForOpenScene();
     if (appNm == null) {
@@ -121,7 +127,23 @@ static public class Mq_File {
     // filter out non-Multisynq output folders without MyFolderIsMultisynqBuildOutput.txt using Linq
     return dirs.Where(dir => dir.DeeperFile("MyFolderIsMultisynqBuildOutput.txt").Exists()).ToList();
   }
+  static public NodeModules NodeModules { get; set; }
+}
 
+public class NodeModules {
+  
+  public FolderThing folder;
+  public NodeModules() {
+    folder = new FolderThing(Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "MultisynqJS", "node_modules")));
+    var folder2 = new FolderThing(Path.GetFullPath(Path.Combine(Application.dataPath, "MultisynqJS", "node_modules")));
+    // throw if different
+    if (folder.longPath != folder2.longPath) {
+      throw new System.Exception($"Mq_File.NodeModules(): folder.longPath != folder2.longPath\nfolder: '{folder.longPath}'\nfolder2: '{folder2.longPath}'");
+    }
+  }
+  public FileThing NodeDataChannel_File() {
+    return folder.DeeperFile("node-datachannel", "build", "Release", "node_datachannel.node");
+  }
 }
 
 }

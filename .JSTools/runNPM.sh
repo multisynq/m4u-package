@@ -12,4 +12,7 @@ export PATH="$1:$PATH"
 # which node
 
 # this expects npm to be available in the Mq_Settings.pathToNode
+# /opt/homebrew/bin/bun i
+# cd /Users/ken/git/cq/m4u-tutorials/Tutorials/node_modules/node-datachannel
+# bun run build
 npm i

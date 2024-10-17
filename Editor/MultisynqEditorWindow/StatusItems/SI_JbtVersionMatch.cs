@@ -6,7 +6,7 @@ using Multisynq;
 
 public class SI_JbtVersionMatch: StatusItem {
 
-  Button ReinstallTools_Btn;
+  Button OpenBuildPanel_Btn;
   Button Docs_Btn;
   // Button OpenBuildPanel_Btn;
 
@@ -15,7 +15,7 @@ public class SI_JbtVersionMatch: StatusItem {
   override public void InitUI() {
     SetupVisElem("JbtVersionMatch_Img",         ref statusImage);
     SetupLabel(  "JbtVersionMatch_Message_Lbl", ref messageLabel);
-    SetupButton( "BuildJsNow2_Btn",             ref ReinstallTools_Btn, Clk_BuildJsNow);
+    SetupButton( "OpenBuildPanel_Btn",          ref OpenBuildPanel_Btn, Clk_OpenBuildPanel);
     SetupButton( "JbtVersionMatch_Docs_Btn",    ref Docs_Btn, Clk_JbtVersionMatch_Docs);
     // SetupButton( "OpenBuildPanel_Btn",       ref OpenBuildPanel_Btn, Clk_OpenEditorBuildPanel);
   }
@@ -42,17 +42,17 @@ public class SI_JbtVersionMatch: StatusItem {
     bool allMatch = installedToolsForDotJsBuild.IsSameAs(installedToolsForMq_Bridge);
 
     StatusSetMgr.versionMatch.SetIsGood(allMatch);
+    ShowVEs(OpenBuildPanel_Btn);
     if (allMatch) {
       Debug.Log("JSTools for Editor & Build match!!!");
     } else {
-      Debug.LogError( installedToolsForDotJsBuild.ReportDiffs(installedToolsForMq_Bridge, "Build", "Editor"));
-      ShowVEs(ReinstallTools_Btn);
+      Debug.Log( installedToolsForDotJsBuild.ReportDiffs(installedToolsForMq_Bridge, "Build", "Editor"));
     }
     // ShowVEs(ReinstallTools_Btn, OpenBuildPanel_Btn);
     return allMatch;
   }
 
-  void Clk_OpenEditorBuildPanel() { // Open Build - JS BUILD TOOLS  ------------- Click
+  void Clk_OpenBuildPanel() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
     Logger.MethodHeader();
     EditorWindow.GetWindow<BuildPlayerWindow>().Show();
     EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes.Where( s => s.enabled ).ToArray();
@@ -60,13 +60,6 @@ public class SI_JbtVersionMatch: StatusItem {
       NotifyAndLogError("No scenes in Build Settings.\nAdd some scenes to build.");
       return;
     }
-  }
-
-  void Clk_BuildJsNow() { // VERSION MATCH - JS BUILD TOOLS  ------------- Click
-    Logger.MethodHeader();
-    edWin.siJsBuild.Clk_Build_JsNow();
-    Check();
-    edWin.CheckAllStatusForReady();
   }
 
   void Clk_JbtVersionMatch_Docs() {

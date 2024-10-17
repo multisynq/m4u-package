@@ -33,20 +33,25 @@ public class SI_JsBuildTools: StatusItem {
   }
 
   override public bool Check() { // SETTINGS
-    var cqJsNodeModulesFolder = Mq_File.MultisynqJS().DeeperFolder("node_modules");
-    bool haveFolder = cqJsNodeModulesFolder.Exists();
-    StatusSetMgr.jsBuildTools.SetIsGood(haveFolder);
+    bool haveBuildTools = true;
+    var rootDir = Mq_File.RootFolder();
+    haveBuildTools &= rootDir.DeeperFolder("node_modules").Exists();
+    haveBuildTools &= rootDir.DeeperFile(  "package.json").Exists();
+    haveBuildTools &= Mq_File.MultisynqJS().Exists();
+    haveBuildTools &= Mq_File.MultisynqJS().DeeperFile("package.json").Exists();
+    haveBuildTools &= Mq_File.MultisynqJS().DeeperFile("package-lock.json").Exists();
+    haveBuildTools &= Mq_File.StreamingAssets_Dir().DeeperFile("build/Release/node_datachannel.node").Exists();
 
-    if (haveFolder) {
+    StatusSetMgr.jsBuildTools.SetIsGood(haveBuildTools);
+
+    if (haveBuildTools) {
       ShowVEs(GotoJSBuildToolsFolder_Btn, edWin.siJsBuild.Build_JsNow_Btn);
       HideVEs(CopyJSBuildTools_Btn);
     } else {
       ShowVEs(CopyJSBuildTools_Btn);
       HideVEs(GotoJSBuildToolsFolder_Btn, edWin.siJsBuild.Build_JsNow_Btn);
-      Debug.LogError($"JS Build Tools are missing from {cqJsNodeModulesFolder.shortPath}");
-      Debug.LogError($"JS Build Tools are missing from {cqJsNodeModulesFolder.longPath}");
     }
-    return haveFolder;
+    return haveBuildTools;
   }
   
   //-- JS BUILD TOOLS --------------------------------

@@ -24,7 +24,7 @@
   "dependencies": {
     "@croquet/croquet": "^2.0.0-35",
     "@croquet/worldcore-kernel": "^2.0.0-alpha",
-    "@multisynq/m4u-package": "file:../../../../m4u-package/.JSTools/m4u-package",
+    "@multisynq/unity-js": "file:../../../../m4u-package/.JSTools/unity-js",
     "assert": "^2.1.0",
     "babel-loader": "^9.1.3",
     "buffer": "^6.0.3",

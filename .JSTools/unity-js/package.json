@@ -1,5 +1,5 @@
 {
-  "name": "@multisynq/m4u-package",
+  "name": "@multisynq/unity-js",
   "version": "0.1.0",
   "description": "Provides communication between Unity and Croquet",
   "main": "index.js",

@@ -171,8 +171,7 @@
                         <ui:VisualElement name="JSBuildTools_Lay" style="margin-left: 5px;">
                             <ui:Label text="Version Match - Built Output &amp; JS Build Tools" display-tooltip-when-elided="true" name="JbtVersionMatch_Message_Lbl" style="width: auto; height: 25px; justify-content: flex-start; flex-direction: row; align-items: auto; -unity-text-align: middle-left; margin-top: 12px; margin-left: 0;" />
                             <ui:VisualElement name="Btn_Lay" style="flex-direction: row; margin-left: 0;">
-                                <ui:Button text="Build JS Now" display-tooltip-when-elided="true" name="BuildJsNow2_Btn" />
-                                <ui:Button text="Open Build Panel" display-tooltip-when-elided="true" name="OpenBuildPanel_Btn" style="display: none;" />
+                                <ui:Button text="Open Build Panel" display-tooltip-when-elided="true" name="OpenBuildPanel_Btn" />
                                 <ui:Button text="Docs" display-tooltip-when-elided="true" name="JbtVersionMatch_Docs_Btn" enable-rich-text="false" style="font-size: 10px; -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>

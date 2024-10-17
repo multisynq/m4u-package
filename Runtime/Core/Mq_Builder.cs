@@ -275,11 +275,11 @@ public class Mq_Builder {
     set { EditorPrefs.SetString(ProjectSpecificKey(HARVEST_SCENES), value); }
   }
 
-  public static string M4uNpmPackageSrc_Folder {
-    get { return Path.GetFullPath("Packages/io.multisynq.multiplayer/.JSTools/m4u-package"); }
+  public static string UnityJsNpmPackage_Folder {
+    get { return Path.GetFullPath("Packages/io.multisynq.multiplayer/.JSTools/unity-js"); }
   }
 
-  public static string CroquetBuildToolsInPackage {
+  public static string JSToolsInPackage_Dir {
     get { return Path.GetFullPath("Packages/io.multisynq.multiplayer/.JSTools"); }
   }
 
@@ -294,7 +294,7 @@ public class Mq_Builder {
 
   public static string NodeDataChannelLibInNodeModules {
     get {
-      string nodeModulesFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "MultisynqJS", "node_modules"));
+      string nodeModulesFolder = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "node_modules"));
       return Path.Combine(nodeModulesFolder, "node-datachannel", "build", "Release", "node_datachannel.node");
     }
   }
@@ -868,33 +868,33 @@ public class Mq_Builder {
   }
 
   public static async Task<bool> InstallJSTools() {
-    string toolsRoot = CroquetBuildToolsInPackage;
-    string mqJSFolder = Path.GetFullPath(Path.Combine(Application.streamingAssetsPath, "..", "MultisynqJS"));
-    string nodeModulesFolder = Path.Combine(mqJSFolder, "node_modules");
+    string aboveAssets_Dir = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+    string nodeModules_Dir = Path.Combine(aboveAssets_Dir, "node_modules");
+    string MultisynqJS_Dir = Path.GetFullPath(Path.Combine(Application.dataPath, "MultisynqJS"));
     string installRecord = JSToolsRecordInEditor;
 
     // try {
       bool needsNPMInstall;
       if (FindJSToolsRecord() == null) needsNPMInstall = true; // nothing installed; run the whole process
-      else if (!Directory.Exists(nodeModulesFolder)) needsNPMInstall = true; // node_modules folder is missing
+      else if (!Directory.Exists(nodeModules_Dir)) needsNPMInstall = true; // node_modules folder is missing
       else {
         // compare package-lock.json before overwriting, to decide if it will be changing
-        string sourcePackageLock = Path.GetFullPath(Path.Combine(toolsRoot, "package-lock.json"));
-        string installedPackageLock = Path.GetFullPath(Path.Combine(mqJSFolder, "package-lock.json"));
+        string sourcePackageLock = Path.GetFullPath(Path.Combine(JSToolsInPackage_Dir, "package-lock.json"));
+        string installedPackageLock = Path.GetFullPath(Path.Combine(MultisynqJS_Dir, "package-lock.json"));
         needsNPMInstall = !File.Exists(installedPackageLock) ||
-                                  !FileEquals(sourcePackageLock, installedPackageLock);
+                          !FileEquals(sourcePackageLock, installedPackageLock);
       }
 
       // copy all tool files to MultisynqJS
-      CopyDirectory(toolsRoot, mqJSFolder, true);
+      CopyDirectory(JSToolsInPackage_Dir, MultisynqJS_Dir, true);
 
       // patch copied package.json to point m4u-package to the local package
-      // "@multisynq/m4u-package": "<CroquetJSPackageInPackage>"
-      string packageJsonPath = Path.Combine(mqJSFolder, "package.json");
+      // "@multisynq/unity-js": "<CroquetJSPackageInPackage>"
+      string packageJsonPath = Path.Combine(MultisynqJS_Dir, "package.json");
       string packageJson = File.ReadAllText(packageJsonPath);
-      string oldPackageLine = Regex.Match(packageJson, "\"@multisynq/m4u-package\":.*\"").Value;
-      string relativePath = Path.GetRelativePath(mqJSFolder, M4uNpmPackageSrc_Folder);
-      string newPackageLine = $"\"@multisynq/m4u-package\": \"file:{relativePath}\"";
+      string oldPackageLine = Regex.Match(packageJson, "\"@multisynq/unity-js\":.*\"").Value;
+      string relativePath = Path.GetRelativePath(MultisynqJS_Dir, UnityJsNpmPackage_Folder);
+      string newPackageLine = $"\"@multisynq/unity-js\": \"file:{relativePath}\"";
       string newPackageJson = Regex.Replace(packageJson, oldPackageLine, newPackageLine);
 
       if (newPackageJson != packageJson) {
@@ -903,12 +903,24 @@ public class Mq_Builder {
       } else if (oldPackageLine == newPackageLine) {
         Debug.Log($"'{packageJsonPath}' already has local m4u-package.  =]");
       } else if (String.IsNullOrEmpty(oldPackageLine)) {
-        Debug.LogError($"Could not find '@multisynq/m4u-package' in '{packageJsonPath}'");
+        Debug.LogError($"Could not find '@multisynq/unity-js' in '{packageJsonPath}'");
       } else {
         Debug.LogError($" Patching of '{packageJsonPath}' failed!");
         Debug.Log($"We want:     {newPackageLine}");
         Debug.Log($"But we have: {oldPackageLine}");
       }
+
+      // workspace package.json
+      string workspacePackageJsonPath = Path.Combine(aboveAssets_Dir, "package.json");
+      File.WriteAllText(workspacePackageJsonPath, @"
+        {
+          ""name"": ""m4u-workspace"",
+          ""version"": ""0.1.0"",
+          ""author"": ""Multisynq"",
+          ""description"": """",
+          ""workspaces"": [""Assets/MultisynqJS""]
+        }".LessIndent()
+      );
 
       int errorCount = 0; // look for errors in logging from npm i
       if (needsNPMInstall) {
@@ -923,7 +935,7 @@ public class Mq_Builder {
         // case they were in fact just transient warnings.
         int triesRemaining = 2;
         while (triesRemaining > 0) {
-          errorCount = RunNPMInstall(mqJSFolder, toolsRoot);
+          errorCount = RunNPMInstall(aboveAssets_Dir, JSToolsInPackage_Dir);
           if (errorCount == 0) break;
 
           if (--triesRemaining > 0) {
@@ -938,8 +950,7 @@ public class Mq_Builder {
         // extract path of filename:
         string tgtDir = Path.GetDirectoryName(NodeDataChannelLibInBuild);
         Debug.Log($"Copying node_datachannel.node to {tgtDir}");
-        var nodeDataChLibInBuild = new FolderThing( tgtDir );
-
+        var nodeDataChLibInBuild = new FolderThing( tgtDir, true );
         nodeDataChLibInBuild.EnsureExists();
         if (File.Exists(NodeDataChannelLibInNodeModules)) {
           if (File.Exists(NodeDataChannelLibInBuild)) File.Delete(NodeDataChannelLibInBuild);
@@ -947,7 +958,7 @@ public class Mq_Builder {
           Debug.Log($"     to {NodeDataChannelLibInBuild}");
           File.Copy(NodeDataChannelLibInNodeModules, NodeDataChannelLibInBuild);
         }
-        else throw new Exception("node_datachannel.node not found in node_modules");
+        else throw new Exception($"Source file MISSING <color=#ff4444>node_datachannel.node</color> at '{NodeDataChannelLibInNodeModules}'");
       }
       else Debug.Log("package-lock.json has not changed; skipping npm install");
 

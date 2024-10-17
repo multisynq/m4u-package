@@ -10,36 +10,37 @@ public class DeleteM4uSupportFiles: EditorWindow {
     string rootDir = Directory.GetParent(Application.dataPath).FullName;
     Debug.Log($"Root path: {rootDir}");
 
-    // Delete specific files
-    // DeleteFile(Path.Combine(rootDir, "Tutorials.sln"));
+    // Delete build result files by wildcard
+    // DeleteFilesRecursivelyByWildcard(rootDir, "*.csproj");
+    DeleteFilesRecursivelyByWildcard(rootDir, ".last-installed-tools");
+    DeleteFilesRecursivelyByWildcard(rootDir, ".last-build-state");
+    DeleteFilesRecursivelyByWildcard(rootDir, ".last-build-state");
 
-    // Delete files by wildcard
-    // DeleteFilesByWildcard(rootDir, "*.csproj");
-    DeleteFilesByWildcard(rootDir, ".last-installed-tools");
-    DeleteFilesByWildcard(rootDir, ".last-build-state");
-    DeleteFilesByWildcard(rootDir, ".last-build-state");
-
-    // Delete specific folders and their contents
-    // DeleteDirectory(Path.Combine(rootPath, ".vscode"));
-    // DeleteDirectory(Path.Combine(rootDir, "Logs"));
-    // DeleteDirectory(Path.Combine(rootPath, "UserSettings"));
+    // DeleteFile(Path.Combine(rootDir, "Tutorials.sln")); // Delete VSCode Solution
 
     // Delete specific files and folders within Assets
     string assetsPath = Path.Combine(rootDir, "Assets");
     Debug.Log($"Assets path: {assetsPath}");
-    // DeleteDirectory(Path.Combine(assetsPath, "AddressableAssetsData"));
     DeleteDirectory(Path.Combine(assetsPath, "StreamingAssets"));
-    // DeleteDirectory(Path.Combine(assetsPath, "TextMesh Pro"));
     DeleteDirectory(Path.Combine(assetsPath, "WebGLTemplates"));
+    // DeleteDirectory(Path.Combine(assetsPath, "AddressableAssetsData"));
+    // DeleteDirectory(Path.Combine(assetsPath, "TextMesh Pro"));
 
     // Delete specific files and folders within Assets/MultisynqJS
     string multisynqJSPath = Path.Combine(assetsPath, "MultisynqJS");
     Debug.Log($"MultisynqJS path: {multisynqJSPath}");
     DeleteDirectory(Path.Combine(multisynqJSPath, "build-tools"));
-    DeleteDirectory(Path.Combine(multisynqJSPath, "node_modules"));
-    DeleteDirectory(Path.Combine(multisynqJSPath, "m4u-package"));
+    DeleteDirectory(Path.Combine(multisynqJSPath, "unity-js"));
+    DeleteDirectory(Path.Combine(multisynqJSPath, "_Runtime"));
 
+    // rootDir files and folders
+    DeleteDirectory(Path.Combine(rootDir, "node_modules"));
+    DeleteFile(Path.Combine(rootDir, "package.json"));
+    DeleteFile(Path.Combine(rootDir, "package-lock.json"));
     Debug.Log("File and folder deletion complete.");
+
+    // refresh asset db
+    AssetDatabase.Refresh();
   }
 
   static void DeleteFile(string path) {
@@ -51,12 +52,18 @@ public class DeleteM4uSupportFiles: EditorWindow {
 
   static void DeleteDirectory(string path) {
     if (Directory.Exists(path)) {
+      string metaPath = path + ".meta";
+      if (File.Exists(metaPath)) {
+        File.Delete(metaPath);
+        Debug.Log($"Deleted file: {metaPath}");
+      }
       Directory.Delete(path, true);
       Debug.Log($"Deleted directory: {path}");
+      // also delete the .meta file if present
     }
   }
 
-  static void DeleteFilesByWildcard(string directory, string searchPattern) {
+  static void DeleteFilesRecursivelyByWildcard(string directory, string searchPattern) {
     foreach (string file in Directory.GetFiles(directory, searchPattern, SearchOption.AllDirectories)) {
       File.Delete(file);
       Debug.Log($"Deleted file: {file}");

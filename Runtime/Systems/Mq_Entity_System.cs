@@ -262,10 +262,10 @@ public class  Mq_Entity_System : Mq_System {
       string[] comps = spec.cs.Split(',');
       foreach (string compName in comps) {
         try {
-          Type typeToAdd = Type.GetType("MultisynqNS." + compName);
+          Type typeToAdd = Type.GetType("Multisynq." + compName);
           if (typeToAdd == null) {
             string assemblyQualifiedName =
-              System.Reflection.Assembly.CreateQualifiedName("Assembly-CSharp", "MultisynqNS." + compName);
+              System.Reflection.Assembly.CreateQualifiedName("Assembly-CSharp", "Multisynq." + compName);
             typeToAdd = Type.GetType(assemblyQualifiedName);
           }
           if (typeToAdd == null) {
