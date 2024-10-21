@@ -25,6 +25,7 @@ namespace Multisynq {
     public float  updateInterval      { get; set; } = 0.1f; // Minimum time between syncs in seconds
     public bool   updateEveryInterval { get; set; } = false; //   true: Force update every interval, even if value hasn't changed.   false: Only sync when the value has changed.
     public string OnChangedCallback   { get; set; } // Name of the method to call on the var's class when the value changes
+    public string hook                { get; set; } // Name of the method to call on the var's class when the value changes
   }
 #endregion
 
@@ -160,7 +161,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       string fieldId = (attribute.CustomName != null) 
         ? GenerateVarId(syncBeh, attribute.CustomName) 
         : GenerateVarId(syncBeh, field.Name);
-      Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
+      Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback ?? attribute.hook);
       return new SynqFieldInfo(
           fieldId, fieldIdx,
           CreateGetter(field, syncBeh), CreateSetter(field, syncBeh),
