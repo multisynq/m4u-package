@@ -17,7 +17,7 @@ public abstract class PathyThing {
 
   public PathyThing(string inputPath) {
     string projectFolder = Path.GetFullPath(Application.dataPath + "/..");
-    string fullPath = Path.GetFullPath(inputPath);
+    string fullPath = (inputPath=="") ? "" :Path.GetFullPath(inputPath);
     
     bool isProjectPath = fullPath.StartsWith(projectFolder);
     bool isAbsolutePath = Path.IsPathRooted(inputPath);
