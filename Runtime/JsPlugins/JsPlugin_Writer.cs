@@ -295,7 +295,7 @@ public class JsPlugin_Writer: MonoBehaviour {
         }
         // Debug.Log(pluginRpt.missingPartOnesTxt);
         Debug.Log($"| <color=#ff5555>MISSING</color>  <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(pluginRpt.tsMissingSomePart)} in {fldr}");
-        Debug.Log($"|    To Add Missing JS Plugin Files, in Menu:");
+        Debug.Log($"|    <color=#55ff55>TO FIX:</color>  Add Missing JS Plugin Files, in Menu:");
         Debug.Log($"|    <color=white>Multisynq > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
       }
       else {

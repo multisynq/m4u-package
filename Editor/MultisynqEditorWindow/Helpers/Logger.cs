@@ -9,11 +9,13 @@ static public class Logger {
   static private string lightBlue = "#0196FF";
 
   static private string spacer  = "-------------";
-  // static private string hspacer = "=============";
+  static private string hspacer = "=============";
   // static private string wave    = "◠‿◠‿◠‿◠‿◠‿◠‿◠‿";
   // static private string wave2   = "'``'-.,_,.-'``'-.,_,.";
-  static private string wave3   = "ø,¸¸,ø¤º°`°º¤";
-  static private string wave3r  = "¤º°`°º¤ø,¸¸,ø";
+  // static private string wave3   = "ø,¸¸,ø¤º°`°º¤";
+  // static private string wave3r  = "¤º°`°º¤ø,¸¸,ø";
+  static private string wave3   = "◠‿=============";
+  static private string wave3r  = "=============◠‿";
 
   static private string docsRootUrl = "https://croquet.io/dev/docs/unity/#";
 

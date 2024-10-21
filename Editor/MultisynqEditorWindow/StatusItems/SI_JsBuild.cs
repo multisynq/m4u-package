@@ -57,7 +57,7 @@ public class SI_JsBuild: StatusItem {
   }
 
   async public void Clk_Build_JsNow() { // JS BUILD  ------------- Click
-    Logger.MethodHeader();
+    Logger.MethodHeader(6);
     Debug.Log("Building JS...");
     bool success = await Mq_Builder.EnsureJSToolsAvailable();
     if (!success) {

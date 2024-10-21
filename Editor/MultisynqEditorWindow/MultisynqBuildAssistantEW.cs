@@ -69,25 +69,25 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Logger.Header("Checking If Ready ・‿・");
     CheckAllStatusForReady();
   }
-
+  static string YN(bool b) => b ? "<color=#33bb33>✔️</color>" : "<b><color=#ff5555>✕</color></b>";
   //=============================================================================
   public void CheckAllStatusForReady() {
     bool allRdy = true;
     // NEVER: allRdy &= Statuses.ready.IsOk() // NEVER want this
-    bool setChk  = siSettings.Check();   allRdy &= setChk;
-    bool nodeChk = siNode.Check();       allRdy &= nodeChk;
-    bool apiChk  = siApiKey.Check();     allRdy &= apiChk;
-    bool brdgChk = siBridge.Check();     allRdy &= brdgChk;
-    bool sysChk  = siSystems.Check();    allRdy &= sysChk;
-    bool brdgSetChk = siBridgeHasSettings.Check(); allRdy &= brdgSetChk;
-    bool jbtChk  = siJsBuildTools.Check(); allRdy &= jbtChk;
-    bool appJsChk = siHasAppJs.Check();  allRdy &= appJsChk;
-    bool jsBldChk = siJsBuild.Check();   allRdy &= jsBldChk;
-    bool jbtVerChk = siJbtVersionMatch.Check(); allRdy &= jbtVerChk;
-    bool bldOutChk = siBuiltOutput.Check(); allRdy &= bldOutChk;
-    bool jsPlgChk = siJsPlugins.Check(); allRdy &= jsPlgChk;
-    Debug.Log($"setChk={setChk} nodeChk={nodeChk} apiChk={apiChk} brdgChk={brdgChk} sysChk={sysChk} brdgSetChk={brdgSetChk} jbtChk={jbtChk} appJsChk={appJsChk} jsBldChk={jsBldChk} jbtVerChk={jbtVerChk} bldOutChk={bldOutChk} jsPlgChk={jsPlgChk}");
-    Debug.Log($"<color=#ffff44>allRdy={allRdy}</color>");
+    bool stgsOk    = siSettings.Check();          allRdy &= stgsOk;
+    bool nodeOk    = siNode.Check();              allRdy &= nodeOk;
+    bool apiOk     = siApiKey.Check();            allRdy &= apiOk;
+    bool brdgOk    = siBridge.Check();            allRdy &= brdgOk;
+    bool sysesOk   = siSystems.Check();           allRdy &= sysesOk;
+    bool brgStgsOk = siBridgeHasSettings.Check(); allRdy &= brgStgsOk;
+    bool toolsOk   = siJsBuildTools.Check();      allRdy &= toolsOk;
+    bool indexJsOk = siHasAppJs.Check();          allRdy &= indexJsOk;
+    bool jsBuilt   = siJsBuild.Check();           allRdy &= jsBuilt;
+    bool verOk     = siJbtVersionMatch.Check();   allRdy &= verOk;
+    bool appBuilt  = siBuiltOutput.Check();       allRdy &= appBuilt;
+    bool pluginsOk = siJsPlugins.Check();         allRdy &= pluginsOk;
+    Debug.Log($"{YN(stgsOk)}stgs, {YN(nodeOk)}node, {YN(apiOk)}apiKey, {YN(brdgOk)}bridge, {YN(sysesOk)}systms, {YN(brgStgsOk)}brgStgs, {YN(toolsOk)}tools, {YN(indexJsOk)}indexJs, {YN(jsBuilt)}jsBuilt, {YN(verOk)}ver, {YN(appBuilt)}appBuilt, {YN(pluginsOk)}plugins");
+    Debug.Log($"<color=#ffff44>All Ready=</color>{(allRdy ? "<color=#33bb33>true</color>" : "<b><color=#ff5555>false</color></b>")}");
     siNode.NodePathsToDropdownAndCheck();
 
     siReadyTotal.AllAreReady(allRdy);
