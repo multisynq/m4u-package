@@ -10,8 +10,8 @@ public class SynqInstanceAttribute : Attribute { }
 
 public class SynqMgr : MonoBehaviour {
 
-  public Dictionary<int, SynqBehaviour> allSBs = new Dictionary<int, SynqBehaviour>();
-  public Dictionary<int, SynqBehaviour> instancingSBs = new Dictionary<int, SynqBehaviour>();
+  public Dictionary<uint, SynqBehaviour> allSBs = new Dictionary<uint, SynqBehaviour>();
+  public Dictionary<uint, SynqBehaviour> instancingSBs = new Dictionary<uint, SynqBehaviour>();
 
   void Awake() {
     foreach (var sb in FindObjectsOfType<SynqBehaviour>()) {
@@ -36,14 +36,14 @@ public class SynqMgr : MonoBehaviour {
     instancingSBs.Remove(sb.netId);
   }
 
-  public SynqBehaviour FindSB(int netId) {
+  public SynqBehaviour FindSB(uint netId) {
     if (allSBs.TryGetValue(netId, out SynqBehaviour sb)) {
       return sb;
     }
     return null;
   }
 
-  public SynqBehaviour FindInstancingSB(int netId) {
+  public SynqBehaviour FindInstancingSB(uint netId) {
     if (instancingSBs.TryGetValue(netId, out SynqBehaviour sb)) {
       return sb;
     }

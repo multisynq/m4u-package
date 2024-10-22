@@ -4,14 +4,16 @@ using UnityEngine;
 
 namespace Multisynq {
 
+public interface IWithNetId {
+  public uint netId {get; set;}
+}
 
 public enum RpcTarget { Others, All };
-
-//========== ||||||||||||||| =============
-public class SynqBehaviour : MonoBehaviour {
-
-  public uint netId = 0;
-  // string methodName
+//========== ||||||||||||| =============
+public class SynqBehaviour : MonoBehaviour, IWithNetId {
+  [field: SerializeField]
+  public uint netId { get; set; } = 0;
+  
   public void CallSynqCommand(string methodName, params object[] parameters) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, methodName, parameters);
   }
