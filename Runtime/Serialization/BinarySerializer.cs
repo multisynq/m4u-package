@@ -27,9 +27,7 @@ public class BinaryPacker {
   }
 
   public void CachePackers(params Type[] types) {
-    foreach (var type in types) {
-      CacheTypePacker(type);
-    }
+    foreach (var type in types) CacheTypePacker(type);
   }
 
   private void CacheTypePacker(Type type) {
@@ -96,8 +94,8 @@ public class BinaryPacker {
             (obj, packer, indent) => $"\"{field.Name}\": \"{field.GetValue(obj)}\"" );
     }
     else if (field.FieldType == typeof(Vector3)) {
-      Add3( (writer, obj, packer) => WriteCompressedVector3(writer, (Vector3)field.GetValue(obj)),
-            (reader, obj, packer) => field.SetValue(obj, ReadCompressedVector3(reader)),
+      Add3( (writer, obj, packer) => WriteVector3(writer, (Vector3)field.GetValue(obj)),
+            (reader, obj, packer) => field.SetValue(obj, ReadVector3(reader)),
             (obj, packer, indent) => $"\"{field.Name}\": {field.GetValue(obj)}" );
     }
     else if (field.FieldType.IsEnum) {
@@ -110,15 +108,13 @@ public class BinaryPacker {
       packerList.Add((writer, obj, packer) =>  {
         var list = (System.Collections.IList)field.GetValue(obj);
         writer.Write(list.Count);
-        foreach (var item in list) {
-          packer.SerializeObject(writer, item);
-        }
+        foreach (var item in list) packer.PackObj(writer, item);
       });
       unpackerList.Add((reader, obj, packer) =>  {
         int count = reader.ReadInt32();
         var list = (System.Collections.IList)Activator.CreateInstance(field.FieldType);
         for (int i = 0; i < count; i++) {
-          list.Add(packer.UnpackObject(reader));
+          list.Add(packer.UnpackObj(reader));
         }
         field.SetValue(obj, list);
       });
@@ -138,8 +134,8 @@ public class BinaryPacker {
       });
     }
     else if (typeof(IWithNetId).IsAssignableFrom(field.FieldType)) {
-      packerList.Add(  (writer, obj, packer) => packer.PackIWithNetId(writer, (IWithNetId)field.GetValue(obj)));
-      unpackerList.Add((reader, obj, packer) => field.SetValue(obj, packer.UnpackIWithNetId(reader)));
+      packerList.Add(  (writer, obj, packer) => packer.PackNetIdObj(writer, (IWithNetId)field.GetValue(obj)));
+      unpackerList.Add((reader, obj, packer) => field.SetValue(obj, packer.UnpackNetIdObj(reader)));
       stringerList.Add((obj, packer, indent) =>  {
         var value = (IWithNetId)field.GetValue(obj);
         return $"\"{field.Name}\": {packer.AsStringInternal(value, indent, false)}";
@@ -148,24 +144,24 @@ public class BinaryPacker {
     else if (field.FieldType.IsClass || field.FieldType.IsValueType) {
       // for any struct or class type, recursively cache its packers
       CacheTypePacker(field.FieldType);
-      packerList.Add(  (writer, obj, packer) => packer.SerializeObject(writer, field.GetValue(obj)));
-      unpackerList.Add((reader, obj, packer) => field.SetValue(obj, packer.UnpackObject(reader)));
+      packerList.Add(  (writer, obj, packer) => packer.PackObj(writer, field.GetValue(obj)));
+      unpackerList.Add((reader, obj, packer) => field.SetValue(obj, packer.UnpackObj(reader)));
       stringerList.Add((obj, packer, indent) =>  {
         return $"\"{field.Name}\": {packer.AsStringInternal(field.GetValue(obj), indent, false)}";
       });
     }
   }
 
-  public byte[] ObjToBytes(object obj) {
+  public byte[] ObjAsBytes(object obj) {
     packedObjects.Clear();
     using (MemoryStream ms = new MemoryStream())
     using (BinaryWriter writer = new BinaryWriter(ms)) {
-      SerializeObject(writer, obj);
+      PackObj(writer, obj);
       return ms.ToArray();
     }
   }
 
-  private void SerializeObject(BinaryWriter writer, object obj) {
+  private void PackObj(BinaryWriter writer, object obj) {
     if (obj == null) {
       writer.Write(false);
       return;
@@ -186,18 +182,18 @@ public class BinaryPacker {
       packerList = packerCache[type];
     }
 
-    foreach (var serializeAction in packerList) {
-      serializeAction(writer, obj, this);
+    foreach (var packAction in packerList) {
+      packAction(writer, obj, this);
     }
   }
 
   public object Unpack(byte[] data) {
     unpackedObjects.Clear();
     using (MemoryStream ms = new MemoryStream(data))
-    using (BinaryReader reader = new BinaryReader(ms)) return UnpackObject(reader);
+    using (BinaryReader reader = new BinaryReader(ms)) return UnpackObj(reader);
   }
 
-  private object UnpackObject(BinaryReader reader) {
+  private object UnpackObj(BinaryReader reader) {
     if (!reader.ReadBoolean()) return null;
 
     string typeName = reader.ReadString();
@@ -222,26 +218,20 @@ public class BinaryPacker {
     return obj;
   }
 
-  private void PackIWithNetId(BinaryWriter writer, IWithNetId obj) {
+  private void PackNetIdObj(BinaryWriter writer, IWithNetId obj) {
     if (obj == null) {
       writer.Write((uint)0);
       return;
     }
     writer.Write(obj.netId);
-    if (!packedObjects.Contains(obj.netId)) {
-      SerializeObject(writer, obj);
-    }
+    if (!packedObjects.Contains(obj.netId)) PackObj(writer, obj);
   }
 
-  private IWithNetId UnpackIWithNetId(BinaryReader reader) {
+  private IWithNetId UnpackNetIdObj(BinaryReader reader) {
     uint netId = reader.ReadUInt32();
-    if (netId == 0) {
-      return null;
-    }
-    if (unpackedObjects.TryGetValue(netId, out IWithNetId obj)) {
-      return obj;
-    }
-    return (IWithNetId)UnpackObject(reader);
+    if (netId == 0) return null;
+    if (unpackedObjects.TryGetValue(netId, out IWithNetId obj)) return obj;
+    return (IWithNetId)UnpackObj(reader);
   }
 
   public string AsString(object obj, int indentLevel = 0) {
@@ -249,9 +239,7 @@ public class BinaryPacker {
   }
 
   private string AsStringInternal(object obj, int indentLevel, bool isTopLevel) {
-    if (obj == null) {
-      return "null";
-    }
+    if (obj == null) return "null";
 
     Type type = obj.GetType();
     if (!asStringCache.TryGetValue(type, out var asStringList)) {
@@ -270,29 +258,18 @@ public class BinaryPacker {
       stringifiedObjects.Add(IWithNetId.netId);
     }
 
-    // sb.Append(isTopLevel ? "" : indent);
-    sb.Append("{");
-    
+    sb.Append("{");    
     bool isFirst = true;
-    if (obj is IWithNetId) {
-      // sb.Append($"\n{innerIndent}\"netId\": {((IWithNetId)obj).netId}");
-      // isFirst = false;
-    }
-
     foreach (var asStringFunc in asStringList) {
       string fieldString = asStringFunc(obj, this, indentLevel + 2);
-      if (!isFirst) {
-        sb.Append(",");
-      }
+      if (!isFirst) sb.Append(",");
       sb.Append($"\n{innerIndent}{fieldString}");
       isFirst = false;
     }
 
     sb.Append($"\n{indent}}}");
 
-    if (obj is IWithNetId) {
-      stringifiedObjects.Remove(((IWithNetId)obj).netId);
-    }
+    if (obj is IWithNetId) stringifiedObjects.Remove(((IWithNetId)obj).netId);
 
     return sb.ToString();
   }
@@ -332,23 +309,30 @@ public class BinaryPacker {
     return Encoding.UTF8.GetString(bytes);
   }
 
-  private static void WriteCompressedVector3(BinaryWriter writer, Vector3 vector) {
-    // writer.Write((int)(vector.x * 10000));
-    // writer.Write((int)(vector.y * 10000));
-    // writer.Write((int)(vector.z * 10000));
-    writer.Write((float)vector.x);
-    writer.Write((float)vector.y);
-    writer.Write((float)vector.z);
+  private static void WriteVector3(BinaryWriter writer, Vector3 vector) {
+    writer.Write(vector.x);
+    writer.Write(vector.y);
+    writer.Write(vector.z);
   }
 
-  private static Vector3 ReadCompressedVector3(BinaryReader reader) {
+  private static Vector3 ReadVector3(BinaryReader reader) {
     return new Vector3(
-      // reader.ReadInt32() / 10000f,
-      // reader.ReadInt32() / 10000f,
-      // reader.ReadInt32() / 10000f
       reader.ReadSingle(),
       reader.ReadSingle(),
       reader.ReadSingle()
+    );
+  }
+  
+  private static void WriteCompressedVector3(BinaryWriter writer, Vector3 vector) {
+    writer.Write((int)(vector.x * 10000));
+    writer.Write((int)(vector.y * 10000));
+    writer.Write((int)(vector.z * 10000));
+  }
+  private static Vector3 ReadCompressedVector3(BinaryReader reader) {
+    return new Vector3(
+      reader.ReadInt32() / 10000f,
+      reader.ReadInt32() / 10000f,
+      reader.ReadInt32() / 10000f
     );
   }
 }

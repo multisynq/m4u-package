@@ -79,7 +79,7 @@ public class BinarySerializer_Test: MonoBehaviour {
     enemy.targets.Add(player2);
 
     // Serialize and deserialize player1
-    byte[] playerBytes = packer.ObjToBytes(player1);
+    byte[] playerBytes = packer.ObjAsBytes(player1);
     PlayerData unpackedPlayer = (PlayerData)packer.Unpack(playerBytes);
     
     string playerStr = packer.AsString(unpackedPlayer);
@@ -90,7 +90,7 @@ public class BinarySerializer_Test: MonoBehaviour {
     Debug.Log($"<color=#44ffff>===playerStr===</color>\n{playerStr}");
 
     // Optionally, you can also serialize and deserialize the enemy to see the targets
-    byte[] enemyBytes = packer.ObjToBytes(enemy);
+    byte[] enemyBytes = packer.ObjAsBytes(enemy);
     EnemyData deserializedEnemy = (EnemyData)packer.Unpack(enemyBytes);
     
     string enemyStr = packer.AsString(deserializedEnemy);
