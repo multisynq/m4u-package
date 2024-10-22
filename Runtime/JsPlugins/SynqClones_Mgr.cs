@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,7 +8,7 @@ namespace Multisynq {
 //========== |||||||||||||| ==================================
 public class SynqClones_Mgr : JsPlugin_Behaviour {
   #region Fields
-    private Dictionary<int, SynqBehaviour> sbsByNetId = new();
+    private Dictionary<uint, SynqBehaviour> sbsByNetId = new();
     new static public string[] CodeMatchPatterns() => new[] {@"SynqClones_Mgr.*SynqClone", @"\[SyncedInstances\]"}; 
   
   #endregion
@@ -61,10 +62,10 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
   }
   //--------------------------------------- ||||||||| ----------------------
   static public (GameObject, SynqBehaviour) SynqClone(SynqBehaviour sb=null) {
-    int      cloneMeNetId = sb.netId;
+    uint     cloneMeNetId = sb.netId;
     GameObject      clone = Instantiate(sb.gameObject);
     SynqBehaviour   newSb = clone.EnsureComp<SynqBehaviour>();
-    int      madeOneNetId = newSb.MakeNewId();
+    uint     madeOneNetId = newSb.MakeNewId();
 
     Vector3    position = clone.transform.position;
     Quaternion rotation = clone.transform.rotation;
@@ -84,8 +85,8 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     }
     Debug.Log($"SynqClone, everybodyClone, %cy%{msg}".TagColors());
 
-    int cloneMeNetId    = int.Parse(      parts[0]);
-    int madeOneNetId    = int.Parse(      parts[1]);
+    uint cloneMeNetId   = uint.Parse(     parts[0]);
+    uint madeOneNetId   = uint.Parse(     parts[1]);
     Vector3    position = ParseVector3(   parts[2]);
     Quaternion rotation = ParseQuaternion(parts[3]);
     Vector3       scale = ParseVector3(   parts[4]);
@@ -118,7 +119,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
   //--------- |||||||||||||| ----------------------
   public void RegisterPrefab(GameObject prefab) {
     SynqBehaviour syncBehaviour = prefab.EnsureComp<SynqBehaviour>();
-    int netId = syncBehaviour.netId;
+    uint netId = syncBehaviour.netId;
     if (!sbsByNetId.ContainsKey(netId)) {
       sbsByNetId[netId] = syncBehaviour;
       Debug.Log($"Registered prefab with netId: {netId}");
@@ -126,7 +127,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
   }
   
   //------------------- |||||||||||||||||||||||||||||||| ----------------------
-  private SynqBehaviour FindInDictOrOnOtherSynqBehaviour( int netId) {
+  private SynqBehaviour FindInDictOrOnOtherSynqBehaviour( uint netId) {
     if (sbsByNetId.TryGetValue(netId, out SynqBehaviour sb)) {
       return sb;
     } else {
@@ -134,8 +135,27 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     }
   }
 
-
-
+  Vector3 Vector3_FromBytes(Byte[] bytes) {
+    return new Vector3(BitConverter.ToSingle(bytes, 0), BitConverter.ToSingle(bytes, 4), BitConverter.ToSingle(bytes, 8));
+  }
+  Byte[] Vector3_ToBytes(Vector3 vector) {
+    Byte[] bytes = new Byte[12];
+    BitConverter.GetBytes(vector.x).CopyTo(bytes, 0);
+    BitConverter.GetBytes(vector.y).CopyTo(bytes, 4);
+    BitConverter.GetBytes(vector.z).CopyTo(bytes, 8);
+    return bytes;
+  }
+  Quaternion Quaternion_FromBytes(Byte[] bytes) {
+    return new Quaternion(BitConverter.ToSingle(bytes, 0), BitConverter.ToSingle(bytes, 4), BitConverter.ToSingle(bytes, 8), BitConverter.ToSingle(bytes, 12));
+  }
+  Byte[] Quaternion_ToBytes(Quaternion quaternion) {
+    Byte[] bytes = new Byte[16];
+    BitConverter.GetBytes(quaternion.x).CopyTo(bytes, 0);
+    BitConverter.GetBytes(quaternion.y).CopyTo(bytes, 4);
+    BitConverter.GetBytes(quaternion.z).CopyTo(bytes, 8);
+    BitConverter.GetBytes(quaternion.w).CopyTo(bytes, 12);
+    return bytes;
+  }
   private Vector3 ParseVector3(string data) {
     string[] parts = data.Split(',');
     return new Vector3(float.Parse(parts[0]), float.Parse(parts[1]), float.Parse(parts[2]));

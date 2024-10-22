@@ -66,7 +66,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
 
   //-- Clicks - CHECK READINESS --------------------------------
   private void Clk_CheckIfReady() { // CHECK READINESS  ------------- Click
-    Logger.Header("Checking If Ready ・‿・");
+    Logger.Header("Check If Ready");
     CheckAllStatusForReady();
   }
   static string YN(bool b) => b ? "<color=#33bb33>✔️</color>" : "<b><color=#ff5555>✕</color></b>";
@@ -89,7 +89,6 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     Debug.Log($"{YN(stgsOk)}stgs, {YN(nodeOk)}node, {YN(apiOk)}apiKey, {YN(brdgOk)}bridge, {YN(sysesOk)}systms, {YN(brgStgsOk)}brgStgs, {YN(toolsOk)}tools, {YN(indexJsOk)}indexJs, {YN(jsBuilt)}jsBuilt, {YN(verOk)}ver, {YN(appBuilt)}appBuilt, {YN(pluginsOk)}plugins");
     Debug.Log($"<color=#ffff44>All Ready=</color>{(allRdy ? "<color=#33bb33>true</color>" : "<b><color=#ff5555>false</color></b>")}");
     siNode.NodePathsToDropdownAndCheck();
-
     siReadyTotal.AllAreReady(allRdy);
   }
 

@@ -10,7 +10,7 @@ public enum RpcTarget { Others, All };
 //========== ||||||||||||||| =============
 public class SynqBehaviour : MonoBehaviour {
 
-  public int netId = 0;
+  public uint netId = 0;
   // string methodName
   public void CallSynqCommand(string methodName, params object[] parameters) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, methodName, parameters);
@@ -68,8 +68,8 @@ public class SynqBehaviour : MonoBehaviour {
       }
     }
   #endif
-  public int MakeNewId() {
-    netId = GenerateNewId(GetInstanceID());
+  public uint MakeNewId() {
+    netId = GenerateNewId(Convert.ToUInt32(GetInstanceID()));
     EnsureUnique();
     Debug.Log($"new netId={netId}");
     return netId;
@@ -90,17 +90,18 @@ public class SynqBehaviour : MonoBehaviour {
     }
   }
 
-  private int GenerateNewId(int currentId) {
+private uint GenerateNewId(uint currentId) {
     unchecked {
-      int hash = currentId;
-      hash = (hash ^ 61) ^ (hash >> 16);
-      hash += (hash << 3);
-      hash ^= (hash >> 4);
-      hash *= 0x27d4eb2d; // Prime number
-      hash ^= (hash >> 15);
-      return Mathf.Abs(hash) % 10000000; // Keep it within 0-9999999 range
+        uint hash = currentId;
+        hash = (hash ^ 61) ^ (hash >> 16);
+        hash += (hash << 3);
+        hash ^= (hash >> 4);
+        hash *= 0x27d4eb2d; // Prime number
+        hash ^= (hash >> 15);
+        return hash % 10000000u; // Keep it within 0-9999999 range
     }
-  }
+}
+
 }
 
 } // namespace MultisynqNS
