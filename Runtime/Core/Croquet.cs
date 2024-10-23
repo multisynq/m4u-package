@@ -310,6 +310,12 @@ public static class Croquet
         Mq_Bridge.SubscribeToCroquetEvent(scope, eventName, forwarder);
         return forwarder;
     }
+    // also allow Func<(SynqVarInfo,bool)> for handler
+    public static Action<string> Subscribe(string scope, string eventName, Func<string, (SynqVar_Mgr.SynqVarInfo,bool)> handler) {
+        Action<string> forwarder = s => handler(s);
+        Mq_Bridge.SubscribeToCroquetEvent(scope, eventName, forwarder);
+        return forwarder;
+    }
 
     /// <summary>
     /// Listen for events sent with explicit scope and string argument.

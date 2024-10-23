@@ -33,16 +33,16 @@ namespace Multisynq {
 public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mgr <<<<<<<<<<<<
 
   #region Fields
-    [SerializeField] private Dictionary<string, SynqVarInfo> syncVars;
-    [SerializeField] private SynqVarInfo[]                   syncVarsArr;
-    static char msgSeparator = '|';
+    [SerializeField] public Dictionary<string, SynqVarInfo> syncVars;
+    [SerializeField] public SynqVarInfo[]                   syncVarsArr;
+    static public char msgSeparator = '|';
     static public string svLogPrefix = "<color=#5555FF>[SynqVar]</color> ";
-    static bool dbg = false;
+    static public bool dbg = false;
     new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVar\]"};
   #endregion
   
   #region JavaScript
-    //-------------------- |||||||||||||||| -------------------------
+    //-------------------------- ||||||||||||||| -------------------------
     public override JsPluginCode GetJsPluginCode() {
       return new(
         pluginName: "SynqVar_Mgr",
@@ -141,8 +141,8 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       }
     } // end Start()
 
-    //-- |||||| -------------------------------------------------------
-    void Update() { // TODO: Remove this once we get CreateSetter() callbacks perfected
+    //------------ |||||| -------------------------------------------------------
+    protected void Update() { // TODO: Remove this once we get CreateSetter() callbacks perfected
       for (int i = 0; i < syncVarsArr.Length; i++) {
         SendMsgIfChanged( syncVarsArr[i] );
       }
@@ -261,42 +261,43 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       string serializedValue = string.Join(msgSeparator.ToString(), parts.Skip(2).ToArray());// join the rest of the message back together with the separator
       return (varIdx, varId, serializedValue);
     }
-
-    //--------- |||||||||||| --------------------------
-    public void ReceiveAsMsg(string msg) {
+    // Type of ReceiveAsMsg() is (string) => (SynqVarInfo,bool)
+    // as a delegate, it is Func<string, (SynqVarInfo,bool)>
+    //----------------------- |||||||||||| --------------------------
+    public (SynqVarInfo,bool) ReceiveAsMsg(string msg) {
       var logPrefix = $"<color=#ff22ff>RECEIVED</color> ";
       var logMsg = $"msg:'<color=cyan>{msg}</color>'";
       var (varIdx, varId, serializedValue) = ParseMsg(msg);
       var logIds = $"varId=<color=white>{varId}</color> varIdx=<color=cyan>{varIdx}</color>";
 
       // Find the syncVar fast by varIdx, or slower by varId if that fails
-      var syncVar = FindSynqVarByArr(varIdx, varId);
-      var arrLookupFailed = (syncVar == null);
-      if (arrLookupFailed) syncVar = FindSynqVarByDict(varId); // Array find failed, try to find by dictionary
-      if (syncVar == null) { // Still null, not found!! Error.
+      var synqVar = FindSynqVarByArr(varIdx, varId);
+      var arrLookupFailed = (synqVar == null);
+      if (arrLookupFailed) synqVar = FindSynqVarByDict(varId); // Array find failed, try to find by dictionary
+      if (synqVar == null) { // Still null, not found!! Error.
         Debug.LogError($"{svLogPrefix} {logMsg} {logPrefix} message for <color=#ff4444>UNKNOWN</color> {logIds}");
-        return;
+        return (null, false);
       }
       // Parse, then set the value (if it changed)
-      object deserializedValue = DeserializeValue(serializedValue, syncVar.varType);
+      object deserializedValue = DeserializeValue(serializedValue, synqVar.varType);
       string logMsgVal = $"'<color=yellow>{deserializedValue}</color>'";
-      object hadVal = syncVar.Getter();
+      object hadVal = synqVar.Getter();
       bool valIsSame = hadVal.Equals(deserializedValue); // TODO: replace with blockLoopySend logic
       if (valIsSame) {
-        if (dbg)  Debug.Log($"{svLogPrefix} {logPrefix} {logMsg} Skipping SET. '<color=yellow>{hadVal}</color>' == {logMsgVal} <color=yellow>Unchanged</color> value. {logIds} blockLoopySend:{syncVar.blockLoopySend}");
-        return;
+        if (dbg)  Debug.Log($"{svLogPrefix} {logPrefix} {logMsg} Skipping SET. '<color=yellow>{hadVal}</color>' == {logMsgVal} <color=yellow>Unchanged</color> value. {logIds} blockLoopySend:{synqVar.blockLoopySend}");
+        return (synqVar, valIsSame);
       }
-      syncVar.blockLoopySend = true;     // Make sure we Skip sending the value we just received
-      syncVar.Setter(deserializedValue); // Set the value using the fancy, speedy Lambda Setter
-      syncVar.blockLoopySend = false;
-      syncVar.LastValue = deserializedValue;
-      syncVar.onChangedCallback?.Invoke(deserializedValue);
+      synqVar.blockLoopySend = true;     // Make sure we Skip sending the value we just received
+      synqVar.Setter(deserializedValue); // Set the value using the fancy, speedy Lambda Setter
+      synqVar.blockLoopySend = false;
+      synqVar.LastValue = deserializedValue;
+      synqVar.onChangedCallback?.Invoke(deserializedValue);
 
       if (dbg)  Debug.Log( (arrLookupFailed) // Report how we found the syncVar
         ?  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} value={logMsgVal}"
         :  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#44ff44>FAST varIdx</color>. {logIds} value={logMsgVal}"
       );
-
+      return (synqVar, valIsSame);
     } // end ReceiveAsMsg()
     //----------------- ||||||||||||||||| --------------------------
     private SynqVarInfo FindSynqVarByDict( string varId ) {
@@ -308,7 +309,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       }
     }
     //----------------- |||||||||||||||| --------------------------
-    private SynqVarInfo FindSynqVarByArr( int varIdx, string varId ) {
+    protected SynqVarInfo FindSynqVarByArr( int varIdx, string varId ) {
       if (varIdx >= 0 && varIdx < syncVarsArr.Length) {
         var syncVar = syncVarsArr[varIdx];
         if (!syncVar.ConfirmedInArr && syncVar.varId != varId) {
@@ -347,12 +348,13 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
   #region InternalClasses
     //==================== ||||||||||| ===
     [Serializable]
-    private abstract class SynqVarInfo {
+    public abstract class SynqVarInfo {
       public readonly string varId;
       public readonly int varIdx;
       public readonly Func<object> Getter;
       public readonly Action<object> Setter;
       public readonly Action<object> onChangedCallback;
+      public Action<object> onUICallback;
       public readonly SynqBehaviour syncedBehaviour;
       public readonly Type varType;
       public readonly SynqVarAttribute attribute;
@@ -362,7 +364,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       public bool ConfirmedInArr { get; set; }
       public float LastSyncTime { get; set; }
 
-      protected SynqVarInfo( // constructor
+      public SynqVarInfo( // constructor
         string varId, int varIdx,      
         Func<object> getter, Action<object> setter,
         SynqBehaviour monoBehaviour, Type varType, 
@@ -468,4 +470,4 @@ public static class SerializationExtensions {
   }
 }
 
-}
+} // END namespace Multisynq
