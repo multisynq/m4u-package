@@ -32,10 +32,13 @@ public class EnemyData : WithNetId {
 }
 
 // Usage example
-public class BinarySerializer_Test: MonoBehaviour {
+public class BinaryPacker_Test: MonoBehaviour {
   private BinaryPacker packer;
   float timer = 3f;
-
+  void Start() {
+    packer.CacheTypePacker(typeof(PlayerData));
+    packer.CacheTypePacker(typeof(EnemyData));
+  }
   public void Update() {
     if (timer > 0) {
       timer -= Time.deltaTime;

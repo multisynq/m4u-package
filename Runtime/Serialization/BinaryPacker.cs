@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine;
 using Multisynq;
 
-
+//========== |||||||||||| =============
 public class BinaryPacker {
 
   public delegate void     PackAction(BinaryWriter writer, object obj, BinaryPacker packer);
@@ -23,14 +23,9 @@ public class BinaryPacker {
 
 
   public void Awake() {
-    CachePackers(typeof(PlayerData), typeof(EnemyData)); // Add all your serializable types here
   }
 
-  public void CachePackers(params Type[] types) {
-    foreach (var type in types) CacheTypePacker(type);
-  }
-
-  private void CacheTypePacker(Type type) {
+  public void CacheTypePacker(Type type) {
     var packerList   = new List<PackAction>();
     var unpackerList = new List<UnpackAction>();
     var stringerList = new List<AsStringFunc>();
@@ -173,7 +168,7 @@ public class BinaryPacker {
 
     if (obj is IWithNetId IWithNetId) {
       writer.Write(IWithNetId.netId);
-      if (packedObjects.Contains(IWithNetId.netId)) return; // Object already serialized
+      if (packedObjects.Contains(IWithNetId.netId)) return; // Object already packed
       packedObjects.Add(IWithNetId.netId);
     }
 
@@ -211,8 +206,8 @@ public class BinaryPacker {
       unpackerList = unpackerCache[type];
     }
 
-    foreach (var deserializeAction in unpackerList) {
-      deserializeAction(reader, obj, this);
+    foreach (var unpackAction in unpackerList) {
+      unpackAction(reader, obj, this);
     }
 
     return obj;
