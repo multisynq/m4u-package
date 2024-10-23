@@ -33,7 +33,7 @@ public class EnemyData : WithNetId {
 
 // Usage example
 public class BinaryPacker_Test: MonoBehaviour {
-  private BinaryPacker packer;
+  private BinaryPacker packer = new();
   float timer = 3f;
   void Start() {
     packer.CacheTypePacker(typeof(PlayerData));
@@ -49,9 +49,6 @@ public class BinaryPacker_Test: MonoBehaviour {
   }
 
   void Test() {
-
-    packer = new();
-    packer.Awake(); // Make sure to call Awake to initialize the caches
     
     // Example usage
     EnemyData enemy = new EnemyData { 
