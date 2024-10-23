@@ -39,7 +39,7 @@ public class SI_ApiKey: StatusItem {
   private void Clk_SignUpApi() { // API KEY  ------------- Click
     Logger.MethodHeader();
     edWin.siSettings.GotoSettings();
-    Application.OpenURL("https://croquet.io/account/");
+    Application.OpenURL("https://multisynq.io/account");
   }
 
   private void Clk_EnterApiKey() {  // API KEY  ------------- Click
