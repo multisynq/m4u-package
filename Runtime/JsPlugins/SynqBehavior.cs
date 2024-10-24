@@ -70,8 +70,9 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
       }
     }
   #endif
-  public uint MakeNewId() {
-    netId = GenerateNewId(Convert.ToUInt32(GetInstanceID()));
+  public uint MakeNewId() {    
+    uint startId = unchecked((uint)GetInstanceID());
+    netId = GenerateNewId(startId);
     EnsureUnique();
     Debug.Log($"new netId={netId}");
     return netId;
@@ -92,17 +93,19 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
     }
   }
 
-private uint GenerateNewId(uint currentId) {
+  private uint GenerateNewId(uint currentId) {
     unchecked {
         uint hash = currentId;
         hash = (hash ^ 61) ^ (hash >> 16);
         hash += (hash << 3);
         hash ^= (hash >> 4);
-        hash *= 0x27d4eb2d; // Prime number
-        hash ^= (hash >> 15);
+        hash *= 0x2d4eb2d9; // Prime number close to 2^32 / φ
+        // Use more bits in final shuffle
+        hash ^= (hash >> 11);
+        hash ^= (hash >> 19);
         return hash % 10000000u; // Keep it within 0-9999999 range
     }
-}
+  }
 
 }
 

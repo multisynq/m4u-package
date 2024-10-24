@@ -131,8 +131,8 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
           }
         }
       }
-
-      syncVarsArr = syncVarsList.ToArray();
+      // make unique array of syncVars
+      syncVarsArr = syncVarsList.Distinct().ToArray();
 
       if (dbg)  {
         foreach (var syncVar in syncVars) {
@@ -144,7 +144,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
     //------------ |||||| -------------------------------------------------------
     protected void Update() { // TODO: Remove this once we get CreateSetter() callbacks perfected
       for (int i = 0; i < syncVarsArr.Length; i++) {
-        SendMsgIfChanged( syncVarsArr[i] );
+        SendMsgIfChanged( syncVarsArr[i], i );
       }
     }
     #if UNITY_EDITOR
@@ -162,24 +162,26 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         ? GenerateVarId(syncBeh, attribute.CustomName) 
         : GenerateVarId(syncBeh, field.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback ?? attribute.hook);
+      string classAndFieldName = $"{syncBeh.GetType().Name}.{field.Name}";
       return new SynqFieldInfo(
           fieldId, fieldIdx,
           CreateGetter(field, syncBeh), CreateSetter(field, syncBeh),
           syncBeh, field, attribute,
           field.GetValue(syncBeh),
-          onChangedCallback
+          onChangedCallback, classAndFieldName
       );
     }
     //------------------ |||||||||||||||||| -----------------------
     private SynqPropInfo CreateSynqPropInfo(SynqBehaviour syncBeh, PropertyInfo prop, SynqVarAttribute attribute, int propIdx) {
       string propId = GenerateVarId(syncBeh, attribute.CustomName ?? prop.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
+      string classAndFieldName = $"{syncBeh.GetType().Name}.{prop.Name}";
       return new SynqPropInfo(
           propId, propIdx,
           CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh), // TODO: pass in propId & propIdx so we can make a callback handler and remove Update checking for changes
           syncBeh, prop, attribute,
           prop.GetValue(syncBeh),
-          onChangedCallback
+          onChangedCallback, classAndFieldName
       );
     }
     //-------------------- ||||||||||||||||||||||| -----------------------
@@ -224,7 +226,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
 
   #region Messaging
     //-- |||||||||||||||| -------------------------------------------------------
-    void SendMsgIfChanged(SynqVarInfo syncVar) {
+    void SendMsgIfChanged(SynqVarInfo syncVar, int i) {
       if ((Time.time - syncVar.LastSyncTime) < syncVar.attribute.updateInterval) {// Skip sending if the update interval has not passed for this var
         return;
       } else syncVar.LastSyncTime = Time.time; // Restart the timer until we can send again
@@ -233,9 +235,19 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       bool   valHasChanged = !currentValue.Equals(syncVar.LastValue);
 
       if (valHasChanged || syncVar.attribute.updateEveryInterval) { // might send every interval, but usually only when changed
+        if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  [<color=#0ff>{i}</color>] {syncVar.varName} = {currentValue}");
+
+        // local set
+        // syncVar.blockLoopySend = true;
+        // syncVar.Setter(currentValue);
+        // syncVar.blockLoopySend = false;
+
         SendAsMsg( syncVar.varIdx, syncVar.varId, currentValue, syncVar.varType);
         syncVar.LastValue = currentValue;
         syncVar.onChangedCallback?.Invoke(currentValue);
+        // also UI
+        var castVal = Convert.ChangeType(currentValue, syncVar.varType);
+        syncVar.onUICallback?.Invoke( castVal );
       }
     }
 
@@ -292,6 +304,8 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       synqVar.blockLoopySend = false;
       synqVar.LastValue = deserializedValue;
       synqVar.onChangedCallback?.Invoke(deserializedValue);
+      var castVal = Convert.ChangeType(deserializedValue, synqVar.varType);
+      synqVar.onUICallback?.Invoke( castVal );
 
       if (dbg)  Debug.Log( (arrLookupFailed) // Report how we found the syncVar
         ?  $"{svLogPrefix} {logPrefix} {logMsg} <color=#33FF33>Did SET!</color>  using <color=#ff4444>SLOW varId</color> dictionary lookup. {logIds} value={logMsgVal}"
@@ -350,6 +364,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
     [Serializable]
     public abstract class SynqVarInfo {
       public readonly string varId;
+      public readonly string varName;
       public readonly int varIdx;
       public readonly Func<object> Getter;
       public readonly Action<object> Setter;
@@ -369,7 +384,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         Func<object> getter, Action<object> setter,
         SynqBehaviour monoBehaviour, Type varType, 
         SynqVarAttribute attribute, object initialValue, 
-        Action<object> onChangedCallback
+        Action<object> onChangedCallback, string varName
       ) {
         this.varId = varId; this.varIdx = varIdx;
         Getter = getter; Setter = setter;
@@ -378,6 +393,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         this.onChangedCallback = onChangedCallback;
         ConfirmedInArr = false;
         LastSyncTime = 0f;
+        this.varName = varName;
       }
     }
 
@@ -390,12 +406,12 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         Func<object> getter, Action<object> setter,
         SynqBehaviour monoBehaviour, FieldInfo fieldInfo, 
         SynqVarAttribute attribute, object initialValue, 
-        Action<object> onChangedCallback
+        Action<object> onChangedCallback, string varName
       ) : base(
         fieldId, fieldIdx, getter, setter, 
         monoBehaviour, fieldInfo.FieldType, 
         attribute, initialValue, 
-        onChangedCallback
+        onChangedCallback, varName
       ) {
         FieldInfo = fieldInfo;
       }
@@ -410,12 +426,12 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         Func<object> getter, Action<object> setter,
         SynqBehaviour monoBehaviour, PropertyInfo propInfo, 
         SynqVarAttribute attribute, object initialValue, 
-        Action<object> onChangedCallback
+        Action<object> onChangedCallback, string varName
       ) : base(
         propId, propIdx, getter, setter, 
         monoBehaviour, propInfo.PropertyType, 
         attribute, initialValue, 
-        onChangedCallback
+        onChangedCallback, varName
       ) {
         PropInfo = propInfo;
       }

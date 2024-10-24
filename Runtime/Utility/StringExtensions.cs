@@ -30,6 +30,10 @@ static class StringExtensions {
     return String.Join(delimiter, input.SplitAndTrimToArray(delimiter));
   }
 
+  static public string CapitalizeFirst(this string input) {
+    return input.Length > 0 ? char.ToUpper(input[0]) + input.Substring(1) : input;
+  }
+
   static public string ConvertToJsonArray(this string[] stringArray) {
     return $"[{String.Join(",", stringArray.Select(s => $"\"{s}\"").ToArray())}]";
   }
