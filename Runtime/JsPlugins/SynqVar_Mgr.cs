@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using UnityEngine;
 using System.Linq;
 
-
 namespace Multisynq {
 
 
@@ -251,8 +250,8 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       }
     }
 
-    //-- ||||||||| -------------------------------------------------------
-    void SendAsMsg(int varIdx, string varId, object value, Type varType) {
+    //--------- ||||||||| -------------------------------------------------------
+    public void SendAsMsg(int varIdx, string varId, object value, Type varType) {
       string serializedValue = SerializeValue(value, varType);
       var msg = $"{varIdx}{msgSeparator}{varId}{msgSeparator}{serializedValue}";
       if (dbg)  Debug.Log($"{svLogPrefix} <color=#ff22ff>SEND</color>  msg:'<color=cyan>{msg}</color>' for var <color=cyan>{varIdx}</color>|<color=white>{varId}</color>|<color=yellow>{serializedValue}</color>");
@@ -322,7 +321,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         return null;
       }
     }
-    //----------------- |||||||||||||||| --------------------------
+    //------------------- |||||||||||||||| --------------------------
     protected SynqVarInfo FindSynqVarByArr( int varIdx, string varId ) {
       if (varIdx >= 0 && varIdx < syncVarsArr.Length) {
         var syncVar = syncVarsArr[varIdx];
@@ -356,85 +355,6 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         : (type == typeof(Quaternion)) 
           ? serializedValue.DeserializeQuaternion()
           : Convert.ChangeType(serializedValue, type);
-    }
-  #endregion
-
-  #region InternalClasses
-    //==================== ||||||||||| ===
-    [Serializable]
-    public abstract class SynqVarInfo {
-      public readonly string varId;
-      public readonly string varName;
-      public readonly int varIdx;
-      public readonly Func<object> Getter;
-      public readonly Action<object> Setter;
-      public readonly Action<object> onChangedCallback;
-      public Action<object> onUICallback;
-      public readonly SynqBehaviour syncedBehaviour;
-      public readonly Type varType;
-      public readonly SynqVarAttribute attribute;
-      public bool blockLoopySend = false;
-
-      public object LastValue { get; set; }
-      public bool ConfirmedInArr { get; set; }
-      public float LastSyncTime { get; set; }
-
-      public SynqVarInfo( // constructor
-        string varId, int varIdx,      
-        Func<object> getter, Action<object> setter,
-        SynqBehaviour monoBehaviour, Type varType, 
-        SynqVarAttribute attribute, object initialValue, 
-        Action<object> onChangedCallback, string varName
-      ) {
-        this.varId = varId; this.varIdx = varIdx;
-        Getter = getter; Setter = setter;
-        syncedBehaviour = monoBehaviour; this.varType = varType; 
-        this.attribute = attribute; LastValue = initialValue; 
-        this.onChangedCallback = onChangedCallback;
-        ConfirmedInArr = false;
-        LastSyncTime = 0f;
-        this.varName = varName;
-      }
-    }
-
-    //=========== ||||||||||||| ===
-    private class SynqFieldInfo : SynqVarInfo {
-      public readonly FieldInfo FieldInfo;
-
-      public      SynqFieldInfo( // constructor
-        string fieldId, int fieldIdx, 
-        Func<object> getter, Action<object> setter,
-        SynqBehaviour monoBehaviour, FieldInfo fieldInfo, 
-        SynqVarAttribute attribute, object initialValue, 
-        Action<object> onChangedCallback, string varName
-      ) : base(
-        fieldId, fieldIdx, getter, setter, 
-        monoBehaviour, fieldInfo.FieldType, 
-        attribute, initialValue, 
-        onChangedCallback, varName
-      ) {
-        FieldInfo = fieldInfo;
-      }
-    }
-
-    //=========== |||||||||||| ===
-    private class SynqPropInfo : SynqVarInfo {
-      public readonly PropertyInfo PropInfo;
-
-      public      SynqPropInfo( // constructor
-        string propId, int propIdx, 
-        Func<object> getter, Action<object> setter,
-        SynqBehaviour monoBehaviour, PropertyInfo propInfo, 
-        SynqVarAttribute attribute, object initialValue, 
-        Action<object> onChangedCallback, string varName
-      ) : base(
-        propId, propIdx, getter, setter, 
-        monoBehaviour, propInfo.PropertyType, 
-        attribute, initialValue, 
-        onChangedCallback, varName
-      ) {
-        PropInfo = propInfo;
-      }
     }
   #endregion
 
@@ -485,5 +405,84 @@ public static class SerializationExtensions {
     );
   }
 }
+
+#region Classes
+
+  //================================== ||||||||||| ===
+  [Serializable] public abstract class SynqVarInfo {
+    public readonly string varId;
+    public readonly string varName;
+    public readonly int varIdx;
+    public readonly Func<object> Getter;
+    public readonly Action<object> Setter;
+    public readonly Action<object> onChangedCallback;
+    public Action<object> onUICallback;
+    public readonly SynqBehaviour syncedBehaviour;
+    public readonly Type varType;
+    public readonly SynqVarAttribute attribute;
+    public bool blockLoopySend = false;
+
+    public object LastValue { get; set; }
+    public bool ConfirmedInArr { get; set; }
+    public float LastSyncTime { get; set; }
+
+    public SynqVarInfo( // constructor
+      string varId, int varIdx,      
+      Func<object> getter, Action<object> setter,
+      SynqBehaviour monoBehaviour, Type varType, 
+      SynqVarAttribute attribute, object initialValue, 
+      Action<object> onChangedCallback, string varName
+    ) {
+      this.varId = varId; this.varIdx = varIdx;
+      Getter = getter; Setter = setter;
+      syncedBehaviour = monoBehaviour; this.varType = varType; 
+      this.attribute = attribute; LastValue = initialValue; 
+      this.onChangedCallback = onChangedCallback;
+      ConfirmedInArr = false;
+      LastSyncTime = 0f;
+      this.varName = varName;
+    }
+  }
+
+  //========== ||||||||||||| =========================
+  public class SynqFieldInfo : SynqVarInfo {
+    public readonly FieldInfo FieldInfo;
+
+    public SynqFieldInfo( // constructor
+      string fieldId, int fieldIdx, 
+      Func<object> getter, Action<object> setter,
+      SynqBehaviour monoBehaviour, FieldInfo fieldInfo, 
+      SynqVarAttribute attribute, object initialValue, 
+      Action<object> onChangedCallback, string varName
+    ) : base(
+      fieldId, fieldIdx, getter, setter, 
+      monoBehaviour, fieldInfo.FieldType, 
+      attribute, initialValue, 
+      onChangedCallback, varName
+    ) {
+      FieldInfo = fieldInfo;
+    }
+  }
+
+  //========== |||||||||||| =========================
+  public class SynqPropInfo : SynqVarInfo {
+    public readonly PropertyInfo PropInfo;
+
+    public SynqPropInfo( // constructor
+      string propId, int propIdx, 
+      Func<object> getter, Action<object> setter,
+      SynqBehaviour monoBehaviour, PropertyInfo propInfo, 
+      SynqVarAttribute attribute, object initialValue, 
+      Action<object> onChangedCallback, string varName
+    ) : base(
+      propId, propIdx, getter, setter, 
+      monoBehaviour, propInfo.PropertyType, 
+      attribute, initialValue, 
+      onChangedCallback, varName
+    ) {
+      PropInfo = propInfo;
+    }
+  }
+#endregion
 
 } // END namespace Multisynq

@@ -104,6 +104,10 @@ public class JsPlugin_Writer: MonoBehaviour {
     }
     //---------------- |||||||||||||||||||| ----------------------------
     static public void WriteOneJsPluginFile(JsPluginCode jsPlugin) {
+      if (jsPlugin==null) {
+        Debug.LogError($"{logPrefix} WriteOneJsPluginFile() called with a null JsPluginCode");
+        return;
+      }
       // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteOneJsPlugin()");
       var file = Mq_File.AppPluginsFolder().EnsureExists().DeeperFile(jsPlugin._pluginName+".js");
       file.WriteAllText(jsPlugin._pluginCode);
@@ -115,7 +119,7 @@ public class JsPlugin_Writer: MonoBehaviour {
       if (jsPlugin==null) return;
         var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._pluginName}.js");
         if (modelClassPath.Exists()) {
-            Debug.Log($"{logPrefix} '{jsPlugin._pluginName}.js' already present at '{modelClassPath.longPath}'");
+            // Debug.Log($"{logPrefix} '{jsPlugin._pluginName}.js' already present at '{modelClassPath.longPath}'");
         } else {
             modelClassPath.SelectAndPing();
             Debug.LogError($"   v");
@@ -204,14 +208,38 @@ public class JsPlugin_Writer: MonoBehaviour {
       // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance
       // 6. Call JsPluginFileName() method for this class
       // 7. Check if the file exists
-        Dictionary<Type, string[]> codeMatchesByJsPlugin =
-          typeof(JsPlugin_Behaviour).DictOfSubclassStaticMethodResults<string[]>( "CodeMatchPatterns" );
-        // log all of those
-        foreach (var (jsPluginType, codeMatches) in codeMatchesByJsPlugin) {
-          foreach (string codeMatchRegex in codeMatches) {
-            Debug.Log($"{logPrefix} {jsPluginType.Name} CodeMatchess:[ {String.Join(", ", codeMatches)} ]");
-          }
+      Dictionary<Type, string[]> codeMatchesByJsPlugin =
+        typeof(JsPlugin_Behaviour).DictOfSubclassStaticMethodResults<string[]>( "CodeMatchPatterns" );
+      // log all of those
+      // foreach (var (jsPluginType, codeMatches) in codeMatchesByJsPlugin) {
+      //   foreach (string codeMatchRegex in codeMatches) {
+      //     Debug.Log($"{logPrefix} {jsPluginType.Name} CodeMatchess:[ {String.Join(", ", codeMatches)} ]");
+      //   }
+      // }
+      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      // var allJsPluginInstances = FindObjectsOfType<GameObject>(true)
+      //   // .Where(x => typeof(JsPlugin_Behaviour).IsAssignableFrom(x.GetType()))
+      //   .Select( (JsPlugin_Behaviour x) => (x.GetType(), x as JsPlugin_Behaviour) );
+      // // log all
+      // foreach (var (jsPluginType, jsPluginInstance) in allJsPluginInstances) {
+      //   // if (jsPluginType?.Name?.Contains("_Mgr")??false) 
+      //   Debug.Log($"----- <color=cyan>{jsPluginType?.Name}</color> has instance in scene on gob <color=yellow>{jsPluginInstance?.gameObject?.name??"??"}</color>");
+      // }
+      // iterate all gameObjects in scene looking for JsPlugin_Behaviour instances
+      List<(Type, JsPlugin_Behaviour)> allJsPluginInstances = new();
+      foreach (var go in FindObjectsOfType<GameObject>(true)) {
+        foreach (var comp in go.GetComponents<JsPlugin_Behaviour>()) {
+          // if (comp is JsPlugin_Behaviour jsPluginInstance) {
+            Debug.Log($"----- <color=cyan>{comp.GetType().Name}</color> has instance in scene on gob <color=yellow>{comp.gameObject.name}</color>", comp.gameObject);
+            allJsPluginInstances.Add((comp.GetType(), comp));
+          // }
         }
+      }
+      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
       // 0. For each SynqBehavior
       foreach (var behaviour in FindObjectsOfType<SynqBehaviour>(false)){ // false means we skip inactives
@@ -232,7 +260,7 @@ public class JsPlugin_Writer: MonoBehaviour {
             if (matches.Count > 0) {
               // log line of code that matched
               var substring40 = synqBehCode.Substring(matches[0].Index, Math.Min(40, synqBehCode.Length - matches[0].Index));
-              Debug.Log($"{logPrefix} {jsPluginType.Name} matched: {codeMatchRegex} at index {matches[0].Index} in code: {substring40}");
+              // Debug.Log($"{logPrefix} {jsPluginType.Name} matched: {codeMatchRegex} at index {matches[0].Index} in code: {substring40}");
               // 2.5 ensure it is not inside a comment
               // if (Regex.IsMatch(sbScript.text, @"//.*" + pattern)) continue; // TODO: add this and test it
 
@@ -241,7 +269,8 @@ public class JsPlugin_Writer: MonoBehaviour {
               string sbPathAndPattern = $"{sbPath}<color=grey> needs: </color> <color=yellow>{jsPluginType}</color> for: <color=white>{codeMatchRegex.Replace("\\","")}</color>";
               rpt.filesThatNeedPlugins.Add(sbPathAndPattern);
               // 4. Check if the class has an instance in the scene
-              var jsPluginInstance = (JsPlugin_Behaviour)FindObjectsOfType(jsPluginType, false).Where(x => x.GetType() == jsPluginType).FirstOrDefault();
+              var jsPluginInstance = allJsPluginInstances.FirstOrDefault(x => x.Item1 == jsPluginType).Item2;
+              // Debug.Log($"{logPrefix} <b><color=white>{jsPluginType.Name}</color></b> {((jsPluginInstance==null)?"<color=red>DOES NOT HAVE</color>":"<color=green>HAS</color>")} an instance in the scene");
               // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance.
               // Also continue if it is disabled
               if (jsPluginInstance == null || !jsPluginInstance.enabled) {
@@ -252,17 +281,20 @@ public class JsPlugin_Writer: MonoBehaviour {
               // 6. Call JsPluginFileName() method for this class
               var   jsPlugin = jsPluginInstance.GetJsPluginCode();
               bool needsCode = jsPlugin != null;
-              if (jsPlugin == null) {
-                Debug.LogWarning($"{logPrefix} <color=cyan>#-#-#</color> {jsPluginInstance.GetType().Name} has <color=red>[[[ null ]]]</color> GetJsPluginCode() class:<color=yellow>{synqBehScript.name}</color> for {codeMatchRegex} needsCode:{(needsCode?"<color=#44ff44>Yes</color>" : "<color=#ff4444>No</color>")}");
-              } else {
-                Debug.Log($"{logPrefix} <color=cyan>#-#-#</color> {jsPluginInstance.GetType().Name} has GetJsPluginCode() of {jsPlugin._pluginName} class:<color=yellow>{synqBehScript.name}</color> for {codeMatchRegex} needsCode:{(needsCode?"<color=#44ff44>Yes</color>" : "<color=#ff4444>No</color>")}");
-              }
+              var needsCodeStr = needsCode ? "<color=#44ff44>Yes</color>" : "<color=#ff4444>No</color>";
+              // if (jsPlugin == null) {
+              //   Debug.LogWarning($"{logPrefix} <color=cyan>#-#-#</color> {jsPluginInstance.GetType().Name} has <color=red>[[[ null ]]]</color> GetJsPluginCode() class:<color=yellow>{synqBehScript.name}</color> for {codeMatchRegex} {needsCodeStr}");
+              // } else {
+                // Debug.Log($"{logPrefix} <color=cyan>#-#-#</color> {jsPluginInstance.GetType().Name} has GetJsPluginCode() of {jsPlugin._pluginName} class:<color=yellow>{synqBehScript.name}</color> for {codeMatchRegex} {needsCodeStr}");
+              // }
               string jsPluginFileName = $"plugins/{jsPlugin?._pluginName??"???"}.js";
               // 7. Check if the file exists
               var modelClassPath = Mq_File.AppFolder().DeeperFile(jsPluginFileName);
               if (!needsCode || modelClassPath.Exists()) {
                 rpt.tsThatAreReady.Add(jsPluginInstance.GetType());
                 rpt.filesThatAreReady.Add(sbPathAndPattern);
+              } else {
+                Debug.Log($"{logPrefix} # % # % # <color=red>MISSING</color> {jsPluginInstance.GetType().Name} needs {jsPluginFileName} for {codeMatchRegex} but {needsCodeStr}");
               }
             } // if IsMatch
           } // foreach codeMatchPatterns

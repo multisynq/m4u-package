@@ -49,7 +49,11 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
   #region JavaScript
     //-------------------------- ||||||||||||||| -------------------------
     public override JsPluginCode GetJsPluginCode() {
-      return null;
+      // null  here means that JS code is neither required 
+      // nor written to the MultisynqJS/<appName>/plugins/indexOfPlugins.js or its folder
+      // for this plugin. 
+      // (In fact, this plugin makes use of the JS code it is subclassed from, SynqVar_Mgr)
+      return null; 
     }
   #endregion
 
@@ -64,7 +68,7 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
     }
     //-- |||||||||||| ------------------------------------------
     void AddUIElement(SynqVarInfo synqVar) {
-      Debug.Log($"{svLogPrefix} AddUIElement for {synqVar.varName}");
+      // Debug.Log($"{svLogPrefix} AddUIElement for {synqVar.varName}");
       var attr = synqVar.attribute as SynqVarUIAttribute;
       // log error if attr is null
       if (attr==null) {
@@ -73,7 +77,7 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
       }
       var cloneMe = defaultUGuiToClone;
       if (attr?.clonePath != null) {
-        Debug.Log($"{svLogPrefix} $$$$ AddUIElement for {synqVar.varName} - uiPathToClone: {attr.clonePath}");
+        // Debug.Log($"{svLogPrefix} $$$$ AddUIElement for {synqVar.varName} - uiPathToClone: {attr.clonePath}");
         attr.uiToClone = GameObject.Find(attr.clonePath);
         if (attr.uiToClone == null) {
           Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - <color=red>uiToClone is null</color>");
@@ -83,7 +87,7 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
       }
       cloneMe.SetActive(false);
       if (cloneMe == null) {
-        Debug.Log($"{svLogPrefix} AddUIElement for {synqVar.varId} - no uGuiToClone");
+        Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - no uGuiToClone");
         return;
       }
       var clone = Instantiate(cloneMe);

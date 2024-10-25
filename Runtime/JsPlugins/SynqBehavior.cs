@@ -11,6 +11,9 @@ public interface IWithNetId {
 public enum RpcTarget { Others, All };
 //========== ||||||||||||| =============
 public class SynqBehaviour : MonoBehaviour, IWithNetId {
+
+  // static public SynqBehaviour currentlyConstructingSynqBehaviour;
+
   [field: SerializeField]
   public uint netId { get; set; } = 0;
   
@@ -95,17 +98,19 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
 
   private uint GenerateNewId(uint currentId) {
     unchecked {
-        uint hash = currentId;
-        hash = (hash ^ 61) ^ (hash >> 16);
-        hash += (hash << 3);
-        hash ^= (hash >> 4);
-        hash *= 0x2d4eb2d9; // Prime number close to 2^32 / φ
-        // Use more bits in final shuffle
-        hash ^= (hash >> 11);
-        hash ^= (hash >> 19);
-        return hash % 10000000u; // Keep it within 0-9999999 range
+      uint hash = currentId;
+      hash = (hash ^ 61) ^ (hash >> 16);
+      hash += (hash << 3);
+      hash ^= (hash >> 4);
+      hash *= 0x2d4eb2d9; // Prime number close to 2^32 / φ
+      // Use more bits in final shuffle
+      hash ^= (hash >> 11);
+      hash ^= (hash >> 19);
+      return hash % 10000000u; // Keep it within 0-9999999 range
     }
   }
+
+  // public SynqBehaviour() { currentlyConstructingSynqBehaviour = this; }
 
 }
 
