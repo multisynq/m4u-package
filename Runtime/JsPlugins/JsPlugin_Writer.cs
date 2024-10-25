@@ -219,24 +219,14 @@ public class JsPlugin_Writer: MonoBehaviour {
       //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
       //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
       //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      // var allJsPluginInstances = FindObjectsOfType<GameObject>(true)
-      //   // .Where(x => typeof(JsPlugin_Behaviour).IsAssignableFrom(x.GetType()))
-      //   .Select( (JsPlugin_Behaviour x) => (x.GetType(), x as JsPlugin_Behaviour) );
-      // // log all
-      // foreach (var (jsPluginType, jsPluginInstance) in allJsPluginInstances) {
-      //   // if (jsPluginType?.Name?.Contains("_Mgr")??false) 
-      //   Debug.Log($"----- <color=cyan>{jsPluginType?.Name}</color> has instance in scene on gob <color=yellow>{jsPluginInstance?.gameObject?.name??"??"}</color>");
-      // }
       // iterate all gameObjects in scene looking for JsPlugin_Behaviour instances
-      List<(Type, JsPlugin_Behaviour)> allJsPluginInstances = new();
-      foreach (var go in FindObjectsOfType<GameObject>(true)) {
-        foreach (var comp in go.GetComponents<JsPlugin_Behaviour>()) {
-          // if (comp is JsPlugin_Behaviour jsPluginInstance) {
-            Debug.Log($"----- <color=cyan>{comp.GetType().Name}</color> has instance in scene on gob <color=yellow>{comp.gameObject.name}</color>", comp.gameObject);
-            allJsPluginInstances.Add((comp.GetType(), comp));
-          // }
-        }
-      }
+      // List<(Type, JsPlugin_Behaviour)> allJsPluginInstances = new();
+      // foreach (var comp in FindObjectsOfType<JsPlugin_Behaviour>(true)) {
+      //   allJsPluginInstances.Add((comp.GetType(), comp));
+      // }
+      // Use Select instead
+      var allJsPluginInstances = FindObjectsOfType<JsPlugin_Behaviour>(true).Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
+      Debug.Log($"----- %cy%JsPlugins=%wh%[{string.Join(", ", allJsPluginInstances.Select(x=>$"%yel%{x.Item2.GetType().Name}%gy%") )}%wh%]".TagColors());
       //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
       //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
       //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

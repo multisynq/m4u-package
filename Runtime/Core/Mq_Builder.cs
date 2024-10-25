@@ -493,13 +493,13 @@ public class Mq_Builder {
     // 3. build target: 'node' or 'webview' or 'webgl'
     // 4. (iff starting a watcher) path to a temporary file to be used for output
     arguments += $"\"{nodeExecPath}\" \"{appName}\" \"{target}\" ";
-    Debug.Log($"<color=yellow>Building JS:</color> {executable} {arguments}");
+    Debug.Log($"%ye%Building JS: Shell command: %gr%~{executable.Replace(Application.dataPath,"")} {arguments}".TagColors());
     if (startWatcher) {
       logFile = Path.GetTempFileName();
       arguments += logFile;
     }
     else {
-      Debug.Log($"building {appName} for {target} to StreamingAssets/{appName}");
+      Debug.Log($"%ye%Building JS:%wh% OUTPUT %gy%to '%gr%StreamingAssets/{appName}%gy%' for %wh%{target} ".TagColors());
     }
 
     // Check that the Js Pulgins are all present

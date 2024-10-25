@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using UnityEngine;
+using Multisynq;
 
 public static class AttributeHelper {
 

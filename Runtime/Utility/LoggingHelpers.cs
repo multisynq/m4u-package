@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-static class LoggingHelpers {
+namespace Multisynq {
+
+public static class LoggingHelpers {
     // Reference for Unity text colors: https://docs.unity3d.com/Manual/StyledText.html
 
     public static Dictionary<string, string> unityEditorColorMap = new Dictionary<string, string>() {
@@ -114,3 +116,5 @@ static class LoggingHelpers {
     }
 
 }
+
+} // END namespace Multisynq

@@ -17,42 +17,23 @@ namespace Multisynq {
     public int varIdx;
 
     public T Set(T val){
-      SynqVar_Mgr.I.SendAsMsg(varIdx, varId, val, typeof(T));
+      // SynqVar_Mgr.I.SendAsMsg(varIdx, varId, val, typeof(T));
       _value = val;
       return _value;
     }
     public T Get() { return _value; }
-    // auto-getter
+
+    // this means you can do: int myInt = mySynqVar; or Debug.Log($"mySynqVar={mySynqVar}");
     public static implicit operator T(SynqVar<T> synqVar) { return synqVar._value; }
+
+    // ToString() is called implicitly when you do: Debug.Log($"mySynqVar={mySynqVar}");
+    public override string ToString() { return _value.ToString(); }
 
     // constructor
     public SynqVar( SynqBehaviour sb, string name, T initialValue ) {
       syncedBehaviour = sb;
       varName = name;
       _value = initialValue;
-      // if (SynqBehaviour.currentlyConstructingSynqBehaviour == null) {
-      //   Debug.LogError("SynqVar created outside of SynqBehaviour initialization!");
-      //   return;
-      // }
-
-      // this.syncedBehaviour = SynqBehaviour.currentlyConstructingSynqBehaviour;
-      // _value = initialValue;
-
-      // // Find this instance's field name in the containing class
-      // var fields = syncedBehaviour.GetType()
-      //   .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-      // foreach (var field in fields) {
-      //   if (field.FieldType == typeof(SynqVar<T>)) {
-      //     // Get the actual instance from the field
-      //     var fieldValue = field.GetValue(syncedBehaviour);
-      //     // Compare references to find ourselves
-      //     if (ReferenceEquals(fieldValue, this)) {
-      //       varName = field.Name;
-      //       break;
-      //     }
-      //   }
-      // }
     }
 
     void Test() {
