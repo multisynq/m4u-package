@@ -57,14 +57,14 @@ public class SI_JsBuildTools: StatusItem {
   //-- JS BUILD TOOLS --------------------------------
 
   private async void Clk_CopyJSBuildTools() { // JS BUILD TOOLS  ------------- Click
-    Logger.MethodHeader();
+    Logger.MethodHeader(6);
     await Mq_Builder.InstallJSTools();
     Check(); // recheck (this SI_JsBuildTools)
     edWin.CheckAllStatusForReady();
   }
 
   private void Clk_GotoJSBuildToolsFolder() { // JS BUILD TOOLS  ------------- Click
-    Logger.MethodHeader();
+    Logger.MethodHeader(4);
     var mqJSFolder = Mq_File.MultisynqJS();
     if (mqJSFolder.Exists()) {
       NotifyAndLog("Assets/MultisynqJS/ \nfolder opened\nin Finder/Explorer.");
