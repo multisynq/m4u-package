@@ -25,6 +25,8 @@ namespace Multisynq {
     public bool   updateEveryInterval { get; set; } = false; //   true: Force update every interval, even if value hasn't changed.   false: Only sync when the value has changed.
     public string OnChangedCallback   { get; set; } // Name of the method to call on the var's class when the value changes
     public string hook                { get; set; } // Name of the method to call on the var's class when the value changes
+    public SynqVarUIAttribute DeepCopy() => (SynqVarUIAttribute)MemberwiseClone();
+    override public string ToString() => $"SynqVarAttribute: CustomName{CustomName} updateInterval:{updateInterval} updateEveryInterval:{updateEveryInterval}";
   }
 #endregion
 
@@ -157,17 +159,15 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
   #region Factories
     //------------------- ||||||||||||||||||| -----------------------
     private SynqFieldInfo CreateSynqFieldInfo(SynqBehaviour syncBeh, FieldInfo field, SynqVarAttribute attribute, int fieldIdx) {
-      string fieldId = (attribute.CustomName != null) 
-        ? GenerateVarId(syncBeh, attribute.CustomName) 
-        : GenerateVarId(syncBeh, field.Name);
+      string fieldId = GenerateVarId(syncBeh, attribute.CustomName ?? field.Name);
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback ?? attribute.hook);
       string classAndFieldName = $"{syncBeh.GetType().Name}.{field.Name}";
       return new SynqFieldInfo(
-          fieldId, fieldIdx,
-          CreateGetter(field, syncBeh), CreateSetter(field, syncBeh),
-          syncBeh, field, attribute,
-          field.GetValue(syncBeh),
-          onChangedCallback, classAndFieldName
+        fieldId, fieldIdx,
+        CreateGetter(field, syncBeh), CreateSetter(field, syncBeh),
+        syncBeh, field, attribute,
+        field.GetValue(syncBeh),
+        onChangedCallback, classAndFieldName
       );
     }
     //------------------ |||||||||||||||||| -----------------------
@@ -176,11 +176,11 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       Action<object> onChangedCallback = CreateOnChangedCallback(syncBeh, attribute.OnChangedCallback);
       string classAndFieldName = $"{syncBeh.GetType().Name}.{prop.Name}";
       return new SynqPropInfo(
-          propId, propIdx,
-          CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh), // TODO: pass in propId & propIdx so we can make a callback handler and remove Update checking for changes
-          syncBeh, prop, attribute,
-          prop.GetValue(syncBeh),
-          onChangedCallback, classAndFieldName
+        propId, propIdx,
+        CreateGetter(prop, syncBeh), CreateSetter(prop, syncBeh), // TODO: pass in propId & propIdx so we can make a callback handler and remove Update checking for changes
+        syncBeh, prop, attribute,
+        prop.GetValue(syncBeh),
+        onChangedCallback, classAndFieldName
       );
     }
     //-------------------- ||||||||||||||||||||||| -----------------------
@@ -441,6 +441,9 @@ public static class SerializationExtensions {
       ConfirmedInArr = false;
       LastSyncTime = 0f;
       this.varName = varName;
+    }
+    override public string ToString() {
+      return $"var {varName}:{varType.Name} = {Getter()} varId:{varId} varIdx:{varIdx} attribute:{attribute}";
     }
   }
 
