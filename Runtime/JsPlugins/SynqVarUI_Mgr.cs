@@ -64,17 +64,21 @@ namespace Multisynq {
       if (theme != null) SynqVarUI_Mgr.RegisterUITheme(theme, this);
     }
 
-    public void SplatIfNotNull(SynqVarUIAttribute attr) {
-      if (attr.theme       != null) theme       = attr.theme;
-      if (attr.clonePath   != null) clonePath   = attr.clonePath;
-      if (attr.imgCompPath != null) imgCompPath = attr.imgCompPath;
-      if (attr.imgRsrcPath != null) imgRsrcPath = attr.imgRsrcPath;
-      if (attr.formatStr   != null) formatStr   = attr.formatStr;
-      if (attr.uGuiTxtName != null) uGuiTxtName = attr.uGuiTxtName;
-      if (attr.labelTxt    != null) labelTxt    = attr.labelTxt;
-      if (attr.imgName     != null) imgName     = attr.imgName;
-      if (attr.order       != 0   ) order       = attr.order;
-    } 
+    public void StompNonNullValuesUsing(SynqVarUIAttribute attr) {// alternate method names: ReplaceNonNullValues, OverrideIfNotNull, OverloadIfNotNull, OvelayIfNotNull, SpreadValsInto
+      // if attr.xxxxx has a non-null vlaue, then use it, otherwise leave it as is in this.xxxxx
+      theme       ??= attr.theme; 
+      clonePath   ??= attr.clonePath;
+      imgCompPath ??= attr.imgCompPath;
+      imgRsrcPath ??= attr.imgRsrcPath;
+      formatStr   ??= attr.formatStr;
+      uGuiTxtName ??= attr.uGuiTxtName;
+      labelTxt    ??= attr.labelTxt;
+      imgName     ??= attr.imgName;
+      order       = attr.order != 0 ? attr.order : order;
+    }
+    override public string ToString() {
+      return $"{base.ToString()} >> theme:{theme}, clonePath:{clonePath}, imgCompPath:{imgCompPath}, imgRsrcPath:{imgRsrcPath}, formatStr:{formatStr}, uGuiTxtName:{uGuiTxtName}, labelTxt:{labelTxt}, imgName:{imgName}, order:{order}";
+    }
   }
 #endregion
 
@@ -122,11 +126,11 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
       if (attr?.theme!=null) {
         if (uiAttributes.ContainsKey(attr.theme)) {
           // make a deep copy 
-          var deepCopy = new SynqVarUIAttribute();
-          deepCopy.SplatIfNotNull(uiAttributes[attr.theme]);
-          deepCopy.SplatIfNotNull(attr);
-          synqVar.attribute = deepCopy;
-          // synqVar.attribute = attr;
+          Debug.Log($"   ### 0 - deepCopy: {synqVar}");
+          var themeAttr = uiAttributes[attr.theme];
+          var currAttr  = attr.DeepCopy();
+          attr.StompNonNullValuesUsing(themeAttr);
+          attr.StompNonNullValuesUsing(currAttr);
         } else {
           Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - <color=red>theme not found</color>");
           return;
@@ -140,6 +144,8 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
         if (attr.uiToClone == null) {
           Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - <color=red>uiToClone is null</color>");
           return;
+        } else {
+          Debug.Log($"         ### AddUIElement for {synqVar.varName} - uiToClone: %gr%{attr.uiToClone.Path()}".TagColors());
         }
         cloneMe = attr.uiToClone;
       }
@@ -171,7 +177,11 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
       string lblTxt = attr?.labelTxt;
       if (lblTxt == null) {
         var afterDotInVarName = synqVar.varName.Split('.').Last();
-        lblTxt = afterDotInVarName.CapitalizeFirst();
+        if (attr!= null && attr.imgName == null) {
+          attr.imgName = afterDotInVarName; // Both: (1) the image) ...
+          Debug.Log($"   ### 777 - attr.imgName: {attr.imgName}");
+        }
+        lblTxt = afterDotInVarName.CapitalizeFirst(); //             ... and (2) the label
       }
 
       UpdateUI(text, imageComponent, synqVar, lblTxt, synqVar.LastValue.ToString());
