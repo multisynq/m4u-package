@@ -26,18 +26,55 @@ namespace Multisynq {
     // [SynqVarUI] 
     // [SynqVarUI(labelTxt = "O2")]
     // [SynqVarUI(valueTxtFunc = (string val, object env)=>$"{(val/100f).ToString(1)}%")]
-    public string                       labelTxt      { get; set; }          // Custom name for the variable, useful for shortening to reduce message size
-    public Func<string, object, string> valueTxtFunc  { get; set; }          // Method to make text for value
-    public string                       formatStr     { get; set; }          // Method to make text for value
+    public string                       theme         { get; set; }          // Key to look up in SynqVarUI_Mgr.uiAttributes
     public string                       clonePath     { get; set; }          // GameObject to clone for UI
-    public GameObject                   uiToClone     { get; set; }          // GameObject to clone for UI
-    public string                       uGuiTxtName   { get; set; }          // GameObject name for text under clonable parent
-    public int                          order         { get; set; } = 0;     // Order to display in UI
-    public List<ItemAction>             actions       { get; set; } = new(); // Actions to take on value change
     public string                       imgCompPath   { get; set; }          // Path to Image component under the cloned UI
     public string                       imgRsrcPath   { get; set; }          // Path in Resources folder for dynamic sprite loading
+    public string                       formatStr     { get; set; }          // Method to make text for value
+    public string                       uGuiTxtName   { get; set; }          // GameObject name for text under clonable parent
+    public string                       labelTxt      { get; set; }          // Custom name for the variable, useful for shortening to reduce message size
     public string                       imgName       { get; set; }          // Name of image to load from Resources folder
+    public int                          order         { get; set; } = 0;     // Order to display in UI
+
+    public Func<string, object, string> valueTxtFunc  { get; set; }          // Method to make text for value
+    public GameObject                   uiToClone     { get; set; }          // GameObject to clone for UI
+    public List<ItemAction>             actions       { get; set; } = new(); // Actions to take on value change
     public Sprite                       defaultImg    { get; set; }          // Default sprite to show
+
+    public SynqVarUIAttribute(
+      string theme       = null, // specific
+      string clonePath   = null, // common
+      string imgCompPath = null, // common
+      string imgRsrcPath = null, // common
+      string formatStr   = null, // common
+      string uGuiTxtName = null, // common
+      string labelTxt    = null, // specific
+      string imgName     = null, // specific
+      int    order       = 0     // specific
+    ) {
+      this.theme        = theme;
+      this.clonePath    = clonePath;
+      this.imgCompPath  = imgCompPath;
+      this.imgRsrcPath  = imgRsrcPath;
+      this.formatStr    = formatStr;
+      this.uGuiTxtName  = uGuiTxtName;
+      this.labelTxt     = labelTxt;
+      this.imgName      = imgName;
+      this.order        = order;
+      if (theme != null) SynqVarUI_Mgr.RegisterUITheme(theme, this);
+    }
+
+    public void SplatIfNotNull(SynqVarUIAttribute attr) {
+      if (attr.theme       != null) theme       = attr.theme;
+      if (attr.clonePath   != null) clonePath   = attr.clonePath;
+      if (attr.imgCompPath != null) imgCompPath = attr.imgCompPath;
+      if (attr.imgRsrcPath != null) imgRsrcPath = attr.imgRsrcPath;
+      if (attr.formatStr   != null) formatStr   = attr.formatStr;
+      if (attr.uGuiTxtName != null) uGuiTxtName = attr.uGuiTxtName;
+      if (attr.labelTxt    != null) labelTxt    = attr.labelTxt;
+      if (attr.imgName     != null) imgName     = attr.imgName;
+      if (attr.order       != 0   ) order       = attr.order;
+    } 
   }
 #endregion
 
@@ -49,6 +86,8 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
     // VisualElement scoreTemplate;
     public GameObject defaultUGuiToClone;
     new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVarUI\]"};
+    static public Dictionary<string, SynqVarUIAttribute> uiAttributes = new();
+    static public void RegisterUITheme(string varName, SynqVarUIAttribute attr) => uiAttributes[varName] = attr;
   #endregion
 
   #region JavaScript
@@ -80,6 +119,20 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
         // Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - <color=red>SynqVarUIAttribute is null</color>");
         // return;
       }
+      if (attr?.theme!=null) {
+        if (uiAttributes.ContainsKey(attr.theme)) {
+          // make a deep copy 
+          var deepCopy = new SynqVarUIAttribute();
+          deepCopy.SplatIfNotNull(uiAttributes[attr.theme]);
+          deepCopy.SplatIfNotNull(attr);
+          synqVar.attribute = deepCopy;
+          // synqVar.attribute = attr;
+        } else {
+          Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - <color=red>theme not found</color>");
+          return;
+        }
+      }
+
       var cloneMe = defaultUGuiToClone;
       if (attr?.clonePath != null) {
         // Debug.Log($"{svLogPrefix} $$$$ AddUIElement for {synqVar.varName} - uiPathToClone: {attr.clonePath}");

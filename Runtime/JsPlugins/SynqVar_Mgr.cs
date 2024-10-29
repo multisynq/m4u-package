@@ -410,16 +410,16 @@ public static class SerializationExtensions {
 
   //================================== ||||||||||| ===
   [Serializable] public abstract class SynqVarInfo {
-    public readonly string varId;
-    public readonly string varName;
-    public readonly int varIdx;
-    public readonly Func<object> Getter;
-    public readonly Action<object> Setter;
-    public readonly Action<object> onChangedCallback;
+    public string varId;
+    public string varName;
+    public int varIdx;
+    public Func<object> Getter;
+    public Action<object> Setter;
+    public Action<object> onChangedCallback;
     public Action<object> onUICallback;
-    public readonly SynqBehaviour syncedBehaviour;
-    public readonly Type varType;
-    public readonly SynqVarAttribute attribute;
+    public SynqBehaviour syncedBehaviour;
+    public Type varType;
+    public SynqVarAttribute attribute;
     public bool blockLoopySend = false;
 
     public object LastValue { get; set; }
