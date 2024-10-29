@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Linq; // for TMP_Text
 
@@ -25,14 +26,18 @@ namespace Multisynq {
     // [SynqVarUI] 
     // [SynqVarUI(labelTxt = "O2")]
     // [SynqVarUI(valueTxtFunc = (string val, object env)=>$"{(val/100f).ToString(1)}%")]
-    public string                       labelTxt     { get; set; }      // Custom name for the variable, useful for shortening to reduce message size
-    // public Func<string, object, string> valueTxtFunc { get; set; }      // Method to make text for value
-    public string                       formatStr    { get; set; }      // Method to make text for value
-    public string                       clonePath    { get; set; }      // GameObject to clone for UI
-    public GameObject                   uiToClone    { get; set; }      // GameObject to clone for UI
-    public string                       uGuiTxtName  { get; set; }      // GameObject name for text under clonable parent
-    public int                          order        { get; set; } = 0; // Order to display in UI
-    public List<ItemAction>             actions      { get; set; } = new(); // Actions to take on value change
+    public string                       labelTxt      { get; set; }          // Custom name for the variable, useful for shortening to reduce message size
+    public Func<string, object, string> valueTxtFunc  { get; set; }          // Method to make text for value
+    public string                       formatStr     { get; set; }          // Method to make text for value
+    public string                       clonePath     { get; set; }          // GameObject to clone for UI
+    public GameObject                   uiToClone     { get; set; }          // GameObject to clone for UI
+    public string                       uGuiTxtName   { get; set; }          // GameObject name for text under clonable parent
+    public int                          order         { get; set; } = 0;     // Order to display in UI
+    public List<ItemAction>             actions       { get; set; } = new(); // Actions to take on value change
+    public string                       imgCompPath   { get; set; }          // Path to Image component under the cloned UI
+    public string                       imgRsrcPath   { get; set; }          // Path in Resources folder for dynamic sprite loading
+    public string                       imgName       { get; set; }          // Name of image to load from Resources folder
+    public Sprite                       defaultImg    { get; set; }          // Default sprite to show
   }
 #endregion
 
@@ -97,32 +102,55 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
       // set name with var key
       clone.name = $"{cloneMe.name}_{synqVar.varName}";
 
+      // Setup Text Component
       TMP_Text text;
-      if (attr?.uGuiTxtName != null) {
-        text = clone.transform.Find(attr.uGuiTxtName).GetComponent<TMP_Text>();
-      } else {
-        text = clone.GetComponentInChildren<TMP_Text>();
+      if (attr?.uGuiTxtName != null) text = clone.transform.Find(attr.uGuiTxtName).GetComponent<TMP_Text>();
+      else text = clone.GetComponentInChildren<TMP_Text>();
+
+      // Setup Image Component if specified
+      Image imageComponent = null;
+      if (!string.IsNullOrEmpty(attr?.imgCompPath)) {
+        imageComponent = clone.transform.Find(attr.imgCompPath)?.GetComponent<Image>();
+        if (imageComponent == null) Debug.LogWarning($"{svLogPrefix} Image component not found at path: {attr.imgCompPath}");
+        else if (attr.defaultImg != null) imageComponent.sprite = attr.defaultImg;
       }
+
       string lblTxt = attr?.labelTxt;
       if (lblTxt == null) {
         var afterDotInVarName = synqVar.varName.Split('.').Last();
         lblTxt = afterDotInVarName.CapitalizeFirst();
       }
-      UpdateText(text, synqVar, lblTxt, synqVar.LastValue.ToString());
-      
-      synqVar.onUICallback = (value) => {
-        UpdateText(text, synqVar, lblTxt, value.ToString());
-        // Debug.Log($"{svLogPrefix} $$$$$$ {synqVar.varName} onUICallback: {value}");
-      };
+
+      UpdateUI(text, imageComponent, synqVar, lblTxt, synqVar.LastValue.ToString());
+
+      synqVar.onUICallback = (value) => UpdateUI(text, imageComponent, synqVar, lblTxt, value.ToString());
+      // Debug.Log($"{svLogPrefix} $$$$$$ {synqVar.varName} onUICallback: {value}");
     }
-    void UpdateText( TMP_Text text, SynqVarInfo synqVar, string label, string value ) {
+
+    void UpdateUI(TMP_Text text, Image image, SynqVarInfo synqVar, string label, string value) {
       var attr = synqVar.attribute as SynqVarUIAttribute;
-      if (attr?.formatStr != null) {
-        text.text = attr.formatStr.Replace("{{key}}", label).Replace("{{value}}", value);
-      } else {
-        text.text = $"{label}   <color=#44ff44><b>{value}</b></color>";
+      
+      // Update text if available
+      if (text != null) {
+        if (attr?.formatStr != null) text.text = attr.formatStr.Replace("{{key}}", label).Replace("{{value}}", value);
+        else text.text = $"{label}   <color=#44ff44><b>{value}</b></color>";
       }
+
+      // Update image if available
+      if (image != null && !string.IsNullOrEmpty(attr?.imgRsrcPath)) {
+        // Try to load sprite from Resources folder based on the value
+        string imgName = attr.imgName ?? label;
+        string spritePath = $"{attr.imgRsrcPath}/{imgName}";
+        Sprite newSprite = Resources.Load<Sprite>(spritePath);
+        if (newSprite != null) image.sprite = newSprite;
+        else {
+          Debug.LogWarning($"{svLogPrefix} Could not load sprite at path: {spritePath}");
+          if (attr.defaultImg != null) image.sprite = attr.defaultImg;
+        }
+      }
+
     }
+
     //------ |||||| -------------------------------------------------------
     // new void Update() {
     //   base.Update();
