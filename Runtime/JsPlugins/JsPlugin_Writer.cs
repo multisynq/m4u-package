@@ -18,9 +18,9 @@ public class JsPlugin_Writer: MonoBehaviour {
       string modelInits = "";
       string viewInits = "";
       foreach( JsPluginCode plugCode in jsPluginCodes) {
-        string[] expts    = plugCode._pluginExports;
+        string[] expts    = plugCode.pluginExports;
         string exptsStr   = string.Join(", ", expts);
-        string plugNm     = plugCode._pluginName;
+        string plugNm     = plugCode.pluginName;
         bool hasView  = expts.Contains(plugNm+"_View");
         bool hasModel = expts.Contains(plugNm+"_Model");
 
@@ -109,23 +109,23 @@ public class JsPlugin_Writer: MonoBehaviour {
         return;
       }
       // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteOneJsPlugin()");
-      var file = Mq_File.AppPluginsFolder().EnsureExists().DeeperFile(jsPlugin._pluginName+".js");
-      file.WriteAllText(jsPlugin._pluginCode);
-      Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin._pluginName, $"%ye%{jsPlugin._pluginName}%gr%").TagColors());
+      var file = Mq_File.AppPluginsFolder().EnsureExists().DeeperFile(jsPlugin.pluginName+".js");
+      file.WriteAllText(jsPlugin.pluginCode);
+      Debug.Log($"{logPrefix} Wrote %gr%{file.shortPath}%gy%".Replace(jsPlugin.pluginName, $"%ye%{jsPlugin.pluginName}%gr%").TagColors());
     }
 
     //---------------- |||||||||||||||||| ------------------------------
     static public void JsPluginFileExists(JsPluginCode jsPlugin, string className) {
       if (jsPlugin==null) return;
-        var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._pluginName}.js");
+        var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin.pluginName}.js");
         if (modelClassPath.Exists()) {
-            // Debug.Log($"{logPrefix} '{jsPlugin._pluginName}.js' already present at '{modelClassPath.longPath}'");
+            // Debug.Log($"{logPrefix} '{jsPlugin.pluginName}.js' already present at '{modelClassPath.longPath}'");
         } else {
             modelClassPath.SelectAndPing();
             Debug.LogError($"   v");
             Debug.LogError($"   v");
             Debug.LogError($"   v");
-            Debug.LogError($"MISSING JS FILE {jsPlugin._pluginName}.js for {className}.cs");
+            Debug.LogError($"MISSING JS FILE {jsPlugin.pluginName}.js for {className}.cs");
             Debug.Log(      "  FIX  in Menu: <color=white>Multisynq > Open Build Assistant > [Check if Ready]</color>");
             Debug.LogError($"   ^");
             Debug.LogError($"   ^");
@@ -173,7 +173,7 @@ public class JsPlugin_Writer: MonoBehaviour {
         return false;
       }
       var jsPlugin = jsPluginMB.GetJsPluginCode();
-      var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin._pluginName}.js");
+      var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin.pluginName}.js");
       return modelClassPath.Exists();
     }
     //========== |||||||||||||| ====================
@@ -277,7 +277,7 @@ public class JsPlugin_Writer: MonoBehaviour {
               // } else {
                 // Debug.Log($"{logPrefix} <color=cyan>#-#-#</color> {jsPluginInstance.GetType().Name} has GetJsPluginCode() of {jsPlugin._pluginName} class:<color=yellow>{synqBehScript.name}</color> for {codeMatchRegex} {needsCodeStr}");
               // }
-              string jsPluginFileName = $"plugins/{jsPlugin?._pluginName??"???"}.js";
+              string jsPluginFileName = $"plugins/{jsPlugin?.pluginName??"???"}.js";
               // 7. Check if the file exists
               var modelClassPath = Mq_File.AppFolder().DeeperFile(jsPluginFileName);
               if (!needsCode || modelClassPath.Exists()) {

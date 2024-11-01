@@ -7,17 +7,19 @@ namespace Multisynq {
 //========== |||||||||||| ================
 public class JsPluginCode {
 
-  public string _pluginName;
-  public string _pluginCode;
-  public string[] _pluginExports;
-  public string _initModelCode;
-  public bool codeIsGood = true;
+  public string   pluginName;
+  public string   pluginCode;
+  public string[] pluginExports;
+  public string   initModelCode;
+  public bool     codeIsGood = true;
 
-  //Array of delegate methods to check the code for problems: (JsPluginCode jpc) => { return jpc._pluginCode.Contains("export default class"); }
-  public List<Func<JsPluginCode, bool>> _codeCheckers = new();
+  // Array of delegate methods to check the code for problems: 
+  // i.e. (JsPluginCode jpc) => { return jpc.pluginCode.Contains("export class"); }
+  // i.e. (JsPluginCode jpc) => { return jpc.pluginCode.MatchPatterns(new[] {"import.*Model", "export.*class"}); }
+  public List<Func<JsPluginCode, bool>> codeCheckers = new();
 
-  //---------|||||||||||| --- constructor
-  public     JsPluginCode( 
+  //---- |||||||||||| --- constructor
+  public JsPluginCode( 
     string pluginName,
     string[] pluginExports,
     string pluginCode, 
@@ -25,15 +27,13 @@ public class JsPluginCode {
   ) { 
     if (string.IsNullOrWhiteSpace(pluginName)) throw new ArgumentException("pluginName cannot be null or whitespace.", nameof(pluginName));
     if (string.IsNullOrWhiteSpace(pluginCode)) throw new ArgumentException("pluginCode cannot be null or whitespace.", nameof(pluginCode));
-    _pluginName = pluginName;
-    _pluginCode = pluginCode;
-    _pluginExports = pluginExports;
+    
+    this.pluginName = pluginName;
+    this.pluginCode = pluginCode;
+    this.pluginExports = pluginExports;
 
-    if (codeCheckers != null) { _codeCheckers.AddRange(codeCheckers); }
-
-    foreach (var checker in _codeCheckers) { // run code checkers and aggregate bools
-      codeIsGood &= checker(this);
-    }
+    if (codeCheckers != null) { this.codeCheckers.AddRange(codeCheckers); }
+    this.codeIsGood = this.codeCheckers.All(checker => checker(this)); // run code checkers and &= aggregate their bools
   }
 
 }
