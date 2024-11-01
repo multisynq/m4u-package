@@ -15,6 +15,9 @@
                     <ui:VisualElement name="CheckReadyBtn_Grp" style="align-items: center; margin-bottom: 15px; border-left-color: rgb(0, 105, 255); border-right-color: rgb(0, 105, 255); border-top-color: rgb(0, 105, 255); border-bottom-color: rgb(0, 105, 255); border-top-left-radius: 9px; border-top-right-radius: 9px; border-bottom-right-radius: 9px; border-bottom-left-radius: 9px; width: 60%; margin-left: 20%; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; height: 46px; justify-content: center;">
                         <ui:Button text="Check If Ready" display-tooltip-when-elided="true" name="CheckIfReady_Btn" style="width: 72%; align-items: flex-start; justify-content: center; height: 26px;" />
                     </ui:VisualElement>
+                    <ui:VisualElement name="ClearLogs_Grp" style="align-items: center; margin-bottom: 10px;">
+                        <ui:Toggle label="Clear Logs when checking" name="ClearLogs_Tgl" value="true" />
+                    </ui:VisualElement>
                     <ui:VisualElement name="ReadyStatus_Lay" style="width: 100%; height: 75px; flex-direction: row; margin-bottom: 0; justify-content: center;">
                         <ui:VisualElement name="Ready_Status_Img" style="background-image: url(&apos;project://database/Packages/io.multisynq.multiplayer/Editor/MultisynqEditorWindow/Images/D_Pad_Right.png?fileID=2800000&amp;guid=909267c73c03b40f69d858614f2fe27f&amp;type=3#D_Pad_Right&apos;); width: 25px; height: 51px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(191, 255, 197);" />
                         <ui:VisualElement name="LblBtns_Lay" style="margin-left: 5px; height: 51px;">

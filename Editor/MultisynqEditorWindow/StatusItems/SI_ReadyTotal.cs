@@ -12,7 +12,7 @@ public class SI_ReadyTotal: StatusItem {
     SetupVisElem("Ready_Status_Img",     ref statusImage);
     SetupLabel(  "Ready_Message_Lbl",    ref messageLabel);
     SetupButton( "Awesome_Btn",          ref Awesome_Btn,        Clk_BeAwesome);
-    SetupButton( "Top_Ready_Docs_Btn",   ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs);    
+    SetupButton( "Top_Ready_Docs_Btn",   ref Top_Ready_Docs_Btn, Clk_Top_Ready_Docs, false);
   }
 
   override public void InitText() {

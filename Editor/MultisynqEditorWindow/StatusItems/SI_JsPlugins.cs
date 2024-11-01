@@ -17,7 +17,7 @@ public class SI_JsPlugins: StatusItem {
     SetupLabel(  "JsPlugins_Message_Lbl", ref messageLabel);
     SetupButton( "AddJsPlugins_Btn",      ref AddJsPlugins_Btn,   Clk_AddJsPlugins_Btn);
     SetupButton( "GotoJsPlugins_Btn",     ref GotoJsPlugins_Btn,  Clk_GotoJsPlugins);
-    SetupButton( "JsPlugins_Docs_Btn",    ref JsPlugins_Docs_Btn, Clk_JsPlugins_Docs);
+    SetupButton( "JsPlugins_Docs_Btn",    ref JsPlugins_Docs_Btn, Clk_JsPlugins_Docs, false);
     SetupButton( "ForceJsPlugins_Btn",    ref ForceJsPlugins_Btn, Clk_ForceJsPlugins);
   }
 

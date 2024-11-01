@@ -18,7 +18,7 @@ public class SI_BuiltOutput: StatusItem {
     SetupButton( "Save_Open_Scene_Btn",        ref Save_Open_Scene_Btn,       Clk_Save_Open_Scene);
     SetupButton( "Goto_Build_Panel_Btn",       ref Goto_Build_Panel_Btn,      Clk_Goto_Build_Panel);
     SetupButton( "Check_Building_Scenes_Btn",  ref Check_Building_Scenes_Btn, Clk_Check_Building_Scenes);
-    SetupButton( "BuiltOutput_Docs_Btn",       ref BuiltOutput_Docs_Btn,      Clk_BuiltOutput_Docs);
+    SetupButton( "BuiltOutput_Docs_Btn",       ref BuiltOutput_Docs_Btn,      Clk_BuiltOutput_Docs, false);
   }
   override public void InitText() {
     StatusSetMgr.builtOutput = new StatusSet( messageLabel, statusImage,

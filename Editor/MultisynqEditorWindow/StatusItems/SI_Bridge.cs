@@ -18,7 +18,7 @@ public class SI_Bridge: StatusItem {
     SetupLabel(  "HaveBridge_Message_Lbl", ref messageLabel);
     SetupButton( "GotoBridgeGob_Btn",      ref GotoBridgeGob_Btn,   Clk_GotoBridgeGob);
     SetupButton( "CreateBridgeGob_Btn",    ref CreateBridgeGob_Btn, Clk_CreateBridgeGob);
-    SetupButton( "HaveBridge_Docs_Btn",    ref Docs_Btn,            Clk_Bridge_Docs);
+    SetupButton( "HaveBridge_Docs_Btn",    ref Docs_Btn,            Clk_Bridge_Docs, false);
   }
 
   override public void InitText() {

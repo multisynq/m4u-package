@@ -80,10 +80,19 @@ public abstract class StatusItem {
   }
 
   // --- ELEMENT METHODS -------------------
-  public void SetupButton(string buttonName, ref Button button, Action buttonAction) {
+  public void SetupButton(string buttonName, ref Button button, Action buttonAction, bool clearLogs = true) {
     button = FindElement<Button>(buttonName, "Button");
+    if (clearLogs) button.clicked += edWin.ClearLogs;
     if (buttonAction != null) button.clicked += buttonAction;
     allButtons.Add(button);
+  }
+
+  public void SetupToggle(string toggleName, ref Toggle toggle, Action<ChangeEvent<bool>> toggleAction) {
+    toggle = FindElement<Toggle>(toggleName, "Toggle");
+    if (toggleAction != null) {
+      EventCallback<ChangeEvent<bool>> callback = new EventCallback<ChangeEvent<bool>>(toggleAction);
+      toggle.RegisterValueChangedCallback(callback);
+    }
   }
 
   public void SetupLabel(string labelName, ref Label label) {

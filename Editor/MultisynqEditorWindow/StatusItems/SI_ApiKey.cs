@@ -17,7 +17,7 @@ public class SI_ApiKey: StatusItem {
     SetupLabel(  "ApiKey_Message_Lbl", ref messageLabel);
     SetupButton( "SignUpApi_Btn",      ref SignUpApi_Btn,   Clk_SignUpApi);
     SetupButton( "GotoApiKey_Btn",     ref GotoApiKey_Btn,  Clk_EnterApiKey);
-    SetupButton( "ApiKey_Docs_Btn",    ref ApiKey_Docs_Btn, Clk_ApiKey_Docs);
+    SetupButton( "ApiKey_Docs_Btn",    ref ApiKey_Docs_Btn, Clk_ApiKey_Docs, false);
   }
 
   override public void InitText() {
