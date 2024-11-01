@@ -40,7 +40,7 @@ public static class AttributeHelper {
   public static bool CheckForBadAttrParents<TRequiredBase, TAttribute>() where TAttribute : Attribute {
     bool allGood = true;
     #if UNITY_EDITOR
-      foreach (MonoBehaviour mb in UnityEngine.Object.FindObjectsOfType<MonoBehaviour>()) {
+      foreach (MonoBehaviour mb in typeof(MonoBehaviour).FindAllInScene(false)) {
         if (!mb.enabled) continue; // skip inactives
         if (!CheckForBadAttributeParent<TRequiredBase, TAttribute>(mb)) {
           allGood = false;

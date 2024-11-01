@@ -15,7 +15,7 @@ public abstract class SingletonMB<T, TBase> : MonoBehaviour where T : SingletonM
         {
             if (_applicationIsQuitting)
             {
-                Debug.LogWarning($"[Singleton] Instance '{typeof(T)}' already destroyed on application quit. Won't create again - returning null.");
+                Debug.LogWarning($"[SingletonMB] Instance '{typeof(T)}' already destroyed on application quit. Won't create again - returning null.");
                 return null;
             }
 
@@ -27,7 +27,7 @@ public abstract class SingletonMB<T, TBase> : MonoBehaviour where T : SingletonM
 
                     if (FindObjectsOfType(typeof(T)).Length > 1)
                     {
-                        Debug.LogError($"[Singleton] Something went really wrong - there should never be more than 1 singleton! Reopening the scene might fix it.");
+                        Debug.LogError($"[SingletonMB] Something went really wrong - there should never be more than 1 singleton! Reopening the scene might fix it.");
                         return _instance;
                     }
 
@@ -39,11 +39,11 @@ public abstract class SingletonMB<T, TBase> : MonoBehaviour where T : SingletonM
 
                         DontDestroyOnLoad(singleton);
 
-                        Debug.Log($"[Singleton] An instance of {typeof(T)} is needed in the scene, so '{singleton}' was created with DontDestroyOnLoad.");
+                        Debug.Log($"[SingletonMB] An instance of {typeof(T)} is needed in the scene, so '{singleton}' was created with DontDestroyOnLoad.");
                     }
                     else
                     {
-                        Debug.Log($"[Singleton] Using instance already created: {_instance.gameObject.name}");
+                        Debug.Log($"[SingletonMB] Using instance already created: {_instance.gameObject.name}");
                     }
                 }
 

@@ -8,7 +8,8 @@ public static class Singletoner {
   //------------- |||||||||| -----------------------------------------------------------
   public static T EnsureInst<T>(T instance, bool dontDestroyOnLoad = true) where T : MonoBehaviour {
     if (instance == null) {
-      var instances = Object.FindObjectsOfType<T>(true);
+      // var instances = Object.FindObjectsOfType<T>(true);
+      var instances = typeof(T).FindAllInScene(true) as T[];
       instance = instances.FirstOrDefault(i => i.enabled);
       if (instance == null && instances.Length > 0) {
         instance = instances[0];

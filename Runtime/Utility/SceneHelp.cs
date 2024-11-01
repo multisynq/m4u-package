@@ -67,4 +67,8 @@ static public class SceneHelp {
     return component;
   }
 
+  // method extension of Component FindAllInScene
+  static public MonoBehaviour[] FindAllInScene(this System.Type type, bool includeInactive = false) {
+    return Object.FindObjectsOfType(type, includeInactive) as MonoBehaviour[];
+  }
 }
