@@ -23,7 +23,7 @@ public class SI_Node: StatusItem {
     SetupLabel(  "Node_Message_Lbl", ref messageLabel);
     SetupButton( "GotoNodePath_Btn", ref GotoNodePath_Btn, Clk_GotoNodePath);
     SetupButton( "TryAuto_Btn",      ref TryAuto_Btn,      Clk_AutoSetupNode);
-    SetupButton( "Node_Docs_Btn",    ref Docs_Btn,         Clk_Node_Docs);
+    SetupButton( "Node_Docs_Btn",    ref Docs_Btn,         Clk_Node_Docs, false);
 
     Node_Dropdown = FindElement<DropdownField>("Node_Dropdown");
     #if UNITY_EDITOR_WIN

@@ -17,7 +17,7 @@ public class SI_BridgeHasSettings: StatusItem {
     SetupLabel(  "BridgeHasSettings_Message_Lbl",     ref messageLabel);
     SetupButton( "BridgeHasSettings_AutoConnect_Btn", ref BridgeHasSettings_AutoConnect_Btn, Clk_BridgeHasSettings_AutoConnect);
     SetupButton( "BridgeHasSettings_Goto_Btn",        ref BridgeHasSettings_Goto_Btn,        Clk_BridgeHasSettings_Goto);
-    SetupButton( "BridgeHasSettings_Docs_Btn",        ref BridgeHasSettings_Docs,            Clk_BridgeHasSettings_Docs);
+    SetupButton( "BridgeHasSettings_Docs_Btn",        ref BridgeHasSettings_Docs,            Clk_BridgeHasSettings_Docs, false);
   }
 
   override public void InitText() {

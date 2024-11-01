@@ -17,7 +17,7 @@ public class SI_Systems: StatusItem {
     SetupLabel(  "HasCqSys_Message_Lbl", ref messageLabel);
     SetupButton( "AddCqSys_Btn",         ref AddCqSys_Btn,         Clk_AddCqSys);
     SetupButton( "ListMissingCqSys_Btn", ref ListMissingCqSys_Btn, Clk_ListMissingCqSys);
-    SetupButton( "HasCqSys_Docs_Btn",    ref Systems_Docs_Btn,     Clk_Systems_Docs);
+    SetupButton( "HasCqSys_Docs_Btn",    ref Systems_Docs_Btn,     Clk_Systems_Docs, false);
   }
 
   override public void InitText() {

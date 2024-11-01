@@ -19,7 +19,7 @@ public class SI_Settings: StatusItem {
     SetupButton( "SettingsCreate_Btn",   ref SettingsCreate_Btn, Clk_SettingsCreate);
     SetupButton( "GotoNodePath_Btn",     ref GotoNodePath_Btn,   null);
     SetupButton( "GotoApiKey_Btn",       ref GotoApiKey_Btn,     null);
-    SetupButton( "Settings_Docs_Btn",    ref Docs_Btn,           Clk_Settings_Docs);
+    SetupButton( "Settings_Docs_Btn",    ref Docs_Btn,           Clk_Settings_Docs, false);
   }
   override public void InitText() {
     StatusSetMgr.settings = new StatusSet( messageLabel, statusImage,

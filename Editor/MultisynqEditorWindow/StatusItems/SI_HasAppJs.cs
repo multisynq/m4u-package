@@ -19,7 +19,7 @@ public class SI_HasAppJs: StatusItem {
     SetupLabel(  "HasAppJs_Message_Lbl", ref messageLabel);
     SetupButton( "SetAppName_Btn",       ref SetAppName_Btn,      Clk_SetAppName);
     SetupButton( "MakeAppJsFile_Btn",    ref MakeAppJsFile_Btn,   Clk_MakeAppJsFile);
-    SetupButton( "HasAppJs_Docs_Btn",    ref HasAppJs_Docs_Btn,   Clk_HasAppJs_Docs);
+    SetupButton( "HasAppJs_Docs_Btn",    ref HasAppJs_Docs_Btn,   Clk_HasAppJs_Docs, false);
     SetupButton( "GotoAppJsFile_Btn",    ref GotoAppJsFile_Btn,   Clk_GotoAppJsFile);
     SetupButton( "GotoAppJsFolder_Btn",  ref GotoAppJsFolder_Btn, Clk_GotoAppJsFolder);
   }

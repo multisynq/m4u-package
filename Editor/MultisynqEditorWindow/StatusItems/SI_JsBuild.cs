@@ -18,7 +18,7 @@ public class SI_JsBuild: StatusItem {
     SetupButton( "ToggleJSBuild_Btn",    ref ToggleJSBuild_Btn,    Clk_ToggleJSBuild); // Start JS Build Watcher
     SetupButton( "Build_JsNow_Btn",      ref Build_JsNow_Btn,      Clk_Build_JsNow);
     SetupButton( "GotoBuiltOutput_Btn",  ref GotoBuiltOutput_Btn,  Clk_GotoBuiltOutput);
-    SetupButton( "JSBuild_Docs_Btn",     ref Docs_Btn,             Clk_JsBuild_Docs);
+    SetupButton( "JSBuild_Docs_Btn",     ref Docs_Btn,             Clk_JsBuild_Docs, false);
   }
 
   override public void InitText() {

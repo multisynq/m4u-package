@@ -1,3 +1,4 @@
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -12,6 +13,8 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
   double deltaTime = 0;
 
   Button CheckIfReady_Btn; // CHECK IF READY
+  Toggle ClearLogs_Tgl;    // CLEAR LOGS
+  bool clearLogs = true;
 
   //==== Status Items (SI_) =====================================================
   public SI_ReadyTotal        siReadyTotal;
@@ -46,6 +49,7 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     StatusItem.ClearStaticLists();
     siReadyTotal        = new SI_ReadyTotal(this);
     siReadyTotal.SetupButton("CheckIfReady_Btn", ref CheckIfReady_Btn, Clk_CheckIfReady);
+    siReadyTotal.SetupToggle("ClearLogs_Tgl",    ref ClearLogs_Tgl,    Tgl_ClearLogs   );
     siSettings          = new SI_Settings(this);
     siNode              = new SI_Node(this);
     siApiKey            = new SI_ApiKey(this);
@@ -70,6 +74,20 @@ public partial class MultisynqBuildAssistantEW : EditorWindow {
     CheckAllStatusForReady();
   }
   static string YN(bool b) => b ? "<color=#33bb33>✔️</color>" : "<b><color=#ff5555>✕</color></b>";
+  //=============================================================================
+  private void Tgl_ClearLogs(ChangeEvent<bool> e) {
+    Logger.Header("Clearing Logs... " + (e.newValue ? "(Enabled)" : "(Disabled)"));
+    clearLogs = e.newValue;
+  }
+  public void ClearLogs() {
+    if (clearLogs) {
+      Logger.Header("Clearing Logs... " + (clearLogs ? "(Enabled)" : "(Disabled)"));
+      var assembly = Assembly.GetAssembly(typeof(UnityEditor.Editor));
+      var type = assembly.GetType("UnityEditor.LogEntries");
+      var method = type.GetMethod("Clear");
+      method.Invoke(new object(), null);
+    }
+  }
   //=============================================================================
   public void CheckAllStatusForReady() {
     bool allRdy = true;

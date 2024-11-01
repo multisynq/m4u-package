@@ -16,7 +16,7 @@ public class SI_JbtVersionMatch: StatusItem {
     SetupVisElem("JbtVersionMatch_Img",         ref statusImage);
     SetupLabel(  "JbtVersionMatch_Message_Lbl", ref messageLabel);
     SetupButton( "OpenBuildPanel_Btn",          ref OpenBuildPanel_Btn, Clk_OpenBuildPanel);
-    SetupButton( "JbtVersionMatch_Docs_Btn",    ref Docs_Btn, Clk_JbtVersionMatch_Docs);
+    SetupButton( "JbtVersionMatch_Docs_Btn",    ref Docs_Btn, Clk_JbtVersionMatch_Docs, false);
     // SetupButton( "OpenBuildPanel_Btn",       ref OpenBuildPanel_Btn, Clk_OpenEditorBuildPanel);
   }
   override public void InitText() {

@@ -17,7 +17,7 @@ public class SI_JsBuildTools: StatusItem {
     SetupLabel(  "JSBuildTools_Message_Lbl",   ref messageLabel);
     SetupButton( "CopyJSBuildTools_Btn",       ref CopyJSBuildTools_Btn,       Clk_CopyJSBuildTools);
     SetupButton( "GotoJSBuildToolsFolder_Btn", ref GotoJSBuildToolsFolder_Btn, Clk_GotoJSBuildToolsFolder);
-    SetupButton( "JSBuildTools_Docs_Btn",      ref Docs_Btn,                   Clk_JsBuildTools_Docs);
+    SetupButton( "JSBuildTools_Docs_Btn",      ref Docs_Btn,                   Clk_JsBuildTools_Docs, false);
   }
 
   override public void InitText() {
