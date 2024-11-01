@@ -1,25 +1,26 @@
-
 using UnityEngine;
 using Multisynq;
 
 public class SynqTransform: SynqBehaviour {
 
-  [SynqVar] public Vector3    pos;
-  [SynqVar] public Quaternion rot;
-  [SynqVar] public Vector3    scl;
+  [SynqVar(hook=nameof(OnPos))] public Vector3    pos;
+  [SynqVar(hook=nameof(OnRot))] public Quaternion rot;
+  [SynqVar(hook=nameof(OnScl))] public Vector3    scl;
 
   Vector3    lastPos;
   Quaternion lastRot;
   Vector3    lastScl;
 
-  float posEpsilon = 0.01f;
-  float rotEpsilon = 0.01f;
-  float scaleEpsilon = 0.01f;
+  float posEpsilon   = 0.001f;
+  float rotEpsilon   = 0.001f;
+  float scaleEpsilon = 0.001f;
+
+  static public bool dbg = false;
 
   void Start() {
-    pos   = transform.position;
-    rot   = transform.rotation;
-    scl   = transform.localScale;
+    pos = transform.position;
+    rot = transform.rotation;
+    scl = transform.localScale;
     lastPos = pos;
     lastRot = rot;
     lastScl = scl;
@@ -27,27 +28,39 @@ public class SynqTransform: SynqBehaviour {
 
   void Update() {
 
-    if (      Vector3.SqrMagnitude(pos  -           lastPos) > posEpsilon  ) {
-      transform.position =         pos;
-      lastPos =                    pos;
-    } else if(Vector3.SqrMagnitude(pos  - transform.position) > posEpsilon) {
+    if ( Vector3.SqrMagnitude(pos  -  transform.position  ) > posEpsilon   ) {
       pos = transform.position;
+      if (dbg) Debug.Log($"pos={pos}");
     }
 
-    if (      Quaternion.Angle(rot, lastRot) > rotEpsilon) {
-      transform.rotation =     rot;
-      lastRot =                rot;
-    } else if(Quaternion.Angle(rot, transform.rotation) > rotEpsilon) {
+    if ( Quaternion.Angle(    rot,    transform.rotation  ) > rotEpsilon   ) {
       rot = transform.rotation;
+      if (dbg) Debug.Log($"rot={rot}");
     }
 
-    if (      Vector3.SqrMagnitude(scl  -              lastScl) > scaleEpsilon) {
-      transform.localScale =       scl;
-      lastScl =                    scl;
-    } else if(Vector3.SqrMagnitude(scl  - transform.localScale) > scaleEpsilon) {
+    if ( Vector3.SqrMagnitude(scl  -  transform.localScale) > scaleEpsilon ) {
       scl = transform.localScale;
+      if (dbg) Debug.Log($"scl={scl}");
     }
 
+  }
+
+  void OnPos(   Vector3 newPos) { // hook method called on changes to the field: pos
+    transform.position = newPos;
+    lastPos = newPos;
+    if (dbg) Debug.Log($"OnPos({newPos})");
+  }
+
+  void OnRot(Quaternion newRot) { // hook method called on changes to the field: rot
+    transform.rotation = newRot;
+    lastRot = newRot;
+    if (dbg) Debug.Log($"OnRot({newRot})");
+  }
+
+  void OnScl(   Vector3 newScl) { // hook method called on changes to the field: scl
+    transform.localScale = newScl;
+    lastScl = newScl;
+    if (dbg) Debug.Log($"OnScl({newScl})");
   }
 
 }
