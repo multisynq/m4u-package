@@ -92,6 +92,7 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
     new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVarUI\]"};
     static public Dictionary<string, SynqVarUIAttribute> uiAttributes = new();
     static public void RegisterUITheme(string varName, SynqVarUIAttribute attr) => uiAttributes[varName] = attr;
+    SynqVar_Mgr syncVarMgr;
   #endregion
 
   #region JavaScript
@@ -108,11 +109,25 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
   #region Start/Update
     //------------------ ||||| ------------------------------------------
     override public void Start() { // SynqVarUI_Mgr.Start()
-      base.Start();
-      svLogPrefix = "<color=#5555FF>[SynqVarUI]</color> ";
-      Debug.Log($"{svLogPrefix} SynqVarUI_Mgr.Start()");
-      var sortedSyncVars = syncVarsArr.OrderBy(sv => -((sv.attribute as SynqVarUIAttribute)?.order ?? int.MaxValue));
-      foreach(SynqVarInfo sv in sortedSyncVars) AddUIElement(sv);
+      // base.Start();
+      // Wait a bit, then start Init()
+      // Invoke(nameof(Init), 0.5f);
+      Init();
+    }
+    // void Init() runs after Start()
+    void Init() {
+      // Do not want a derived class like SynqVarUI_Mgr, so can't use FindObjectOfType<SynqVar_Mgr>()
+      syncVarMgr = FindObjectsOfType<SynqVar_Mgr>().Where(svMgr => svMgr.GetType() == typeof(SynqVar_Mgr)).FirstOrDefault();
+      if (syncVarMgr == null || syncVarMgr.syncVarsArr == null) {
+        Invoke(nameof(Init), 1f);
+        Debug.Log($"{svLogPrefix} SynqVarUI_Mgr.Init() - waiting for syncVarMgr");
+      } else {
+        Debug.Log($"{svLogPrefix} SynqVarUI_Mgr.Init() - found syncVarMgr =========== &&&&&&&");
+        svLogPrefix = "<color=#5555FF>[SynqVarUI]</color> ";
+        Debug.Log($"{svLogPrefix} SynqVarUI_Mgr.Start()");
+        var sortedSyncVars = syncVarMgr.syncVarsArr.OrderBy(sv => -((sv.attribute as SynqVarUIAttribute)?.order ?? int.MaxValue));
+        foreach(SynqVarInfo sv in sortedSyncVars) AddUIElement(sv);
+      }
     }
     //-- |||||||||||| ------------------------------------------
     void AddUIElement(SynqVarInfo synqVar) {
@@ -215,17 +230,10 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
     }
 
     //------ |||||| -------------------------------------------------------
-    // new void Update() {
-    //   base.Update();
-    // }
-    string HexColorGradient(float val, Color? minColor=null, Color? maxColor=null) {
-      // default to green to red
-      val = val / 100f;
-      if (minColor == null) minColor = ColorUtility.TryParseHtmlString("#44ff44", out Color g) ? g : Color.green;
-      if (maxColor == null) maxColor = ColorUtility.TryParseHtmlString("#ff4444", out Color r) ? r : Color.red;
-      var color = Color.Lerp((Color)minColor, (Color)maxColor, val);
-      return $"#{ColorUtility.ToHtmlStringRGB(color)}";
+    new void Update() { // block base.Update()
+      //base.Update();
     }
+
   #endregion
 
   #region Messaging
