@@ -15,7 +15,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
   //------------------ ||||| ----------------------
   override public void Start() {
     base.Start();
-    Croquet.Subscribe("SynqClone", "everybodyClone", OnTellToClone);
+    Croquet.Subscribe("SynqClone", "everybodyClone", OnEverybodyClone);
   }
   #region JavaScript
     //-------------------------- ||||||||||||||| -------------------------
@@ -77,7 +77,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     return (clone, newSb);
   }
   //---------- ||||||||||||| ----------------------
-  private void OnTellToClone(string msg) {
+  private void OnEverybodyClone(string msg) {
     string[] parts = msg.Split('|');
     if (parts.Length != 5) {
       Debug.LogError($"SynqInstance_Mgr.OnTellToInstance() Invalid message: {msg}");
