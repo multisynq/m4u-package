@@ -124,7 +124,12 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
           var svAttr = field.GetCustomAttribute<SynqVarAttribute>();
           if (svAttr != null) {
             var syncFieldInfo = CreateSynqFieldInfo(syncBeh, field, svAttr, varIdx++);
-            syncVars.Add(syncFieldInfo.varId, syncFieldInfo);
+            // log out gameObj path is already contained
+            if (syncVars.ContainsKey(syncFieldInfo.varId)) {
+              Debug.LogError($"{svLogPrefix} {gameObject.name} Duplicate varId found: <color=#4ff>{syncBeh.GetType().Name}</color>.<color=white>{syncFieldInfo.varId}</color> in <color=yellow>{syncBeh.gameObject.Path()}</color>");
+            } else {
+              syncVars.Add(syncFieldInfo.varId, syncFieldInfo);
+            }
             syncVarsList.Add(syncFieldInfo);
           }
         }
@@ -139,7 +144,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         }
       }
       // make unique array of syncVars
-      syncVarsArr = syncVarsList.Distinct().ToArray();
+      syncVarsArr = syncVarsList.ToArray();
 
       if (dbg)  {
         foreach (var syncVar in syncVars) {
@@ -150,6 +155,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
 
     //------------ |||||| -------------------------------------------------------
     protected void Update() { // TODO: Remove this once we get CreateSetter() callbacks perfected
+      if (syncVarsArr==null) Debug.LogError($"{svLogPrefix} {gameObject.Path()}.syncVarsArr is null");
       for (int i = 0; i < syncVarsArr.Length; i++) {
         SendMsgIfChanged( syncVarsArr[i], i );
       }
