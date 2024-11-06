@@ -33,14 +33,20 @@ namespace Multisynq {
 //========== ||||||||||| ====================================================== ||||||||||| ================
 public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mgr <<<<<<<<<<<<
 
-  #region Fields
-    [SerializeField] public Dictionary<string, SynqVarInfo> syncVars;
-    [SerializeField] public SynqVarInfo[]                   syncVarsArr;
-    static public char msgSeparator = '|';
-    static public string svLogPrefix = "<color=#5555FF>[SynqVar]</color> ";
-    static public bool dbg = false;
-    new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVar"};
+  #region Types
+    public class SynqVarsByName : Dictionary<string, SynqVarInfo> { }
   #endregion
+
+  #region Fields
+    [SerializeField] public SynqVarsByName syncVars;
+    [SerializeField] public SynqVarInfo[]  syncVarsArr;
+    static public           char           msgSeparator = '|';
+    static public           string         svLogPrefix = "<color=#5555FF>[SynqVar]</color> ";
+    static public           bool           dbg = false;
+  #endregion
+
+  // Array of patterns to check if the app's C# codebase will have need of this JS plugin code
+  new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVar"};
   
   #region JavaScript
     //-------------------------- ||||||||||||||| -------------------------
@@ -102,8 +108,8 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
         AttributeHelper.CheckForBadAttrParents<SynqBehaviour, SynqVarAttribute>();
       #endif
 
-      syncVars = new Dictionary<string, SynqVarInfo>();
-      List<SynqVarInfo> syncVarsList = new List<SynqVarInfo>();
+      syncVars = new SynqVarsByName();
+      List<SynqVarInfo> syncVarsList = new();
       int varIdx = 0; // Index for the syncVarsArr array for the fast lookup system
       // Find SynqVar attribute on fields & properties of SyncedBehaviours and add them to the syncVars dictionary
       foreach (SynqBehaviour syncBeh in FindObjectsOfType<SynqBehaviour>()) {
