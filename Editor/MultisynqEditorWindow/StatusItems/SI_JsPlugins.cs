@@ -42,19 +42,25 @@ public class SI_JsPlugins: StatusItem {
     JsPlugin_Writer.WriteMissingJsPlugins();
     // Update Asset DB
     AssetDatabase.Refresh();
-    
-    Mq_File.AppFolder().DeeperFolder("plugins").SelectAndPing();
+    PingPlugins();
     edWin.CheckAllStatusForReady();
-    Notify("Files Added.\nSelected on Project pane.");
+    Notify("JsPlugin files added.\nSelected on Project pane.");
   }
-
+  private void PingPlugins() {
+    var plFldr = Mq_File.AppPluginsFolder();
+    var iopf   = plFldr.DeeperFile("indexOfPlugins.js");
+    if (iopf != null) iopf.SelectAndPing(true);
+    else {
+      var ff = plFldr.FirstFile();
+      if (ff != null) ff.SelectAndPing(true);
+      else            plFldr.SelectAndPing();
+    }
+  }
   private void Clk_GotoJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader(4);
     // CqFile.AppFolder().DeeperFolder("plugins").EnsureExists().SelectAndPing();
     Mq_File.AppPluginsFolder().EnsureExists();
-    var plFldr = Mq_File.AppFolder().DeeperFolder("plugins");
-    if (plFldr.FirstFile() != null) plFldr.FirstFile().SelectAndPing(true);
-    else                            plFldr.SelectAndPing();
+    PingPlugins();
     Notify("Selected in Project.\nSee Inspector.");
   }
 
@@ -66,6 +72,7 @@ public class SI_JsPlugins: StatusItem {
     )) {
       Mq_File.AppPluginsFolder().EnsureExists();
       JsPlugin_Writer.WriteNeededJsPluginFiles();
+      PingPlugins();
       Notify("Forced JS Plugins.");
     }
   }
