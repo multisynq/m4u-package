@@ -424,12 +424,13 @@ public class Mq_Builder {
     Regex exclusionRegex = new Regex(string.Join("|", excludedFiles.Select(x => @"\b" + Regex.Escape(x) + @"\b")));
     allFiles = allFiles.Where(f => !exclusionRegex.IsMatch(f)).ToList();
     string report = string.Join("\n", allFiles);
-    Debug.Log( $"Calculating build identifier from {allFiles.Count} files:\n{report}" );
 
     var hash = new SHA256Managed();
     var hashBytes = hash.ComputeHash( allFiles.Select( f => File.ReadAllBytes( f ) ).SelectMany( b => b ).ToArray() );
     var h = hashBytes.Select( b => b.ToString( "x2" ) );
-    return h.Aggregate( (a, b) => a + b );
+    string hashString = h.Aggregate( (a, b) => a + b );
+    Debug.Log( $"Calculated build identifier from {allFiles.Count} files: '{hashString}'\n{report}" );
+    return hashString;
   }
 
   public static void StartBuild(bool startWatcher, string overrideTarget = null) {
