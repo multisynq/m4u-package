@@ -261,7 +261,8 @@ public class  Mq_Bridge : MonoBehaviour {
       #endif
 
       DontDestroyOnLoad(gameObject);
-      croquetSystems = gameObject.GetComponents<Mq_System>();
+      croquetSystems = gameObject.GetComponents<Mq_System>().Where(system => system.enabled).ToArray();
+      Debug.Log($"%mag%Systems: %wh%[%ye%{string.Join(", ", croquetSystems.Select(system => system.GetType().Name))}%wh%]".TagColors());
       Croquet.Subscribe("croquet", "viewCount", HandleViewCount);
     }
   }
@@ -1624,6 +1625,7 @@ public class CroquetDebugTypes {
   public bool subscribe;
   public bool classes;
   public bool ticks;
+  public bool write;
 
   public override string ToString() {
     List<string> flags = new List<string>();
@@ -1636,7 +1638,8 @@ public class CroquetDebugTypes {
     if (subscribe) flags.Add("subscribe");
     if (classes) flags.Add("classes");
     if (ticks) flags.Add("ticks");
-
+    if (write) flags.Add("write");
+    
     return string.Join(',', flags.ToArray());
   }
 }
