@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Linq;
+using System;
 
 namespace Multisynq {
 
@@ -25,7 +27,12 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
   /// when their JS plugin functionality is needed. The default implementation returns
   /// a reminder message to define patterns.
   /// </remarks>
-  static public string[] CodeMatchPatterns() => new string[]{"You should define CodeMatchPatterns() in your subclass of JsPlugin_Behaviour"};
+  static public string[] CsCodeMatchesToNeedThisJs() => new string[]{"You should define CsCodeMatchesToNeedThisJs() in your subclass of JsPlugin_Behaviour"};
+  
+  /// <summary>
+  /// Defines the behaviours that need this JS plugin.
+  /// </summary>
+  static public Type[] BehavioursThatNeedThisJs() => null;
 
   virtual public void Start() {
     #if UNITY_EDITOR
@@ -45,13 +52,30 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
     virtual public void WriteMyJsPluginFile() {
       // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteMyJsPluginFile()");
       var jsPlugin = GetJsPluginCode();
-      JsPlugin_Writer.WriteOneJsPluginFile(jsPlugin);
+      if (jsPlugin!=null) JsPlugin_Writer.WriteOneJsPluginFile(jsPlugin);
     }
   #else
     // skipped in builds
     virtual public void WriteMyJsPluginFile() { }
   #endif
 
+  /// <summary>
+  /// Checks if any of the behaviours that need this JS plugin are present in the scene.
+  /// </summary>
+  /// <returns>True if any of the needed behaviours are present, false otherwise.</returns>
+  public string CheckIfANeededBehaviourIsPresent() {
+    var neededBehaviours = BehavioursThatNeedThisJs();
+    string isNullStr = (neededBehaviours == null) ? "<color=#ff4444>null</color>" : "<color=#44ff44>not null</color>";
+    // Log out my type
+    // Debug.Log($"{logPrefix} %ye%{this.GetType().Name}%gy%.BehavioursThatNeedThisJs()=={isNullStr} for %cy%{this.name}".TagColors());
+    if (neededBehaviours == null) return null;
+    Debug.Log($"{logPrefix} CheckIfANeededBehaviourIsPresent() for %cy%{this.name}%gy% looking for %wh%[%ye%{string.Join(", ", neededBehaviours.Select(b => b.Name))}%wh%]".TagColors());
+    // Looks in scene for any of the behaviours that need this JS plugin
+    var matches = neededBehaviours.Where(b => FindObjectsOfType(b).Length > 0).ToArray();
+    string rpt = (matches.Length > 0) ? string.Join(",", matches.Select(b => b.Name)) : null;
+    // Debug.Log($"{logPrefix} CheckIfANeededBehaviourIsPresent() for %cy%{this.name}%gy% FOUND %wh%[%ye%{rpt}%wh%]".TagColors());
+    return rpt;
+  }
 }
 
 

@@ -9,7 +9,6 @@ namespace Multisynq {
 public class SynqClones_Mgr : JsPlugin_Behaviour {
   #region Fields
     private Dictionary<uint, SynqBehaviour> sbsByNetId = new();
-    new static public string[] CodeMatchPatterns() => new[] {@"SynqClones_Mgr.*SynqClone", @"\[SyncedInstances\]"}; 
   
   #endregion
   //------------------ ||||| ----------------------
@@ -76,7 +75,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     Debug.Log($"SynqClone, pleaseClone, %cy%{msg}".TagColors());
     return (clone, newSb);
   }
-  //---------- ||||||||||||| ----------------------
+  //---------- |||||||||||||||| ----------------------
   private void OnEverybodyClone(string msg) {
     string[] parts = msg.Split('|');
     if (parts.Length != 5) {

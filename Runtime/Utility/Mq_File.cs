@@ -92,7 +92,10 @@ static public class Mq_File {
   }
 
   static public FolderThing PkgPrefabFolder() {
-    return new FolderThing(pkgRootFolder + "/Prefabs");
+    var x = new FolderThing(pkgRootFolder + "/Prefabs");
+    Debug.Log(@"pkgRootFolder + ""/Prefabs"" =" + pkgRootFolder + "/Prefabs");
+    Debug.Log($"PkgPrefabFolder: shortPath:{x.shortPath} longPath:{x.longPath}");
+    return x;
   }
 
   static public FileThing CqSettingsTemplateFile() {

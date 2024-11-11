@@ -46,7 +46,7 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
   #endregion
 
   // Array of patterns to check if the app's C# codebase will have need of this JS plugin code
-  new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVar"};
+  new static public string[] CsCodeMatchesToNeedThisJs() => new[] {@"\[SynqVar"};
   
   #region JavaScript
     //-------------------------- ||||||||||||||| -------------------------

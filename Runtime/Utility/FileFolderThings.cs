@@ -149,7 +149,8 @@ public class FolderThing : PathyThing {
     foreach (string deeperPath in file) {
       newPath = Path.Combine(newPath, deeperPath);
     }
-    return new FileThing(newPath);
+    var newFile = new FileThing(newPath, canBeMissing);
+    return newFile;
   }
 
   public FileThing FirstFile() {
@@ -171,8 +172,9 @@ public class FolderThing : PathyThing {
 //========== ||||||||| ====================
 public class FileThing : PathyThing {
 
-  public FileThing(string _shortPath) : base(_shortPath) {
+  public FileThing(string _shortPath, bool _canBeMissing = false) : base(_shortPath) {
     #if UNITY_EDITOR
+      canBeMissing = _canBeMissing;
       if (AssetDatabase.IsValidFolder(shortPath)) {
         Debug.LogWarning("FileThing: path must be a file, not a folder");
       }
@@ -184,7 +186,7 @@ public class FileThing : PathyThing {
 
   override public bool Exists() {
     bool doesExist = File.Exists(longPath);
-    if (!doesExist) {
+    if (!doesExist && !canBeMissing) {
       Debug.LogWarning($"FileThing: does not exist: '{longPath}'");
     }
     return doesExist;

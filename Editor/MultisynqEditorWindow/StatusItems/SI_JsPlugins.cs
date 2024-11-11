@@ -86,7 +86,7 @@ public class SI_JsPlugins: StatusItem {
     var         pluginRpt = JsPlugin_Writer.AnalyzeAllJsPlugins();
     bool needsSomePlugins = pluginRpt.neededTs.Count>0;
     var   hasPluginImport = JsPlugin_Writer.IndexJsHasPluginsImport(needsSomePlugins);
-    bool amMissingPlugins = JsPlugin_Writer.LogJsPluginReport(pluginRpt);
+    bool amMissingPlugins = JsPlugin_Writer.LogJsPluginReport(pluginRpt, true);
     bool  puglinProblems  = amMissingPlugins || (needsSomePlugins && !hasPluginImport);
     if (puglinProblems) Debug.Log($"[SI_JsPlugins] amMissingPlugins: {amMissingPlugins}  needsSomePlugins: {needsSomePlugins}  hasPluginImport: {hasPluginImport}  puglinProblems: {puglinProblems}\npuglinProblems   = amMissingPlugins || (needsSomePlugins && !hasPluginImport)");
 

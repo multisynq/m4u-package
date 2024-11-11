@@ -38,7 +38,8 @@ public static class Singletoner {
       return null;
     }
     var instances = Object.FindObjectsOfType(type, true) as MonoBehaviour[];
-    var instance = instances.FirstOrDefault(i => i.enabled);
+    // Use Where to make sure it is an exact type match
+    var instance = instances.Where(i => i.GetType() == type).FirstOrDefault(i => i.enabled);
     if (instance == null && instances.Length > 0) {
       instance = instances[0];
       instance.enabled = true;
@@ -46,7 +47,7 @@ public static class Singletoner {
     }
     if (instance == null) {
       instance = EnsureInstanceInternal(type); //, dontDestroyOnLoad);
-      // Debug.Log($"%mg%[Singletoner]%gy% ByType An instance of {type.Name} is needed in the scene, so one was created.", instance);
+      Debug.Log($"%mg%[Singletoner]%gy% An instance of [%ye%{type.Name}%gy%] is needed in the scene, so one was created.".TagColors(), instance);
     }
     if (instances.Length > 1) {
       CleanupExtraInstances(instances, instance);
@@ -57,15 +58,15 @@ public static class Singletoner {
     // Debug.Log($"%mg%[Singletoner]%gy% ByType Instance {type.Name}.".TagColors(), instance);
     return instance;
   }
-  //------------------------- ||||||||||||||||||||||| ------------------------------------------------------
+  //-------------------------- |||||||||||||||||||||| ------------------------------------------------------
   private static MonoBehaviour EnsureInstanceInternal(System.Type compType) {
     // Ensure a GameObject _Singletons is present
     GameObject singletons = GameObject.Find("_Singletons") ?? new GameObject("_Singletons");
     // Add a new GameObject with the desired component
     GameObject singleton = new GameObject($"[{compType.Name}]", compType);
     singleton.transform.SetParent(singletons.transform);
-    var instance = singleton.GetComponent(compType);
-    Debug.Log($"%mg%[Singletoner]%gy% An instance of {compType.Name} is needed in the scene, so '{singleton.name}' was created.".TagColors(), instance);
+    MonoBehaviour instance = singleton.GetComponent(compType) as MonoBehaviour;
+    // Debug.Log($"%mg%[Singletoner]%gy% An instance of {compType.Name} is needed in the scene, so '{singleton.name}' was created.".TagColors(), instance);
     #if UNITY_EDITOR
       if (!Application.isPlaying) {
         // mark scene dirty
@@ -79,7 +80,15 @@ public static class Singletoner {
     // Debug.LogWarning($"[Singletoner] Multiple instances of {keepInstance.GetType().Name} found. Keeping one instance and destroying others.");
     foreach (var instance in instances) {
       if (instance != keepInstance) {
-        Object.Destroy(instance.gameObject);
+        #if UNITY_EDITOR
+          if (!Application.isPlaying) {
+            Object.DestroyImmediate(instance.gameObject);
+          } else {
+            Object.Destroy(instance.gameObject);
+          }
+        #else
+          Object.Destroy(instance.gameObject);
+        #endif
       }
     }
   }

@@ -89,21 +89,22 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
     // [SerializeField] public UIDocument uiDoc;
     // VisualElement scoreTemplate;
     public GameObject defaultUGuiToClone;
-    new static public string[] CodeMatchPatterns() => new[] {@"\[SynqVarUI\]"};
+    new static public string[] CsCodeMatchesToNeedThisJs() => new[] {@"\[SynqVarUI"};
     static public Dictionary<string, SynqVarUIAttribute> uiAttributes = new();
     static public void RegisterUITheme(string varName, SynqVarUIAttribute attr) => uiAttributes[varName] = attr;
     SynqVar_Mgr syncVarMgr;
   #endregion
 
   #region JavaScript
-    //-------------------------- ||||||||||||||| -------------------------
-    public override JsPluginCode GetJsPluginCode() {
-      // null  here means that JS code is neither required 
-      // nor written to the MultisynqJS/<appName>/plugins/indexOfPlugins.js or its folder
-      // for this plugin. 
-      // (In fact, this plugin makes use of the JS code it is subclassed from, SynqVar_Mgr)
-      return null; 
-    }
+  // Grab SynqVarUI_Mgr.GetJsPluginCode() from base class by not overriding it here
+    // //-------------------------- ||||||||||||||| -------------------------
+    // public override JsPluginCode GetJsPluginCode() {
+    //   // null  here means that JS code is neither required 
+    //   // nor written to the MultisynqJS/<appName>/plugins/indexOfPlugins.js or its folder
+    //   // for this plugin. 
+    //   // (In fact, this plugin makes use of the JS code it is subclassed from, SynqVar_Mgr)
+    //   return null; 
+    // }
   #endregion
 
   #region Start/Update

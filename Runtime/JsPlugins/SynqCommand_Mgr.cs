@@ -23,7 +23,7 @@ public class SynqCommand_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqCo
     private static char msgSeparator = '|';
     private static string scLogPrefix = "<color=#7777FF>[SynqCommand]</color> ";
     static bool dbg = false;
-    new static public string[] CodeMatchPatterns() => new[] {@"\[SynqCommand\]", @"\[SynqRPC\]"}; 
+    new static public string[] CsCodeMatchesToNeedThisJs() => new[] {@"\[SynqCommand", @"\[SynqRPC"}; 
   #endregion
 
   #region JavaScript
