@@ -165,11 +165,11 @@ public class SynqVarUI_Mgr : SynqVar_Mgr { // <<<<<<<<<<<< class SynqVarUI_Mgr <
         }
         cloneMe = attr.uiToClone;
       }
-      cloneMe.SetActive(false);
       if (cloneMe == null) {
         Debug.LogError($"{svLogPrefix} AddUIElement for {synqVar.varId} - no uGuiToClone");
         return;
       }
+      cloneMe.SetActive(false);
       var clone = Instantiate(cloneMe);
       clone.SetActive(true);
       clone.transform.SetParent(cloneMe.transform.parent, false); // same parent
