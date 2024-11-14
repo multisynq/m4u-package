@@ -18,7 +18,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
   }
   #region JavaScript
     //-------------------------- ||||||||||||||| -------------------------
-    public override JsPluginCode GetJsPluginCode() {
+    new static public JsPluginCode GetJsPluginCode() {
       return new(
         pluginName: "SynqClones_Mgr",
         pluginExports: new[] {"SynqClones_Mgr_Model", "SynqClones_Mgr_View"},

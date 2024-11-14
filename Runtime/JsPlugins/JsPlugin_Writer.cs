@@ -17,6 +17,9 @@ public class JsPlugin_Writer: MonoBehaviour {
     static public string MakeIndexOfPlugins_JsCode( List<JsPluginCode> jsPluginCodes ) {
       // filter our nulls
       jsPluginCodes = jsPluginCodes.Where(x => x != null).ToList();
+      // make distinct using type name
+      jsPluginCodes = jsPluginCodes.GroupBy(x => x.pluginName).Select(g => g.First()).ToList();
+      
       string imports = "";
       string modelInits = "";
       string viewInits = "";
@@ -143,39 +146,49 @@ public class JsPlugin_Writer: MonoBehaviour {
       var rpt = jsPluginRpt ?? AnalyzeAllJsPlugins(false);
       if (!rpt.needsSomePlugins) return;
       Debug.Log($"%mag%WRITE ALL%gy%{rpt.neededOnesTxt}".TagColors());
-      WriteJsPluginsAndTheirIndex(   rpt.neededTs.ToList(), jsPluginRpt );
+      JsPluginToScene_File_And_IndexFile(   rpt.needed_Plugins, jsPluginRpt );
     }
     //---------------- ||||||||||||||||||||| ---------------------------
     public static void WriteMissingJsPlugins( JsPluginReport jsPluginRpt = null) {
       var rpt = jsPluginRpt ?? AnalyzeAllJsPlugins(false);
-      WriteJsPluginsAndTheirIndex( rpt.tsMissingSomePart.ToList(), rpt );
+      JsPluginToScene_File_And_IndexFile( rpt.missingPart_Plugins, rpt );
     }
     //---------------- ||||||||||||||||||||||||||| ----------------------------------
-    public static void WriteJsPluginsAndTheirIndex(List<Type> jsPluginTypes, JsPluginReport jsPluginRpt = null) {
+    public static void JsPluginToScene_File_And_IndexFile(List<AnalysisOfOneJsPlugin> jsPlugs, JsPluginReport jsPluginRpt = null) {
       var rpt = jsPluginRpt ?? AnalyzeAllJsPlugins(false);
       // if one is a subclass and has the same JsPluginCode as another, we only write one of them
-      List<Type> onesToRemove = new();
-      foreach (var jpt in jsPluginTypes) {
-        if (jsPluginTypes.Any(x => jpt.IsSubclassOf(x) && JsPlugin_ToSceneAndFile(x).GetJsPluginCode().pluginName == JsPlugin_ToSceneAndFile(jpt).GetJsPluginCode().pluginName)) {
-          onesToRemove.Add(jpt);
-        }
-      }
-      foreach (var jpt in onesToRemove) jsPluginTypes.Remove(jpt); // remove the ones we don't want to write
+      // List<AnalysisOfOneJsPlugin> onesToRemove = new();
+      // foreach (var jpt_1 in jsPlugs) {
+      //   foreach (var jpt_2 in jsPlugs) {
+      //     if (jpt_1.type.IsSubclassOf(jpt_2.type)) {
+      //       var jpc1 = jpt_1.jsPluginCode;
+      //       var jpc2 = jpt_2.jsPluginCode;
+      //       if (jpc1.pluginName == jpc2.pluginName) {
+      //         onesToRemove.Add(jpt_1);
+      //       }
+      //     }
+      //   }
+      // }
+      // foreach (var jpt in onesToRemove) jsPlugs.Remove(jpt); // remove the ones we don't want to write
 
-      var jsFilesToWrite = jsPluginTypes.Select(jpt => JsPlugin_ToSceneAndFile(jpt).GetJsPluginCode()).ToList();
-      Debug.Log($"%wh%-- JS PLUGINS TO WRITE=%wh%[{string.Join(", ", jsPluginTypes.Select(x=>$"%yel%{x?.Name ?? "<null>"}%gy%") )}%wh%]".TagColors());
-      WriteIndexOfPluginsFile( jsFilesToWrite );
+      List<JsPluginCode> jsFilesToWrite = new();
+      foreach (var jpt in jsPlugs) {
+        var jsPluginMB = Singletoner.EnsureInstByType(jpt.type) as JsPlugin_Behaviour;
+        jsPluginMB.WriteMyJsPluginFile( jpt.jsPluginCode );
+      }
+      Debug.Log($"%wh%-- JS PLUGINS TO WRITE=%wh%[{string.Join(", ", jsPlugs.Select(x=>$"%yel%{x?.name ?? "<null>"}%gy%") )}%wh%]".TagColors());
+      WriteIndexOfPluginsFile( rpt.needed_Plugins.Select(x => x.jsPluginCode).ToList() );
       #if UNITY_EDITOR
         AssetDatabase.Refresh();
       #endif
     }
     //------------------------------ ||||||||||||||||||||||| ----------------------------------
-    static public JsPlugin_Behaviour JsPlugin_ToSceneAndFile( Type jsPluginType ) {
-      var jsPluginMB = Singletoner.EnsureInstByType(jsPluginType) as JsPlugin_Behaviour;
-      // Debug.Log($"{logPrefix} Ensured GameObject with a '%ye%{jsPluginType.Name}%gy%' on it.".TagColors(), jsPluginMB.gameObject);
-      jsPluginMB.WriteMyJsPluginFile();
-      return jsPluginMB;
-    }
+    // static public Type JsPlugin_ToSceneAndFile( Type jsPluginType ) {
+    //   var jsPluginMB = Singletoner.EnsureInstByType(jsPluginType) as JsPlugin_Behaviour;
+    //   // Debug.Log($"{logPrefix} Ensured GameObject with a '%ye%{jsPluginType.Name}%gy%' on it.".TagColors(), jsPluginMB.gameObject);
+    //   jsPluginMB.WriteMyJsPluginFile();
+    //   return jsPluginMB.GetType();
+    // }
 
     static public bool JsFileForThisClassTypeExists(Type jsPluginType) {
       if (!typeof(JsPlugin_Behaviour).IsAssignableFrom(jsPluginType)) {
@@ -188,209 +201,308 @@ public class JsPlugin_Writer: MonoBehaviour {
         Debug.LogError($"{logPrefix} JsFileForThisClassTypeExists() could not find a GetJsPluginCode() method for {jsPluginType.Name}");
         return false;
       }
-      var jsPlugin = jsPluginMB.GetJsPluginCode();
+      var jsPlugin = jsPluginMB._GetJsPluginCode();
       var modelClassPath = Mq_File.AppFolder().DeeperFile($"plugins/{jsPlugin.pluginName}.js");
       return modelClassPath.Exists();
     }
     //========== |||||||||||||| ====================
     public class JsPluginReport {
-      public HashSet<Type> neededTs                  = new();
-      public HashSet<Type> missingSceneInstancesOfTs = new();
-      public HashSet<Type> haveSceneInstancesOfTs    = new();
-      public HashSet<Type> readyTypes            = new();
-      public HashSet<Type> tsMissingSomePart         = new();
-      public HashSet<string> pluginsNeededForCodeOrBehMatch    = new();
-      public HashSet<string> readyPluginNames       = new();
-      public HashSet<string> filesMissingPlugins     = new();
+      public List<Type> allPluginTypes         = new();
+      public List<AnalysisOfOneJsPlugin> needed_Plugins           = new();
+      public List<AnalysisOfOneJsPlugin> notInScene_Plugins = new();
+      public List<AnalysisOfOneJsPlugin> inScene_Plugins          = new();
+      public List<AnalysisOfOneJsPlugin> ready_Plugins            = new();
+      public List<AnalysisOfOneJsPlugin> missingPart_Plugins      = new();
       public string needTxt;
       public string neededOnesTxt;
-      public string haveInstOnesTxt;
-      public string haveJsFileOnesTxt;
-      public string missingPartOnesTxt;
+      public string inScene_Txt;
+      public string ready_Txt;
+      public string missingPart_Txt;
       public bool   needsSomePlugins = false;
+      public List<AnalysisOfOneJsPlugin> analyses = new();
+      public List<SynqBehaviour> sceneSynqBehaviours = new();
     }
-    
+
+    public class AnalysisOfOneJsPlugin {
+      public Type     type;
+      public string   name;
+      public GameObject gob;
+      public MonoBehaviour manager;
+
+      public string[] codeMatchesToCheck;
+      public (string, SynqBehaviour)[] synqBehsWithCodeMatches;
+      public bool     hasCodeMatches = false;
+
+      public JsPluginCode jsPluginCode;
+      public string jsFilePath;
+
+      public Type[]   neededBehaviours = null;
+      public bool     needsSomeBehs = false;
+
+      public bool     isInScene = false;
+      public bool     jsFilePresent = false;
+      public bool     jsFileOk = false;
+    }
 
     //-------------------------- ||||||||||||||||||| ----------------------------------------
     static public JsPluginReport AnalyzeAllJsPlugins(bool dbg = true) {
 
       JsPluginReport rpt = new();
 
-      // 0. For each SynqBehavior
-      // 1. Read the script file
-      // 2. Check if it contains a pattern that needs a JsPlugin
-      // 3. If it does, add the JsPlugin to the neededPlugins list
-      // 4. Check if the class has an instance in the scene
-      // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance
-      // 6. Call JsPluginFileName() method for this class
-      // 7. Check if the file exists
-      Dictionary<Type, string[]> codeMatchesByJsPlugin =
-        typeof(JsPlugin_Behaviour).DictOfSubclassStaticMethodResults<string[]>( "CsCodeMatchesToNeedThisJs" );
-      // log all of those
-      // foreach (var (jsPluginType, codeMatches) in codeMatchesByJsPlugin) {
-      //   foreach (string codeMatchRegex in codeMatches) {
-      //     if (dbg) Debug.Log($"{logPrefix} {jsPluginType.Name} CodeMatchess:[ {String.Join(", ", codeMatches)} ]");
-      //   }
-      // }
-      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      // iterate all gameObjects in scene looking for JsPlugin_Behaviour instances
-      // List<(Type, JsPlugin_Behaviour)> allJsPluginInstances = new();
-      // foreach (var comp in FindObjectsOfType<JsPlugin_Behaviour>(true)) {
-      //   allJsPluginInstances.Add((comp.GetType(), comp));
-      // }
-      var allJsPluginInstances = FindObjectsOfType<JsPlugin_Behaviour>(true).Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
-      if (dbg) Debug.Log($"%wh%-- Scene's %cy%JsPlugins=%wh%[{string.Join(", ", allJsPluginInstances.Select(x=>$"%yel%{x.Item2.GetType().Name}%gy%") )}%wh%]".TagColors());
-      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-      //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      rpt.allPluginTypes = Assembly.GetExecutingAssembly().GetTypes()
+        .Where(t => t.IsSubclassOf(typeof(JsPlugin_Behaviour))).ToList();
+      if (dbg) Debug.Log($"%wh%-- ALL   %cy%JsPlugins=%wh%[{string.Join(", ", rpt.allPluginTypes.Select(x=>$"%yel%{x.Name}%gy%") )}%wh%]".TagColors());
+
+      var inSceneComps     = FindObjectsOfType<JsPlugin_Behaviour>(false);
+      var inSceneTuples    = inSceneComps.Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
+      if (dbg) Debug.Log($"%wh%-- Scene's %cy%JsPlugins=%wh%[{string.Join(", ", inSceneTuples.Select(x=>$"%yel%{x.Item2.GetType().Name}%gy%") )}%wh%]".TagColors());
       
-      // Use Reflection to find all subclasses of JsPlugin_Behaviour in the current Assembly
-      // Use the BehavioursThatNeedThisJs() method to get the types that need this JsPlugin
-      List<(Type t, Type[])> allJsPluginTypes = Assembly.GetExecutingAssembly().GetTypes()
-        .Where(t => t.IsSubclassOf(typeof(JsPlugin_Behaviour)))
-        .Select(t => (t, t.GetMethods().Where(m => m.Name == "BehavioursThatNeedThisJs").FirstOrDefault()?.Invoke(null, null) as Type[]))
-        .ToList();
-      if (dbg) Debug.Log($"%wh%-- ALL   %cy%JsPlugins=%wh%[{string.Join(", ", allJsPluginTypes.Select(x=>$"%yel%{x.Item1.Name}%gy%") )}%wh%]".TagColors());
+      rpt.sceneSynqBehaviours = FindObjectsOfType<SynqBehaviour>(false).ToList(); // false means we skip inactives
 
-      var jsPluBehsWithNeeds = allJsPluginTypes.Where(x => x.Item2 != null); // filter out any that have null BehavioursThatNeedThisJs method
-      foreach (var (t, neededBehaviours) in jsPluBehsWithNeeds) {
-        string rpt4 = string.Join(", ", neededBehaviours.Select(beh=>$"%ye%{beh.Name} (<color=#fff>{((FindObjectOfType(beh)!=null) ? "Some" : "None")}</color>)"));
-        if (dbg) Debug.Log($"{logPrefix} %wh%[{rpt4}%wh%] need %ye%{t.Name}%gy%".TagColors());
-        // Find JsPlugins we need because any of their needed behaviours are in the scene
-        if (neededBehaviours.Any(beh => FindObjectOfType(beh) != null)) {
-          rpt.pluginsNeededForCodeOrBehMatch.Add(t.Name);
-          rpt.neededTs.Add(t);
-        }
+      foreach( var type in rpt.allPluginTypes) {
+        var an = new AnalysisOfOneJsPlugin();
+        an.type = type;
+        an.name = type.Name;
+        an.codeMatchesToCheck = type.CallStaticMethod("CsCodeMatchesToNeedThisJs") as string[];
+        an.synqBehsWithCodeMatches = rpt.sceneSynqBehaviours
+          .SelectMany(beh => an.codeMatchesToCheck
+            .Where(code => Regex.IsMatch(GetCodeOfBeh(beh), code)) // if any of the code matches (like [SyncVar]) are found in the beh's code, add it to the list
+            .Select(code => (code, beh))
+          ).ToArray();
+        an.hasCodeMatches   = an.synqBehsWithCodeMatches.Length > 0;
+
+        an.jsPluginCode  = type.CallStaticMethod("GetJsPluginCode") as JsPluginCode;
+        an.jsFilePath    = $"plugins/{an.jsPluginCode.pluginName}.js";
+        an.jsFilePresent = Mq_File.AppFolder(true).DeeperFile(an.jsFilePath).Exists();
+        an.jsFileOk      = an.jsFilePresent || an.jsPluginCode == null;
+
+        an.neededBehaviours = type.CallStaticMethod("BehavioursThatNeedThisJs") as Type[] ?? new Type[0];
+        an.needsSomeBehs    = an.neededBehaviours.Length > 0;
+        an.manager   = inSceneComps.FirstOrDefault(x => x.GetType().Name == type.Name);
+        an.isInScene = an.manager != null;
+        an.gob       = an.manager?.gameObject;
+        rpt.analyses.Add(an);
       }
-      // for each of the allJsPluginInstances, check the scene for BehavioursThatNeedThisJs
-      // foreach (var (jsPluginType2, jsPluginInstance2) in allJsPluginInstances) {
-      //   var neededBehaviours = jsPluginInstance2.CheckIfANeededBehaviourIsPresent();
-      //   string yesNo = (neededBehaviours == null) ? "<color=#4f4>No, ok</color>" : "<color=#f44>Yes</color>";
-      //   if (dbg) Debug.Log($"{logPrefix} ### Checking if %cy%{jsPluginInstance2.name}%gy% needs %ye%{jsPluginType2.Name}%gy%  {yesNo}".TagColors());
-      //   if (neededBehaviours != null) {
-      //     rpt.neededTs.Add(jsPluginType2);
-      //     if (dbg) Debug.Log($"{logPrefix} ### %cy%{jsPluginInstance2.name}%gy% needs %ye%{neededBehaviours}%gy% for %ye%{jsPluginType2.Name}%gy%".TagColors());
-      //     rpt.filesThatNeedPlugins.Add($"{jsPluginInstance2.name} needs {neededBehaviours} for {jsPluginType2.Name}");
-      //     rpt.neededTs.Add(jsPluginType2);
-      //   }
-      // }
-
-      // 0. For each SynqBehavior
-      foreach (var behaviour in FindObjectsOfType<SynqBehaviour>(false)){ // false means we skip inactives
-        // 1. Read the SynqBehavior script file
-        MonoScript synqBehScript = MonoScript.FromMonoBehaviour(behaviour);
-        string            sbPath = AssetDatabase.GetAssetPath(synqBehScript);
-        string       synqBehCode = synqBehScript.text;
-        if (synqBehCode == null) {
-          if (dbg) Debug.LogError($"{logPrefix} FindMissingJsPluginTypes() found a SynqBehaviour with no script: {behaviour.name}");
-          continue;
-        }
-        // 2. Check if it contains a pattern that needs a JsPlugin
-        foreach (var (jsPluginType, codeMatches) in codeMatchesByJsPlugin) {
-          foreach (string codeMatchRegex in codeMatches) {
-            // get RegExp results
-            var matches = Regex.Matches(synqBehCode, codeMatchRegex);
-            // if (Regex.IsMatch(synqBehCode, codeMatchRegex)) {
-            if (matches.Count > 0) {
-              string codeMatchRpt = $"<color=yellow>{sbPath}</color> has code:<color=#fff>{codeMatchRegex.Replace("\\","")}</color>";
-              // log line of code that matched
-              // var substring40 = synqBehCode.Substring(matches[0].Index, Math.Min(40, synqBehCode.Length - matches[0].Index));
-              // if (dbg) Debug.Log($"{logPrefix} {jsPluginType.Name} matched: {codeMatchRegex} at index {matches[0].Index} in code: {substring40}");
-              // 2.5 ensure it is not inside a comment
-              // if (Regex.IsMatch(sbScript.text, @"//.*" + pattern)) continue; // TODO: add this and test it
-
-              // 3. If it does, add the JsPlugin to the neededPlugins list
-              rpt.neededTs.Add(jsPluginType);
-              string sbPathAndPattern = $"{codeMatchRpt} needs: [<color=yellow>{jsPluginType.Name}</color>]";
-              rpt.pluginsNeededForCodeOrBehMatch.Add(jsPluginType.Name);
-              // 4. Check if the class has an instance in the scene
-              var jsPluginInstance = allJsPluginInstances.FirstOrDefault(x => x.Item1 == jsPluginType).Item2;
-              // if (dbg) Debug.Log($"{logPrefix} <b><color=white>{jsPluginType.Name}</color></b> {((jsPluginInstance==null)?"<color=red>DOES NOT HAVE</color>":"<color=green>HAS</color>")} an instance in the scene");
-              // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance.
-              // Also continue if it is disabled
-              if (jsPluginInstance == null || !jsPluginInstance.enabled) {
-                rpt.missingSceneInstancesOfTs.Add(jsPluginType);
-                if (dbg) Debug.Log($"{logPrefix} <color=#f44>MISSING</color> {sbPathAndPattern}");
-                continue;
-              }
-              rpt.haveSceneInstancesOfTs.Add(jsPluginType);
-              // 6. Call JsPluginFileName() method for this class
-              var   jsPluginCode  = jsPluginInstance.GetJsPluginCode();
-              bool needsCode      = jsPluginCode != null;
-              string needsCodeStr = needsCode ? "<color=#44ff44>Yes</color>" : "<color=#ff4444>No</color>";
-
-              string jsPluginFileName = $"plugins/{jsPluginCode?.pluginName??"???"}.js";
-              // 7. Check if the file exists
-              var modelClassPath = Mq_File.AppFolder(true).DeeperFile(jsPluginFileName);
-              string hasSceneInstanceRpt = jsPluginInstance != null             ? "<color=#4f4>Y</color>" : "<color=#f44>N</color>";
-              string hasJsFileRpt        = needsCode && modelClassPath.Exists() ? "<color=#4f4>Y</color>" : "<color=#f44>N</color>";
-              string jsFileRpt = needsCode ? $"and JS file: <color=#4f4>{jsPluginFileName}</color> ({hasJsFileRpt})" : "but no JS file";
-
-              if (!needsCode || modelClassPath.Exists()) {
-                rpt.readyTypes.Add(jsPluginType);
-                rpt.readyPluginNames.Add(jsPluginType.Name);
-                // rpt.filesThatAreReady.Add($"<color=#4ff>{jsPluginInstance.GetType().Name}</color>({hasSceneInstanceRpt}) {jsFileRpt}".TagColors());
-              }
-              if (dbg) Debug.Log($"{codeMatchRpt}"+
-                $" so needs a scene <color=#4ff>{jsPluginInstance.GetType().Name}</color>({hasSceneInstanceRpt}) {jsFileRpt}",  jsPluginInstance
-              );
-            } // if IsMatch
-          } // foreach codeMatchPatterns
-        } // foreach codeMatchPatternsByJsPlugin
-      } // foreach SynqBehaviour
-      rpt.tsMissingSomePart   = rpt.neededTs.Except(rpt.readyTypes).ToHashSet();
-      rpt.filesMissingPlugins = rpt.pluginsNeededForCodeOrBehMatch.Except(rpt.readyPluginNames).ToHashSet();
-      // lambda for report text from List
-      var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
-        return "[ " + string.Join(", ", types.Select(x => $"%ye%{x.Name}%gy%")) + " ]";
-      });
-      // lambda for report text "Count:%cy%{A.Length}%gy% of %cy%{B.Count}%gy%
-      var countOfCount = new System.Func<HashSet<System.Type>, HashSet<System.Type>, string>((A, B) => {
-        return $"Count:%cy%{A.Count}%gy% of %cy%{B.Count}%gy%";
-      });
-      string rptMissings = rptList(rpt.missingSceneInstancesOfTs);
-      string rptAOKs     = rptList(rpt.readyTypes);
-      string rptNeededs  = rptList(rpt.neededTs);
-      string rptHaves    = rptList(rpt.haveSceneInstancesOfTs);
-      rpt.neededOnesTxt          = $"{logPrefix} %cy%{rpt.neededTs.Count}%gy% needed JsPlugins: {rptNeededs}".TagColors();
-      rpt.haveInstOnesTxt        = $"{logPrefix} {countOfCount(rpt.haveSceneInstancesOfTs, rpt.neededTs)} JsPlugins %gre%have%gy% an instance in scene: {rptHaves}".TagColors();
-      rpt.haveJsFileOnesTxt      = $"{logPrefix} {countOfCount(rpt.readyTypes,         rpt.neededTs)} JsPlugins are %gre%ready%gy% to go: {rptAOKs}".TagColors();
-      rpt.missingPartOnesTxt     = $"{logPrefix} {countOfCount(rpt.tsMissingSomePart,      rpt.neededTs)} JsPlugins are %red%MISSING%gy% a part: {rptList(rpt.tsMissingSomePart)}".TagColors();
-      rpt.needsSomePlugins = rpt.neededTs.Count > 0;
+      rpt.needed_Plugins      = rpt.analyses.Where(x => x.needsSomeBehs || x.hasCodeMatches).ToList();
+      rpt.notInScene_Plugins  = rpt.analyses.Where(x => !x.isInScene).ToList();
+      rpt.inScene_Plugins     = rpt.analyses.Where(x => x.isInScene).ToList();
+      
+      rpt.ready_Plugins       = rpt.needed_Plugins.Where(x => x.isInScene && x.jsFileOk).ToList();
+      rpt.missingPart_Plugins = rpt.needed_Plugins.Where(x => !x.isInScene || !x.jsFileOk).ToList();
+      rpt.needsSomePlugins    = rpt.needed_Plugins.Count > 0;
       return rpt;
     }
+    static public string GetCodeOfBeh(MonoBehaviour beh) {
+      MonoScript script = MonoScript.FromMonoBehaviour(beh);
+      return script.text;
+    }
+    //-------------------------- ||||||||||||||||||| ----------------------------------------
+    // static public JsPluginReport AnalyzeAllJsPluginsOld(bool dbg = true) {
+
+    //   JsPluginReport rpt = new();
+
+    //   // 0. For each SynqBehavior
+    //   // 1. Read the script file
+    //   // 2. Check if it contains a pattern that needs a JsPlugin
+    //   // 3. If it does, add the JsPlugin to the neededPlugins list
+    //   // 4. Check if the class has an instance in the scene
+    //   // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance
+    //   // 6. Call JsPluginFileName() method for this class
+    //   // 7. Check if the file exists
+    //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    //   // iterate all gameObjects in scene looking for JsPlugin_Behaviour instances
+    //   var inSceneComps     = FindObjectsOfType<JsPlugin_Behaviour>(false);
+    //   var inSceneCompNames = inSceneComps.Select(comp => comp.name).ToList();
+    //   var inSceneTuples    = inSceneComps.Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
+    //   if (dbg) Debug.Log($"%wh%-- Scene's %cy%JsPlugins=%wh%[{string.Join(", ", inSceneTuples.Select(x=>$"%yel%{x.Item2.GetType().Name}%gy%") )}%wh%]".TagColors());
+    //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    //   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      
+    //   Dictionary<Type, string[]> codeMatchesByJsPlugin =
+    //     typeof(JsPlugin_Behaviour).DictOfSubclassStaticMethodResults<string[]>( "CsCodeMatchesToNeedThisJs" );
+
+    //   // Use Reflection to find all subclasses of JsPlugin_Behaviour in the current Assembly
+    //   // Use the BehavioursThatNeedThisJs() method to get the types that need this JsPlugin
+    //   List<(Type t, Type[])> allJsPluginTypes = Assembly.GetExecutingAssembly().GetTypes()
+    //     .Where(t => t.IsSubclassOf(typeof(JsPlugin_Behaviour)))
+    //     .Select(t => (t, t.GetMethods().Where(m => m.Name == "BehavioursThatNeedThisJs").FirstOrDefault()?.Invoke(null, null) as Type[]))
+    //     .ToList();
+    //   if (dbg) Debug.Log($"%wh%-- ALL   %cy%JsPlugins=%wh%[{string.Join(", ", allJsPluginTypes.Select(x=>$"%yel%{x.Item1.Name}%gy%") )}%wh%]".TagColors());
+
+    //   var jsPluBehsWithNeeds = allJsPluginTypes.Where(x => x.Item2 != null); // filter out any that have null BehavioursThatNeedThisJs method
+    //   foreach (var (t, neededBehaviours) in jsPluBehsWithNeeds) {
+    //     string rpt4 = string.Join(", ", neededBehaviours.Select(beh=>$"%ye%{beh.Name} (<color=#fff>{((FindObjectOfType(beh)!=null) ? "Some" : "None")}</color>)"));
+    //     if (dbg) Debug.Log($"{logPrefix} %wh%[{rpt4}%wh%] need %ye%{t.Name}%gy%".TagColors());
+    //     // Find JsPlugins we need because any of their needed behaviours are in the scene
+    //     if (neededBehaviours.Any(beh => FindObjectOfType(beh) != null)) {
+    //       rpt.needed_Types.Add(t);
+    //       // reduce to be counts of each type
+    //       var counts = neededBehaviours.GroupBy(beh => beh).ToDictionary(group => group.Key, group => group.Count());
+    //       var countsRpt = string.Join(", ", counts.Select(x => $"%ye%{x.Key.Name}%gy%(%cy%{x.Value}%gy%)"));
+    //       if (dbg) Debug.Log($" %ye%$%gy% Found: [{countsRpt}] so need %cy%{t.Name}".TagColors());
+    //     }
+    //   }
+    //   // for each of the allJsPluginInstances, check the scene for BehavioursThatNeedThisJs
+    //   // foreach (var (jsPluginType2, jsPluginInstance2) in allJsPluginInstances) {
+    //   //   var neededBehaviours = jsPluginInstance2.CheckIfANeededBehaviourIsPresent();
+    //   //   string yesNo = (neededBehaviours == null) ? "<color=#4f4>No, ok</color>" : "<color=#f44>Yes</color>";
+    //   //   if (dbg) Debug.Log($"{logPrefix} ### Checking if %cy%{jsPluginInstance2.name}%gy% needs %ye%{jsPluginType2.Name}%gy%  {yesNo}".TagColors());
+    //   //   if (neededBehaviours != null) {
+    //   //     rpt.neededTs.Add(jsPluginType2);
+    //   //     if (dbg) Debug.Log($"{logPrefix} ### %cy%{jsPluginInstance2.name}%gy% needs %ye%{neededBehaviours}%gy% for %ye%{jsPluginType2.Name}%gy%".TagColors());
+    //   //     rpt.filesThatNeedPlugins.Add($"{jsPluginInstance2.name} needs {neededBehaviours} for {jsPluginType2.Name}");
+    //   //     rpt.neededTs.Add(jsPluginType2);
+    //   //   }
+    //   // }
+
+    //   // 0. For each SynqBehavior
+    //   foreach (var behaviour in FindObjectsOfType<SynqBehaviour>(false)){ // false means we skip inactives
+    //     // 1. Read the SynqBehavior script file
+    //     MonoScript synqBehScript = MonoScript.FromMonoBehaviour(behaviour);
+    //     string            sbPath = AssetDatabase.GetAssetPath(synqBehScript);
+    //     string       synqBehCode = synqBehScript.text;
+    //     if (synqBehCode == null) {
+    //       if (dbg) Debug.LogError($"{logPrefix} FindMissingJsPluginTypes() found a SynqBehaviour with no script: {behaviour.name}");
+    //       continue;
+    //     }
+    //     // 2. Check if it contains a pattern that needs a JsPlugin
+    //     foreach (var (jsPluginType, codeMatches) in codeMatchesByJsPlugin) {
+    //       foreach (string codeMatchRegex in codeMatches) {
+    //         // get RegExp results
+    //         var matches = Regex.Matches(synqBehCode, codeMatchRegex);
+    //         // if (Regex.IsMatch(synqBehCode, codeMatchRegex)) {
+    //         if (matches.Count > 0) {
+    //           string codeMatchRpt = $"<color=yellow>{sbPath}</color> has code:<color=#fff>{codeMatchRegex.Replace("\\","")}</color>";
+    //           // log line of code that matched
+    //           // var substring40 = synqBehCode.Substring(matches[0].Index, Math.Min(40, synqBehCode.Length - matches[0].Index));
+    //           // if (dbg) Debug.Log($"{logPrefix} {jsPluginType.Name} matched: {codeMatchRegex} at index {matches[0].Index} in code: {substring40}");
+    //           // 2.5 ensure it is not inside a comment
+    //           // if (Regex.IsMatch(sbScript.text, @"//.*" + pattern)) continue; // TODO: add this and test it
+
+    //           // 3. If it does, add the JsPlugin to the neededPlugins list
+    //           rpt.needed_Types.Add(jsPluginType);
+    //           string sbPathAndPattern = $"{codeMatchRpt} needs: [<color=yellow>{jsPluginType.Name}</color>]";
+    //           // 4. Check if the class has an instance in the scene
+    //           // var jsPluginInstance = allJsPluginInstances.FirstOrDefault(x => x.Item1 == jsPluginType).Item2;
+
+    //           // if (dbg) Debug.Log($"{logPrefix} <b><color=white>{jsPluginType.Name}</color></b> {((jsPluginInstance==null)?"<color=red>DOES NOT HAVE</color>":"<color=green>HAS</color>")} an instance in the scene");
+    //           // 5. Continue if not in scene since we cannot get the JsPluginFileName() method from a non-instance.
+    //           // Also continue if it is disabled
+              
+    //           var jsPluginInstance = FindObjectOfType(jsPluginType) as JsPlugin_Behaviour;
+    //           Debug.Log($" %ye%!%gy% {jsPluginType.Name} instance: %cy%{jsPluginInstance}%gy% gob:%gr%{jsPluginInstance?.gameObject.Path()}".TagColors());
+    //           bool isInScene = (jsPluginInstance != null && jsPluginInstance.enabled);
+    //           if (isInScene) {
+    //             rpt.inScene_Types.Add(jsPluginType);
+    //           } else {
+    //             rpt.notInScene_Types.Add(jsPluginType);
+    //             if (dbg) Debug.Log($"{logPrefix} <color=#f44>MISSING</color> {sbPathAndPattern}");
+    //           }
+    //           // 6. Call JsPluginFileName() method for this class
+    //           JsPluginCode jsPluginCode  = jsPluginType.CallStaticMethod("GetJsPluginCode") as JsPluginCode;
+    //           bool            needsCode  = jsPluginCode != null;
+    //           string        needsCodeStr = needsCode ? "<color=#44ff44>Yes</color>" : "<color=#ff4444>No</color>";
+
+    //           string jsPluginFileName = $"plugins/{jsPluginCode?.pluginName ?? "???"}.js";
+    //           // 7. Check if the file exists
+    //           var modelClassPath = Mq_File.AppFolder(true).DeeperFile(jsPluginFileName);
+    //           string hasSceneInstanceRpt = jsPluginInstance != null             ? "<color=#4f4>Y</color>" : "<color=#f44>N</color>";
+    //           string hasJsFileRpt        = needsCode && modelClassPath.Exists() ? "<color=#4f4>Y</color>" : "<color=#f44>N</color>";
+    //           string jsFileRpt = needsCode ? $"and JS file: <color=#4f4>{jsPluginFileName}</color> ({hasJsFileRpt})" : "but no JS file";
+    //           bool hasNeededCode = !needsCode || modelClassPath.Exists();
+
+    //           if (isInScene && hasNeededCode) {
+    //             rpt.ready_Types.Add(jsPluginType);
+    //           } else {
+    //             rpt.missingPart_Types.Add(jsPluginType);
+    //           }
+    //           if (dbg) Debug.Log($"{codeMatchRpt}"+
+    //             $" so needs a scene <color=#4ff>{jsPluginType.Name}</color>({hasSceneInstanceRpt}) {jsFileRpt}",  jsPluginInstance
+    //           );
+    //         } // if IsMatch
+    //       } // foreach codeMatchPatterns
+    //     } // foreach codeMatchPatternsByJsPlugin
+    //   } // foreach SynqBehaviour
+    //   rpt.needed_Types      = rpt.needed_Types.Distinct().ToList();
+    //   // rpt.inScene_Types     = rpt.inScene_Types.Distinct().ToList();
+    //   rpt.ready_Types       = rpt.ready_Types.Distinct().ToList();
+    //   rpt.missingPart_Types = rpt.missingPart_Types.Distinct().ToList();
+
+    //   // loop through needed types and collect the inSceneTypes
+    //   foreach (var neededType in rpt.needed_Types) {
+    //     var inSceneType = rpt.inScene_Types.FirstOrDefault(x => x.Name == neededType.Name);
+    //     if (inSceneType != null) {
+    //       rpt.inScene_Types.Add(inSceneType);
+    //     }
+    //   }
+
+    //   // rpt.missingPart_Types = rpt.needed_Types.Except(rpt.ready_Types).ToList();
+
+    //   // lambda func for report text from List
+    //   var rptList = new System.Func<List<System.Type>, string>((types) => {
+    //     return "[ " + string.Join(", ", types.Select(x => $"%ye%{x.Name}%gy%")) + " ]";
+    //   });
+    //   // lambda func for report text
+    //   var countOfCount = new System.Func<List<System.Type>, List<System.Type>, string>((A, B) => {
+    //     return $"Count:%cy%{A.Count}%gy% of %cy%{B.Count}%gy%";
+    //   });
+    //   string neededOnes      = rptList(rpt.needed_Types      );
+    //   string inSceneOnes     = rptList(rpt.inScene_Types     );
+    //   string readyOnes       = rptList(rpt.ready_Types       );
+    //   string missingPartOnes = rptList(rpt.missingPart_Types );
+    //   rpt.neededOnesTxt    = $" %ye%|%gy% %cy%{rpt.needed_Types.Count}%gy% needed JsPlugins: {neededOnes}".TagColors();
+    //   rpt.inScene_Txt      = $" %ye%|%gy% {countOfCount(rpt.inScene_Types,     rpt.needed_Types)} JsPlugins %gre%have%gy% an instance in scene: {inSceneOnes}".TagColors();
+    //   rpt.ready_Txt        = $" %ye%|%gy% {countOfCount(rpt.ready_Types,       rpt.needed_Types)} JsPlugins are %gre%ready%gy% to go: {readyOnes}".TagColors();
+    //   rpt.missingPart_Txt  = $" %ye%|%gy% {countOfCount(rpt.missingPart_Types, rpt.needed_Types)} JsPlugins are %red%MISSING%gy% a part: {missingPartOnes}".TagColors();
+    //   rpt.needsSomePlugins = rpt.needed_Types.Count > 0;
+    //   return rpt;
+    // }
     //---------------- ||||||||||||||||| ----------------------------------------
-    public static bool LogJsPluginReport(JsPluginReport pluginRpt, bool dbg = true) {
-      // lambda function for report text from List
-      var rptList = new System.Func<HashSet<System.Type>, string>((types) => {
-        return "[ " + string.Join(", ", types.Select(x => $"<color=yellow>{x.Name}</color>")) + " ]";
+    public static bool LogJsPluginReport(JsPluginReport rpt, bool dbg = true) {
+
+      var rptList = new Func<List<AnalysisOfOneJsPlugin>, string>((plugins) => {
+        return "[ " + string.Join(", ", plugins.Select(x => $"<color=yellow>{x.name}</color>")) + " ]";
+      });
+      
+      var countOfCount = new Func<List<AnalysisOfOneJsPlugin>, List<AnalysisOfOneJsPlugin>, string>((A, B) => {
+        return $"Count:%cy%{A.Count}%gy% of %cy%{B.Count}%gy%";
       });
 
+      string neededOnes      = rptList(rpt.needed_Plugins      );
+      string inSceneOnes     = rptList(rpt.inScene_Plugins     );
+      string readyOnes       = rptList(rpt.ready_Plugins       );
+      string missingPartOnes = rptList(rpt.missingPart_Plugins );
+      rpt.neededOnesTxt    = $" %ye%|%gy% %cy%{rpt.needed_Plugins.Count}%gy% needed JsPlugins: {neededOnes}".TagColors();
+      rpt.inScene_Txt      = $" %ye%|%gy% {countOfCount(rpt.inScene_Plugins,     rpt.needed_Plugins)} JsPlugins %gre%have%gy% an instance in scene: {inSceneOnes}".TagColors();
+      rpt.ready_Txt        = $" %ye%|%gy% {countOfCount(rpt.ready_Plugins,       rpt.needed_Plugins)} JsPlugins are %gre%ready%gy% to go: {readyOnes}".TagColors();
+      rpt.missingPart_Txt  = $" %ye%|%gy% {countOfCount(rpt.missingPart_Plugins, rpt.needed_Plugins)} JsPlugins are %red%MISSING%gy% a part: {missingPartOnes}".TagColors();
+      rpt.needsSomePlugins = rpt.needed_Plugins.Count > 0;
+
       var fldr = $"<color=#ff55ff>Assets/MultisynqJS/{Mq_File.GetAppNameForOpenScene()}/plugins/</color>";
-      int missingCnt = pluginRpt.tsMissingSomePart.Count;
-      int neededCnt = pluginRpt.neededTs.Count;
-      bool amMissingPlugins = pluginRpt.tsMissingSomePart.Count > 0;
+      int missingCnt = rpt.missingPart_Plugins.Count;
+      int neededCnt = rpt.needed_Plugins.Count;
+      bool amMissingPlugins = rpt.missingPart_Plugins.Count > 0;
       if (amMissingPlugins) {
-        if (dbg) Debug.Log(pluginRpt.neededOnesTxt);
-        if (dbg) Debug.Log(pluginRpt.haveInstOnesTxt);
-        if (dbg) Debug.Log(pluginRpt.haveJsFileOnesTxt);
+        if (dbg) Debug.Log(rpt.neededOnesTxt);
+        if (dbg) Debug.Log(rpt.inScene_Txt);
+        if (dbg) Debug.Log(rpt.ready_Txt);
         // for each missing file, log the file
-        foreach (var missingFile in pluginRpt.filesMissingPlugins) {
-          if (dbg) Debug.Log($"|    Missing its Js Plugin: <color=#ff7777>{missingFile}</color>");
+        foreach (var plug in rpt.missingPart_Plugins) {
+          string neededBy = (plug.hasCodeMatches ? $"(code match)" : "") + (plug.needsSomeBehs ? $"(a beh)" : "");
+          if (dbg) Debug.Log($"|    Missing a part: <color=#ff7777>{plug.name}</color> neededBy:{neededBy} isInScene:{plug.isInScene}, jsFile present:{plug.jsFilePresent}");
         }
         // for all ready files, log the file
-        foreach (var readyFile in pluginRpt.readyPluginNames) {
-          if (dbg) Debug.Log($"|    Js Plugin is ready for: <color=#55ff55>{readyFile}</color>");
+        foreach (var plug in rpt.ready_Plugins) {
+          if (dbg) Debug.Log($"|    Js Plugin is ready for: <color=#55ff55>{plug.name}</color>");
         }
         // if (dbg) Debug.Log(pluginRpt.missingPartOnesTxt);
-        if (dbg) Debug.Log($"| <color=#ff5555>MISSING</color>  <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(pluginRpt.tsMissingSomePart)} in {fldr}");
+        if (dbg) Debug.Log($"| <color=#ff5555>MISSING</color>  <color=cyan>{missingCnt}</color> of <color=cyan>{neededCnt}</color> JS Plugins: {rptList(rpt.missingPart_Plugins)} in {fldr}");
         if (dbg) Debug.Log($"|    <color=#55ff55>TO FIX:</color>  Add Missing JS Plugin Files, in Menu:");
         if (dbg) Debug.Log($"|    <color=white>Multisynq > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
       }
       else {
-        if (dbg) Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(pluginRpt.neededTs)}");
+        if (dbg) Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(rpt.needed_Plugins)}");
       }
 
       return amMissingPlugins;

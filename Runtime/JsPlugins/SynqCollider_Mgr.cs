@@ -5,6 +5,8 @@ using System.Linq;
 using System;
 
 namespace Multisynq {
+
+  //========== |||||||||||||||| ==================================
   public class SynqCollider_Mgr : JsPlugin_Behaviour {
     private Dictionary<uint, SynqBehaviour> collidersByNetId = new();
     new static public string[] CsCodeMatchesToNeedThisJs() => new[] { @"SynqCollider_Mgr.*Collider", @"\[SyncedCollider\]" };
@@ -21,7 +23,7 @@ namespace Multisynq {
       }
     }
 
-    public override JsPluginCode GetJsPluginCode() {
+    new static public JsPluginCode GetJsPluginCode() {
       return new(
         pluginName: "SynqCollider_Mgr",
         pluginExports: new[] {"SynqCollider_Mgr_Model", "SynqCollider_Mgr_View"},
@@ -246,13 +248,13 @@ namespace Multisynq {
       get { return _Instance = Singletoner.EnsureInst(_Instance); }
     }
     #endregion
-  }
+  } // class SynqCollider_Mgr
 
   // Optional helper component to automatically set up collider
-  [RequireComponent(typeof(Collider), typeof(SynqBehaviour))]
-  public class SynqCollider : MonoBehaviour {
-    void Start() {
-      SynqCollider_Mgr.SetupCollider(gameObject);
-    }
-  }
+  // [RequireComponent(typeof(Collider), typeof(SynqBehaviour))]
+  // public class SynqCollider : MonoBehaviour {
+  //   void Start() {
+  //     SynqCollider_Mgr.SetupCollider(gameObject);
+  //   }
+  // }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using System;
+using System.Reflection;
 
 namespace Multisynq {
 
@@ -16,7 +17,13 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
   /// <remarks>
   /// Subclasses must implement this method to provide the actual JavaScript code for the plugin.
   /// </remarks>
-  abstract public JsPluginCode GetJsPluginCode();
+  static public JsPluginCode GetJsPluginCode() { return null; }
+  public JsPluginCode _GetJsPluginCode() { 
+    // call static one using reflection
+    var mi = GetType().GetMethod("GetJsPluginCode", 
+        BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+    return mi.Invoke(null, null) as JsPluginCode;
+  }
   
   /// <summary>
   /// Defines patterns to check if the app's C# codebase requires this JS plugin code.
@@ -49,9 +56,8 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
     /// to write the JavaScript plugin file for this behavior to:
     ///   Assets/MultisynqJs.<appName>/JsPlugins/<pluginName>.js
     /// </remarks>
-    virtual public void WriteMyJsPluginFile() {
-      // if (dbg) Debug.Log($"{logPrefix} <color=white>BASE</color> virtual public void WriteMyJsPluginFile()");
-      var jsPlugin = GetJsPluginCode();
+    virtual public void WriteMyJsPluginFile(JsPluginCode jsPlugin) {
+      Debug.Log($"{logPrefix} jsPlugin:{jsPlugin?.pluginName ?? "<null>"} <color=white>BASE</color> virtual public void WriteMyJsPluginFile() {gameObject.name}");
       if (jsPlugin!=null) JsPlugin_Writer.WriteOneJsPluginFile(jsPlugin);
     }
   #else

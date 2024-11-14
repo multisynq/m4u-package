@@ -27,34 +27,35 @@ public class SynqCommand_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqCo
   #endregion
 
   #region JavaScript
-  public override JsPluginCode GetJsPluginCode() {
-    return new(
-      pluginName: "SynqCommand_Mgr",
-      pluginExports: new[] {"SynqCommand_Mgr_Model"},
-      pluginCode: @"
-        import { Model } from '@croquet/croquet';
+    //---------------------------- ||||||||||||||| -------------------------
+    new static public JsPluginCode GetJsPluginCode() {
+      return new(
+        pluginName: "SynqCommand_Mgr",
+        pluginExports: new[] {"SynqCommand_Mgr_Model"},
+        pluginCode: @"
+          import { Model } from '@croquet/croquet';
 
-        export class SynqCommand_Mgr_Model extends Model {
-          dbg = false
-          init(options) {
-            super.init(options);
-            this.subscribe('SynqCommand', 'pleaseRun', this.onPleaseRun);
-            if (this.dbg) console.log('### <color=magenta>SynqCommand_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>');
+          export class SynqCommand_Mgr_Model extends Model {
+            dbg = false
+            init(options) {
+              super.init(options);
+              this.subscribe('SynqCommand', 'pleaseRun', this.onPleaseRun);
+              if (this.dbg) console.log('### <color=magenta>SynqCommand_Mgr_Model.init() <<<<<<<<<<<<<<<<<<<<< </color>');
+            }
+            onPleaseRun(msg) {
+              if (this.dbg) console.log(`<color=blue>[SynqCommand]</color> <color=yellow>JS</color> CroquetModel <color=magenta>SynqCommandMgrModel.onSynqCommandExecute()</color> msg = <color=white>${JSON.stringify(msg)}</color>`);
+              this.publish('SynqCommand', 'everybodyRun', msg);
+            }
           }
-          onPleaseRun(msg) {
-            if (this.dbg) console.log(`<color=blue>[SynqCommand]</color> <color=yellow>JS</color> CroquetModel <color=magenta>SynqCommandMgrModel.onSynqCommandExecute()</color> msg = <color=white>${JSON.stringify(msg)}</color>`);
-            this.publish('SynqCommand', 'everybodyRun', msg);
-          }
-        }
-        SynqCommand_Mgr_Model.register('SynqCommand_Mgr_Model');
-      ".LessIndent()
-    );
-  }
-  //------------------ |||||||||||||||||| -------------------------
-  override public void WriteMyJsPluginFile() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
-    // if (dbg)  Debug.Log($"{logPrefix} override public void OnInjectJsPluginCode()");
-    base.WriteMyJsPluginFile();
-  }
+          SynqCommand_Mgr_Model.register('SynqCommand_Mgr_Model');
+        ".LessIndent()
+      );
+    }
+    //------------------ |||||||||||||||||| -------------------------
+    override public void WriteMyJsPluginFile(JsPluginCode jsPlugin) { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
+      // if (dbg)  Debug.Log($"{logPrefix} override public void OnInjectJsPluginCode()");
+      base.WriteMyJsPluginFile(jsPlugin);
+    }
   #endregion
 
   #region Start/Update

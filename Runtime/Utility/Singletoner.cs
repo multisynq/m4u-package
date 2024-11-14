@@ -32,30 +32,31 @@ public static class Singletoner {
     return instance;
   }
   //------------------------- |||||||||||||||| -----------------------------------------------------------
-  public static MonoBehaviour EnsureInstByType(System.Type type) {//}, bool dontDestroyOnLoad = true) {
+  public static MonoBehaviour EnsureInstByType(System.Type type) {
     if (!typeof(MonoBehaviour).IsAssignableFrom(type)) {
       Debug.LogError($"[Singletoner] EnsureInstByType called with a non-MonoBehaviour type: {type.Name}");
       return null;
     }
-    var instances = Object.FindObjectsOfType(type, true) as MonoBehaviour[];
     // Use Where to make sure it is an exact type match
-    var instance = instances.Where(i => i.GetType() == type).FirstOrDefault(i => i.enabled);
+    var instances = Object.FindObjectsOfType(type, true)
+      .OfType<MonoBehaviour>()
+      .Where(x => x.GetType() == type)  // Only exact type matches
+      .ToArray();
+    var instance = instances.FirstOrDefault(i => (i.GetType().Name == type.Name) && i.enabled);
     if (instance == null && instances.Length > 0) {
       instance = instances[0];
       instance.enabled = true;
       // Debug.Log($"[Singletoner] Enabled the only existing instance of {type.Name}.");
     }
     if (instance == null) {
-      instance = EnsureInstanceInternal(type); //, dontDestroyOnLoad);
-      Debug.Log($"%mg%[Singletoner]%gy% An instance of [%ye%{type.Name}%gy%] is needed in the scene, so one was created.".TagColors(), instance);
+      instance = EnsureInstanceInternal(type);
+      Debug.Log($"%mg%[Singletoner]%gy% Created in scene: [%ye%{type.Name}%gy%]".TagColors(), instance);
     }
+    string instancesRpt = string.Join(", ", instances.Select(x=>$"%yel%{x?.name ?? "<null>"}%gy%"));
+    Debug.Log($"  |  Instances found: %wh%[{instancesRpt}%wh%] ".TagColors());
     if (instances.Length > 1) {
       CleanupExtraInstances(instances, instance);
     }
-    // if (dontDestroyOnLoad && instance.gameObject.scene.name != null) {
-    //   Object.DontDestroyOnLoad(instance.gameObject);
-    // }
-    // Debug.Log($"%mg%[Singletoner]%gy% ByType Instance {type.Name}.".TagColors(), instance);
     return instance;
   }
   //-------------------------- |||||||||||||||||||||| ------------------------------------------------------

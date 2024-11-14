@@ -49,8 +49,8 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
   new static public string[] CsCodeMatchesToNeedThisJs() => new[] {@"\[SynqVar"};
   
   #region JavaScript
-    //-------------------------- ||||||||||||||| -------------------------
-    public override JsPluginCode GetJsPluginCode() {
+    //---------------------------- ||||||||||||||| -------------------------
+    new static public JsPluginCode GetJsPluginCode() {
       return new(
         pluginName: "SynqVar_Mgr",
         pluginExports: new[] {"SynqVar_Mgr_Model", "SynqVar_Mgr_View"},
@@ -91,9 +91,9 @@ public class SynqVar_Mgr : JsPlugin_Behaviour { // <<<<<<<<<<<< class SynqVar_Mg
       );
     }
     //------------------ |||||||||||||||||| -------------------------
-    override public void WriteMyJsPluginFile() { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
+    override public void WriteMyJsPluginFile(JsPluginCode jsPlugin) { // TODO: remove since this does the same as the base, but it does demo how to override for fancy Inject usage we might want later
       // if (dbg)  Debug.Log($"{svLogPrefix} override public void OnInjectJsPluginCode()");
-      base.WriteMyJsPluginFile();
+      base.WriteMyJsPluginFile(jsPlugin);
     }
   #endregion
 

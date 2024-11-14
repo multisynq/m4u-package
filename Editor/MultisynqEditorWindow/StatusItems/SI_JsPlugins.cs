@@ -73,6 +73,7 @@ public class SI_JsPlugins: StatusItem {
       Mq_File.AppPluginsFolder().EnsureExists();
       JsPlugin_Writer.WriteNeededJsPluginFiles();
       PingPlugins();
+      edWin.CheckAllStatusForReady();
       Notify("Forced JS Plugins.");
     }
   }
@@ -84,7 +85,7 @@ public class SI_JsPlugins: StatusItem {
 
   override public bool Check() { // JS PLUGINS
     var         pluginRpt = JsPlugin_Writer.AnalyzeAllJsPlugins();
-    bool needsSomePlugins = pluginRpt.neededTs.Count>0;
+    bool needsSomePlugins = pluginRpt.needed_Plugins.Count>0;
     var   hasPluginImport = JsPlugin_Writer.IndexJsHasPluginsImport(needsSomePlugins);
     bool amMissingPlugins = JsPlugin_Writer.LogJsPluginReport(pluginRpt, true);
     bool  puglinProblems  = amMissingPlugins || (needsSomePlugins && !hasPluginImport);

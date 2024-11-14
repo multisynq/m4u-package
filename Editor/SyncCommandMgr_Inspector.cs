@@ -20,7 +20,7 @@ public class SynqCommand_Mgr_Editor : Editor {
   }
 
   private void WriteCode(SynqCommand_Mgr manager) {
-    manager.WriteMyJsPluginFile();
+    manager.WriteMyJsPluginFile(manager.GetType().CallStaticMethod("GetJsPluginCode") as JsPluginCode);
     AssetDatabase.Refresh();
   }
 }

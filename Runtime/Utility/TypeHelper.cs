@@ -38,6 +38,15 @@ public static class TypeHelper {
   public static MethodInfo[] GetPublicMethods(this Type type) {
     return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
   }
+  public static object CallStaticMethod(this Type type, string methodName, params object[] parameters) {
+    var method = type.GetMethod(methodName, 
+      BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+    
+    if (method == null)
+      throw new MissingMethodException($"Static method '{methodName}' not found in {type.Name} or its base classes");
+      
+    return method.Invoke(null, parameters);
+  }
 
   public static Dictionary<Type, TResult> DictOfSubclassStaticMethodResults<TResult>(this Type type, string methodName, params object[] parameters) {
     Dictionary<Type, TResult> results = new();

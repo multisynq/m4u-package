@@ -8,13 +8,19 @@ namespace Multisynq {
 public class SynqVarPerPlayer<T> {
   
   string varId;
-  Dictionary<string,T> values = new();
+  public Dictionary<string,T> values = new();
 
   public SynqVarPerPlayer(string _varId, T _myValue) {
     myValue = _myValue;
     varId = _varId;
 
     // subscribe to changes by other joined players in the session
+    // Mq_Bridge.Instance.onPlayerJoined += OnPlayerJoined;
+  }
+
+  void OnPlayerJoined(string viewId, string[] args) {
+    Debug.Log($"Player joined: {viewId}. All players: {string.Join(", ", args)}");
+    values[viewId] = myValue;
   }
 
   public T myValue {
