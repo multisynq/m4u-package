@@ -230,7 +230,7 @@ public class JsPlugin_Writer: MonoBehaviour {
       public MonoBehaviour manager;
 
       public string[] codeMatchesToCheck;
-      public (string, SynqBehaviour)[] synqBehsWithCodeMatches;
+      public SynqBehaviour[] synqBehsWithCodeMatches;
       public bool     hasCodeMatches = false;
 
       public JsPluginCode jsPluginCode;
@@ -268,7 +268,7 @@ public class JsPlugin_Writer: MonoBehaviour {
         an.synqBehsWithCodeMatches = rpt.sceneSynqBehaviours
           .SelectMany(beh => an.codeMatchesToCheck
             .Where(code => Regex.IsMatch(GetCodeOfBeh(beh), code)) // if any of the code matches (like [SyncVar]) are found in the beh's code, add it to the list
-            .Select(code => (code, beh))
+            .Select(code => beh)
           ).ToArray();
         an.hasCodeMatches   = an.synqBehsWithCodeMatches.Length > 0;
 
@@ -278,12 +278,21 @@ public class JsPlugin_Writer: MonoBehaviour {
         an.jsFileOk      = an.jsFilePresent || an.jsPluginCode == null;
 
         an.neededBehaviours = type.CallStaticMethod("BehavioursThatNeedThisJs") as Type[] ?? new Type[0];
-        an.neededBehsInScene = an.neededBehaviours.Where(x => FindObjectOfType(x) != null).ToArray();
+        an.neededBehsInScene = an.neededBehaviours.Where(x => 
+          // FindObjectOfType(x, false) != null
+          InSceneAndEnabled(x)
+        ).ToArray();
         an.aSceneBehNeedsMe  = an.neededBehsInScene.Length > 0;
         an.manager   = inSceneComps.FirstOrDefault(x => x.GetType().Name == type.Name);
         an.isInScene = an.manager != null;
         an.gob       = an.manager?.gameObject;
         rpt.analyses.Add(an);
+        string neededBehs  = string.Join(", ", an.neededBehaviours.Select(x => (
+          // (FindObjectOfType(x, false) != null) ? $"%red%{x.Name}%gy%" : $"%wh%{x.Name}%gy%"
+          InSceneAndEnabled(x) ? $"%red%{x.Name}%gy%" : $"%wh%{x.Name}%gy%"
+        )));
+        string codeMatches = string.Join(", ", an.synqBehsWithCodeMatches.Select(x => x.name));
+        Debug.Log($" |  %cy%{an.name}%gy% neededBehaviours:[%yel%{neededBehs}%gy%] codeMatches:[%yel%{codeMatches}%gy%]".TagColors());
       }
       rpt.needed_Plugins      = rpt.analyses.Where(x => x.aSceneBehNeedsMe || x.hasCodeMatches).ToList();
       rpt.notInScene_Plugins  = rpt.analyses.Where(x => !x.isInScene).ToList();
@@ -294,11 +303,19 @@ public class JsPlugin_Writer: MonoBehaviour {
       rpt.needsSomePlugins    = rpt.needed_Plugins.Count > 0;
       return rpt;
     }
+    //---------------- ||||||||||||||||| ----------------------------------------
+    static public bool InSceneAndEnabled(Type behType) {
+      var foundComponents = FindObjectsOfType(behType, false);
+      Debug.Log($"Checking {behType.Name} found %cy%{foundComponents?.Length ?? 0}%gy% components".TagColors());
+      
+      var enabledProperty = behType.GetProperty("enabled");
+      return foundComponents?.Any(c => enabledProperty?.GetValue(c) as bool? ?? false) ?? false;
+    }
+    //------------------ |||||||||||| ----------------------------------------
     static public string GetCodeOfBeh(MonoBehaviour beh) {
       MonoScript script = MonoScript.FromMonoBehaviour(beh);
       return script.text;
     }
-
     //---------------- ||||||||||||||||| ----------------------------------------
     public static bool LogJsPluginReport(JsPluginReport rpt, bool dbg = true) {
 
@@ -343,7 +360,7 @@ public class JsPlugin_Writer: MonoBehaviour {
         if (dbg) Debug.Log($"|    <color=white>Multisynq > Open Build Assistant Window > [Check If Ready], then [Add Missing JS Plugin Files]</color>");
       }
       else {
-        if (dbg) Debug.Log($"All needed JS Plugins found in {fldr}: {rptList(rpt.needed_Plugins)}");
+        if (dbg) Debug.Log($"All needed JS Plugins found in scene & in {fldr}: {rptList(rpt.needed_Plugins)}");
       }
 
       return amMissingPlugins;

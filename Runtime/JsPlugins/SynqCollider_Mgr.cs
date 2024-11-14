@@ -11,7 +11,13 @@ namespace Multisynq {
     private Dictionary<uint, SynqBehaviour> collidersByNetId = new();
     new static public string[] CsCodeMatchesToNeedThisJs() => new[] { @"SynqCollider_Mgr.*Collider", @"\[SyncedCollider\]" };
     
-    new static public Type[] BehavioursThatNeedThisJs() => new [] { typeof(Collider), typeof(Rigidbody) };
+    new static public Type[] BehavioursThatNeedThisJs() => new [] { 
+      typeof(Rigidbody),
+      typeof(Collider), 
+      // typeof(SphereCollider),
+      // typeof(BoxCollider),
+      // typeof(CapsuleCollider)
+    };
 
     new void Start() {
       base.Start();

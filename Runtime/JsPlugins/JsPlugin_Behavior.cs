@@ -34,7 +34,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
   /// when their JS plugin functionality is needed. The default implementation returns
   /// a reminder message to define patterns.
   /// </remarks>
-  static public string[] CsCodeMatchesToNeedThisJs() => new string[]{"You should define CsCodeMatchesToNeedThisJs() in your subclass of JsPlugin_Behaviour"};
+  static public string[] CsCodeMatchesToNeedThisJs() => new string[0];
   
   /// <summary>
   /// Defines the behaviours that need this JS plugin.
