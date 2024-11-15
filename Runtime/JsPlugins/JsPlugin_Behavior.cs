@@ -57,7 +57,7 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
     ///   Assets/MultisynqJs.<appName>/JsPlugins/<pluginName>.js
     /// </remarks>
     virtual public void WriteMyJsPluginFile(JsPluginCode jsPlugin) {
-      Debug.Log($"{logPrefix} jsPlugin:{jsPlugin?.pluginName ?? "<null>"} <color=white>BASE</color> virtual public void WriteMyJsPluginFile() {gameObject.name}");
+      // Debug.Log($"{logPrefix} jsPlugin:{jsPlugin?.pluginName ?? "<null>"} <color=white>BASE</color> virtual public void WriteMyJsPluginFile() {gameObject.name}");
       if (jsPlugin!=null) JsPlugin_Writer.WriteOneJsPluginFile(jsPlugin);
     }
   #else

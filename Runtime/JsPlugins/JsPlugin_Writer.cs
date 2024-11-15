@@ -256,7 +256,6 @@ public class JsPlugin_Writer: MonoBehaviour {
 
       var inSceneComps     = FindObjectsOfType<JsPlugin_Behaviour>(false);
       var inSceneTuples    = inSceneComps.Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
-      if (dbg) Debug.Log($"%wh%-- Scene's %cy%JsPlugins=%wh%[{string.Join(", ", inSceneTuples.Select(x=>$"%yel%{x.Item2.GetType().Name}%gy%") )}%wh%]".TagColors());
       
       rpt.sceneSynqBehaviours = FindObjectsOfType<SynqBehaviour>(false).ToList(); // false means we skip inactives
 
@@ -301,12 +300,15 @@ public class JsPlugin_Writer: MonoBehaviour {
       rpt.ready_Plugins       = rpt.needed_Plugins.Where(x => x.isInScene && x.jsFileOk).ToList();
       rpt.missingPart_Plugins = rpt.needed_Plugins.Where(x => !x.isInScene || !x.jsFileOk).ToList();
       rpt.needsSomePlugins    = rpt.needed_Plugins.Count > 0;
+
+      if (dbg) Debug.Log($"%wh%-- Scene's %cy%JsPlugins=%wh%[{string.Join(", ", inSceneTuples.Select(x=>$"%yel%{x.Item2.GetType().Name}%gy%") )}%wh%]".TagColors());
+
       return rpt;
     }
     //---------------- ||||||||||||||||| ----------------------------------------
     static public bool InSceneAndEnabled(Type behType) {
       var foundComponents = FindObjectsOfType(behType, false);
-      Debug.Log($"Checking {behType.Name} found %cy%{foundComponents?.Length ?? 0}%gy% components".TagColors());
+      // Debug.Log($"Checking {behType.Name} found %cy%{foundComponents?.Length ?? 0}%gy% components".TagColors());
       
       var enabledProperty = behType.GetProperty("enabled");
       return foundComponents?.Any(c => enabledProperty?.GetValue(c) as bool? ?? false) ?? false;
