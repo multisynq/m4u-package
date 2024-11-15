@@ -15,12 +15,25 @@ public class JsFile_Inspector : Editor { //====================
   static public int fontSize = 16;
   private string cachedCode;
   readonly int MAX_CODE = 15000;
+  string path = null;
+
+  public static HashSet<JsFile_Inspector> activeEditors = new();
+  void OnEnable(){ activeEditors.Add(this); }
+  void OnDisable(){ activeEditors.Remove(this); }
+  static public void RepaintActiveEditors() {
+    UnityEngine.Debug.Log("Repainting active JsFile_Inspectors");
+    foreach (var ae in activeEditors) {
+      ae.cachedCode = null;
+      ae.LoadAndDisplayCode();
+      EditorUtility.SetDirty(ae);
+    }
+  }
 
   //--------------------------- |||||||||||||||||| --------------------------
   public override VisualElement CreateInspectorGUI() {
 
-    string path = AssetDatabase.GetAssetPath(target);
-    if (IsValidFileType(path)) {
+    path = AssetDatabase.GetAssetPath(target);
+    if (path!=null && IsValidFileType(path)) {
 
       root = new VisualElement();
       // Load UXML
@@ -42,7 +55,7 @@ public class JsFile_Inspector : Editor { //====================
       root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged); // Register callback for layout changes
       EditorApplication.delayCall += () => FitToInspector(); // Set initial size
 
-      LoadAndDisplayCode(path);
+      LoadAndDisplayCode();
 
       return root;
 
@@ -51,7 +64,7 @@ public class JsFile_Inspector : Editor { //====================
     }
   }
   // --------- |||||||||||||||||| --------------------------
-  private void LoadAndDisplayCode(string path) {
+  private void LoadAndDisplayCode() {
     if (string.IsNullOrEmpty(cachedCode)) {
       string code = File.ReadAllText(path);
       if (code.Length > MAX_CODE) code = code[..MAX_CODE] + "\n...";
@@ -127,4 +140,5 @@ public class JsFile_Inspector : Editor { //====================
 
     return White(code);
   }
+
 }

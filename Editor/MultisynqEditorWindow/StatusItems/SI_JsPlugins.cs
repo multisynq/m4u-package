@@ -50,11 +50,12 @@ public class SI_JsPlugins: StatusItem {
     var plFldr = Mq_File.AppPluginsFolder();
     var iopf   = plFldr.DeeperFile("indexOfPlugins.js");
     if (iopf != null) iopf.SelectAndPing(true);
-    else {
-      var ff = plFldr.FirstFile();
-      if (ff != null) ff.SelectAndPing(true);
-      else            plFldr.SelectAndPing();
-    }
+      else {
+        var ff = plFldr.FirstFile();
+        if (ff != null) ff.SelectAndPing(true);
+        else            plFldr.SelectAndPing();
+      }
+      JsFile_Inspector.RepaintActiveEditors();
   }
   private void Clk_GotoJsPlugins() {  // JS PLUGINS  ------------- Click
     Logger.MethodHeader(4);
