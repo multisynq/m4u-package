@@ -174,6 +174,13 @@ class BridgeToUnity {
     globalThis.unityInstance.SendMessage('Multisynq', 'OnMessageReceivedFromJS', JSON.stringify(wrappedMessage));
   }
 
+  bulkPublishToUnity = (scope, event, arrayOfPayloads) => {
+    const messages = arrayOfPayloads.map(payload => 
+      `croquetPub\x01${scope}\x01${event}\x01${payload}`
+    )
+    this.sendBundleToUnity(messages);
+  }
+
   // Helper function to convert ArrayBuffer to base64 string
   arrayBufferToBase64(buffer) {
       let binary = '';
