@@ -9,7 +9,8 @@ namespace Multisynq {
 public class SynqClones_Mgr : JsPlugin_Behaviour {
   #region Fields
     private Dictionary<uint, SynqBehaviour> sbsByNetId = new();
-  
+
+    new static public Type[] BehavioursThatNeedThisJs() => new[] {typeof(SynqClones)};
   #endregion
   //------------------ ||||| ----------------------
   override public void Start() {
@@ -17,7 +18,7 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     Croquet.Subscribe("SynqClone", "everybodyClone", OnEverybodyClone);
   }
   #region JavaScript
-    //-------------------------- ||||||||||||||| -------------------------
+    //---------------------------- ||||||||||||||| -------------------------
     new static public JsPluginCode GetJsPluginCode() {
       return new(
         pluginName: "SynqClones_Mgr",
@@ -25,18 +26,17 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
         pluginCode: @"
           import { Model, View } from '@croquet/croquet';
 
-          export class SynqClones_Mgr_Model extends Model {
+          export class SynqClones_Mgr_Model extends Model { // ☭ - There is no I, only we (in the Model)
             cloneMsgs = []
             init(options) {
               super.init(options);
-              this.subscribe('SynqClone', 'pleaseClone', this.onPleaseClone);
-              console.log('<color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.init()</color>');
+              this.subscribe('SynqClone', 'pleaseClone', this.onPleaseClone); // i.e. a bullet was made in Unity
+              console.log(this.now(), '<color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.init()</color>');
             }
-            
             onPleaseClone(data) {
-              console.log('<color=blue>SynqClone</color> <color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.onAskForInstance()</color><color=cyan>' + data + '</color>');
-              this.publish('SynqClone', 'everybodyClone', data);
-              cloneMsgs.push(data);
+              console.log(this.now(), '<color=blue>SynqClone</color> <color=yellow>[JS]</color> <color=magenta>SynqClones_Mgr_Model.onAskForInstance()</color><color=cyan>' + data + '</color>');
+              this.publish('SynqClone', 'everybodyClone', data); // i.e. tell everybody to see the bullet
+              this.cloneMsgs.push(data);
             }
           }
           SynqClones_Mgr_Model.register('SynqClones_Mgr_Model');
@@ -45,8 +45,9 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
             constructor(model) {
               super(model);
               this.model = model;
-              model.cloneMsgs.forEach(msg => model.onPleaseClone(msg));
+              globalThis.theGameEngineBridge.bulkPublishToUnity('SynqClone', 'everybodyClone', model.cloneMsgs);
             }
+
           }
         ".LessIndent()
       );
@@ -98,7 +99,9 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     }
     SynqBehaviour cloneMeSb = FindInDictOrOnOtherSynqBehaviour(cloneMeNetId);
     if (cloneMeSb != null) {
-      GameObject instance = Instantiate(cloneMeSb.gameObject, position, rotation);
+      //===========================================================
+      GameObject instance = Instantiate(cloneMeSb.gameObject, position, rotation); // <<<<<<<<<<<<<<<<<<<<<
+      //===========================================================
       instance.transform.localScale = scale;
 
       SynqBehaviour newSb = instance.EnsureComp<SynqBehaviour>();
