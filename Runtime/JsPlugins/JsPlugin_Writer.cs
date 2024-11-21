@@ -244,7 +244,10 @@ public class JsPlugin_Writer: MonoBehaviour {
       public bool     jsFileOk = false;
       public Type[] neededBehsInScene;
     }
-
+    static public List<T> ActuallyFindObjectsOfType<T>(bool includeInactive) where T : MonoBehaviour {
+      if (includeInactive) return FindObjectsOfType<T>().ToList();
+      else                 return FindObjectsOfType<T>().Where(x => x.enabled).ToList();
+    }
     //-------------------------- ||||||||||||||||||| ----------------------------------------
     static public JsPluginReport AnalyzeAllJsPlugins(bool dbg = true) {
 
@@ -257,10 +260,10 @@ public class JsPlugin_Writer: MonoBehaviour {
       var inSceneComps     = FindObjectsOfType<JsPlugin_Behaviour>(false);
       var inSceneTuples    = inSceneComps.Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
       
-      rpt.sceneSynqBehaviours = FindObjectsOfType<SynqBehaviour>(false).ToList(); // false means we skip inactives
+      rpt.sceneSynqBehaviours = FindObjectsOfType<SynqBehaviour>(false).Where(x => x.enabled).ToList(); // false means we skip inactives
 
       foreach( var type in rpt.allPluginTypes) {
-        var an = new AnalysisOfOneJsPlugin();
+        AnalysisOfOneJsPlugin an = new();
         an.type = type;
         an.name = type.Name;
         an.codeMatchesToCheck = type.CallStaticMethod("CsCodeMatchesToNeedThisJs") as string[];
@@ -290,7 +293,8 @@ public class JsPlugin_Writer: MonoBehaviour {
           // (FindObjectOfType(x, false) != null) ? $"%red%{x.Name}%gy%" : $"%wh%{x.Name}%gy%"
           InSceneAndEnabled(x) ? $"%red%{x.Name}%gy%" : $"%wh%{x.Name}%gy%"
         )));
-        string codeMatches = string.Join(", ", an.synqBehsWithCodeMatches.Select(x => x.name));
+        // string neededYN = (an.aSceneBehNeedsMe || an.hasCodeMatches) ? "%gr%Needed%gy%" : "";
+        string codeMatches = string.Join(", ", an.synqBehsWithCodeMatches.Select(x => x.GetType().Name));
         Debug.Log($" |  %cy%{an.name}%gy% neededBehaviours:[%yel%{neededBehs}%gy%] codeMatches:[%yel%{codeMatches}%gy%]".TagColors());
       }
       rpt.needed_Plugins      = rpt.analyses.Where(x => x.aSceneBehNeedsMe || x.hasCodeMatches).ToList();
