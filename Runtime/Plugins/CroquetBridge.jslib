@@ -1,3 +1,4 @@
+// This file is only ever used in the WEBGL build.
 mergeInto(LibraryManager.library, {
     SendMessageToJS: function(messagePtr) {
         var message = UTF8ToString(messagePtr);

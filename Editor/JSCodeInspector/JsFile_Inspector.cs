@@ -118,24 +118,34 @@ public class JsFile_Inspector : Editor { //====================
     string Blue(  string s) => ColorWrap(s, "#569CD6");
     string Orange(string s) => ColorWrap(s, "#FFA500");
     string White( string s) => ColorWrap(s, "white");
-    string Mag(   string s) => ColorWrap(s, "#DB70D6");
-    string Cyan(  string s) => ColorWrap(s, "#4EC9B0");
+    string Cyan(  string s) => ColorWrap(s, "#83D7C5");
+    string Pink(  string s) => ColorWrap(s, "#E394DD");
+    string Red(   string s) => ColorWrap(s, "#C1808A");
+    // string Mag(   string s) => ColorWrap(s, "#DB70D6");
 
     code = Regex.Replace(code, @"color", "c0l0r"); // hide the word "color" from the syntax highlighter
-    code = Regex.Replace(code, @"(\=)[^>|==]",            m => Mag(m.Value));
-    code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(m.Value)); // between a . and a ( is tan like this.foo()
-    code = Regex.Replace(code, @"(\(|\))",         m => Mag(m.Value));
-    code = Regex.Replace(code, @"(\{|\})",         m => Yellow(m.Value));
-    code = Regex.Replace(code, @"(\;)",            m => Blue(m.Value));
-    code = Regex.Replace(code, @"(\,)",            m => White(m.Value));
-    code = Regex.Replace(code, @"(//.*)",          m => Green(m.Value));
+    // code = Regex.Replace(code, @"(\=)[^>|==]",     m => Mag(   m.Value)); // =
+    code = Regex.Replace(code, @"\.([\w_0-9]+)\(", m => Tan(   m.Value)); // between a "." and a "(" i.e. "foo" in "this.foo()"
+    code = Regex.Replace(code, @"(\(|\))",         m => Blue(  m.Value)); // ( )
+    code = Regex.Replace(code, @"(\{|\})",         m => Yellow(m.Value)); // { }
+    code = Regex.Replace(code, @"(\[|\])",         m => Yellow(m.Value)); // [ ]
+    code = Regex.Replace(code, @"(\;)",            m => Blue(  m.Value)); // ;
+    code = Regex.Replace(code, @"(\,)",            m => White( m.Value)); // ,
+    code = Regex.Replace(code, @"(//.*)",          m => Green( m.Value)); // //xxx
+    code = Regex.Replace(code, @"('[^'\n]*')",     m => Pink(  m.Value)); // 'xxx'
+    code = Regex.Replace(code, @"(""[^""\n]*"")",  m => Pink(  m.Value)); // "xxx"
+    code = Regex.Replace(code, @"(this).",         m => Red(   m.Value)); // +xxx
     code = Regex.Replace(code, "c0l0r", "color"); // restore the word "color"
 
-    var keywordColors = new Dictionary<string, Func<string, string>> { { @"\bclass\s+(\w+)\b", Cyan }, { @"\b(if|else|for|while|return|class)\b", Orange }, { @"\b(from|import|export)\b", Mag }, { @"\b(function|var|let|const|extends)\b", Blue }
+    var keywordColors = new Dictionary<string, Func<string, string>> { 
+      { @"\bclass\s+(\w+)\b", Blue }, 
+      { @"\b(if|else|for|while|return|class)\b", Orange }, 
+      { @"\b(from|import|export|extends|new)\b", Cyan }, 
+      { @"\b(function|var|let|const)\b", Blue }
     };
 
     foreach (var kvp in keywordColors) {
-        code = Regex.Replace(code, kvp.Key, m => kvp.Value(m.Value));
+      code = Regex.Replace(code, kvp.Key, m => kvp.Value(m.Value));
     }
 
     return White(code);

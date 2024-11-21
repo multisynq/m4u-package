@@ -6,7 +6,7 @@ using Multisynq;
 public static class Singletoner {
 
   //------------- |||||||||| -----------------------------------------------------------
-  public static T EnsureInst<T>(T instance, bool dontDestroyOnLoad = true) where T : MonoBehaviour {
+  public static T EnsureInst<T>(T instance) where T : MonoBehaviour {
     if (instance == null) {
       // var instances = Object.FindObjectsOfType<T>(true);
       var instances = typeof(T).FindAllInScene(true) as T[];
@@ -25,9 +25,9 @@ public static class Singletoner {
         CleanupExtraInstances(instances, instance);
       }
     }
-    if (dontDestroyOnLoad && instance.gameObject.scene.name != null) {
-      Object.DontDestroyOnLoad(instance.gameObject);
-    }
+    // if (dontDestroyOnLoad && instance.gameObject.scene.name != null) {
+    //   Object.DontDestroyOnLoad(instance.gameObject);
+    // }
     // Debug.Log($"%mg%[Singletoner]%gy% Instance {typeof(T).Name}.".TagColors(), instance);
     return instance;
   }
