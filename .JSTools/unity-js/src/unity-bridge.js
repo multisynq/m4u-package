@@ -174,7 +174,7 @@ class BridgeToUnity {
     globalThis.unityInstance.SendMessage('Multisynq', 'OnMessageReceivedFromJS', JSON.stringify(wrappedMessage));
   }
 
-  bulkPublishToUnity = (scope, event, arrayOfPayloads) => {
+  bulkPublishToUnity(scope, event, arrayOfPayloads) {
     const messages = arrayOfPayloads.map(payload => 
       `croquetPub\x01${scope}\x01${event}\x01${payload}`
     )
