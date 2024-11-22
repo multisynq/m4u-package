@@ -23,8 +23,9 @@ namespace Multisynq {
 public class  Mq_Bridge : MonoBehaviour {
   public bool mq_Bridge;  // Helps tools resolve "missing Script" problems
   # region Public
-  public static event System.Action<string> OnSessionStart = delegate { };
-  public static event System.Action<string> OnViewEnter = delegate { };
+  public static event Action<string> OnSessionStart = delegate { };
+  public static event Action<string> OnUserJoin     = delegate { };
+  public static event Action<string> OnUserExit     = delegate { };
 
   public Mq_Settings appProperties;
 
@@ -1372,7 +1373,7 @@ public class  Mq_Bridge : MonoBehaviour {
     OnSessionStart(viewId);
   }
   public bool callbacksFound = false;
-  // Find all SynqBehaviour and use reflection to find all methods named OnSessionStart() and OnViewEnter()
+  // Find all SynqBehaviour and use reflection to find all methods named OnSessionStart() and OnUserJoin()
   public void FindSynqBehaviourCallbacks() {
     if (callbacksFound) return;
     callbacksFound = true;
@@ -1384,12 +1385,23 @@ public class  Mq_Bridge : MonoBehaviour {
         if (method.Name == "OnSessionStart") {
           OnSessionStart += (string viewId) => method.Invoke(synqBehaviour, new object[] { viewId });
           Debug.Log($"Found %gr%OnSessionStart()%gy% handler in %cy%{synqBehaviour.GetType().Name}".TagColors());
-        } else if (method.Name == "OnViewEnter") {
-          OnViewEnter += (string viewId) => method.Invoke(synqBehaviour, new object[] { viewId });
-          Debug.Log($"Found %gr%OnViewEnter()%gr% handler in %gr%{synqBehaviour.name}%gr%".TagColors());
+        } else if (method.Name == "OnUserJoin") {
+          OnUserJoin     += (string viewId) => method.Invoke(synqBehaviour, new object[] { viewId });
+          Debug.Log($"Found %gr%OnUserJoin()%gr% handler in %gr%{synqBehaviour.GetType().Name}%gr%".TagColors());
+        } else if (method.Name == "OnUserExit") {
+          OnUserExit     += (string viewId) => method.Invoke(synqBehaviour, new object[] { viewId });
+          Debug.Log($"Found %gr%OnUserExit()%gr% handler in %gr%{synqBehaviour.GetType().Name}%gr%".TagColors());
         }
       }
     }
+    // if OnUserJoin is more than 0 length, we'll Croquet.Subscribe to "user-join" and "user-exit"
+    // and dispatch the appropriate handlers here.
+    // if (OnUserJoin.GetInvocationList().Length > 0) {
+      Croquet.Subscribe("session", "user-join", (string viewId) => OnUserJoin(viewId));
+    // }
+    // if (OnUserExit.GetInvocationList().Length > 0) {
+      Croquet.Subscribe("session", "user-exit", (string viewId) => OnUserExit(viewId));
+    // }
   }
 
   void HandleSceneStateUpdated(string[] args) {

@@ -269,5 +269,18 @@ export class GameModelRoot extends ModelRoot {
     static modelServices() {
         return [InitializationManager];
     }
+    init() {
+        super.init();
+        this.subscribe(this.sessionId, "view-join", this.userJoin);
+        this.subscribe(this.sessionId, "view-exit", this.userExit);
+    }
+    userJoin(viewId) {
+        console.log("---= userJoin(", viewId, ")");
+        this.publish('session', "user-join", viewId);
+    }
+    userExit(viewId) {
+        console.log("---= userExit(", viewId, ")");
+        this.publish('session', "user-exit", viewId);
+    }
 }
 GameModelRoot.register('GameModelRoot');
