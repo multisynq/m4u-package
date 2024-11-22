@@ -207,12 +207,12 @@ public class JsPlugin_Writer: MonoBehaviour {
     }
     //========== |||||||||||||| ====================
     public class JsPluginReport {
-      public List<Type> allPluginTypes         = new();
-      public List<AnalysisOfOneJsPlugin> needed_Plugins           = new();
-      public List<AnalysisOfOneJsPlugin> notInScene_Plugins = new();
-      public List<AnalysisOfOneJsPlugin> inScene_Plugins          = new();
-      public List<AnalysisOfOneJsPlugin> ready_Plugins            = new();
-      public List<AnalysisOfOneJsPlugin> missingPart_Plugins      = new();
+      public List<Type>                  allPluginTypes      = new();
+      public List<AnalysisOfOneJsPlugin> needed_Plugins      = new();
+      public List<AnalysisOfOneJsPlugin> notInScene_Plugins  = new();
+      public List<AnalysisOfOneJsPlugin> inScene_Plugins     = new();
+      public List<AnalysisOfOneJsPlugin> ready_Plugins       = new();
+      public List<AnalysisOfOneJsPlugin> missingPart_Plugins = new();
       public string needTxt;
       public string neededOnesTxt;
       public string inScene_Txt;
@@ -252,13 +252,14 @@ public class JsPlugin_Writer: MonoBehaviour {
     static public JsPluginReport AnalyzeAllJsPlugins(bool dbg = true) {
 
       JsPluginReport rpt = new();
-
-      rpt.allPluginTypes = Assembly.GetExecutingAssembly().GetTypes()
-        .Where(t => t.IsSubclassOf(typeof(JsPlugin_Behaviour))).ToList();
+      var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+      // rpt.allPluginTypes = Assembly.GetExecutingAssembly().GetTypes()
+      rpt.allPluginTypes.AddRange( allAssemblies.SelectMany(x => x.GetTypes())
+        .Where(t => t.IsSubclassOf(typeof(JsPlugin_Behaviour))).ToList());
       if (dbg) Debug.Log($"%wh%-- ALL   %cy%JsPlugins=%wh%[{string.Join(", ", rpt.allPluginTypes.Select(x=>$"%yel%{x.Name}%gy%") )}%wh%]".TagColors());
 
-      var inSceneComps     = FindObjectsOfType<JsPlugin_Behaviour>(false);
-      var inSceneTuples    = inSceneComps.Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
+      var inSceneComps  = FindObjectsOfType<JsPlugin_Behaviour>(false);
+      var inSceneTuples = inSceneComps.Select((JsPlugin_Behaviour x) => (x.GetType(), x)).ToList();
       
       rpt.sceneSynqBehaviours = FindObjectsOfType<SynqBehaviour>(false).Where(x => x.enabled).ToList(); // false means we skip inactives
 

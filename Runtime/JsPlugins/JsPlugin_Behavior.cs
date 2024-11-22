@@ -47,23 +47,21 @@ abstract public class JsPlugin_Behaviour : MonoBehaviour {
     #endif
   }
 
-  #if UNITY_EDITOR
-    /// <summary>
-    /// Writes the JavaScript plugin file for this behavior.
-    /// </summary>
-    /// <remarks>
-    /// This method is called from the Build Assistant in the Unity Editor 
-    /// to write the JavaScript plugin file for this behavior to:
-    ///   Assets/MultisynqJs.<appName>/JsPlugins/<pluginName>.js
-    /// </remarks>
-    virtual public void WriteMyJsPluginFile(JsPluginCode jsPlugin) {
-      // Debug.Log($"{logPrefix} jsPlugin:{jsPlugin?.pluginName ?? "<null>"} <color=white>BASE</color> virtual public void WriteMyJsPluginFile() {gameObject.name}");
+  /// <summary>
+  /// Writes the JavaScript plugin file for this behavior.
+  /// </summary>
+  /// <remarks>
+  /// This method is called from the Build Assistant in the Unity Editor 
+  /// to write the JavaScript plugin file for this behavior to:
+  ///   Assets/MultisynqJs.<appName>/JsPlugins/<pluginName>.js
+  /// </remarks>
+  virtual public void WriteMyJsPluginFile(JsPluginCode jsPlugin) {
+    // Debug.Log($"{logPrefix} jsPlugin:{jsPlugin?.pluginName ?? "<null>"} <color=white>BASE</color> virtual public void WriteMyJsPluginFile() {gameObject.name}");
+    #if UNITY_EDITOR
+      // skipped in builds
       if (jsPlugin!=null) JsPlugin_Writer.WriteOneJsPluginFile(jsPlugin);
-    }
-  #else
-    // skipped in builds
-    virtual public void WriteMyJsPluginFile() { }
-  #endif
+    #endif
+  }
 
   /// <summary>
   /// Checks if any of the behaviours that need this JS plugin are present in the scene.
