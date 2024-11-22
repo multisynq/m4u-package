@@ -11,6 +11,7 @@ using WebSocketSharp;
 using WebSocketSharp.Server;
 using WebSocketSharp.Net;
 using System.Runtime.InteropServices;
+using System.Reflection;
 
 
 namespace Multisynq {
@@ -22,6 +23,9 @@ namespace Multisynq {
 public class  Mq_Bridge : MonoBehaviour {
   public bool mq_Bridge;  // Helps tools resolve "missing Script" problems
   # region Public
+  public static event System.Action<string> OnSessionStart = delegate { };
+  public static event System.Action<string> OnViewEnter = delegate { };
+
   public Mq_Settings appProperties;
 
   [Header("Session Configuration")]
@@ -268,6 +272,9 @@ public class  Mq_Bridge : MonoBehaviour {
   }
 
   private void Start() {
+
+    FindSynqBehaviourCallbacks();
+
     if (INTEROP_BRIDGE) {
       RegisterUnityReceiver();
     }
@@ -1359,6 +1366,29 @@ public class  Mq_Bridge : MonoBehaviour {
         ? SceneManager.GetActiveScene().name
         : launchViaMenuIntoScene;
       Croquet.RequestToLoadScene(startupSceneName, true, true);
+    }
+    // Call registered event handlers OnSessionStart += (string viewId) => { ... }
+    FindSynqBehaviourCallbacks();
+    OnSessionStart(viewId);
+  }
+  public bool callbacksFound = false;
+  // Find all SynqBehaviour and use reflection to find all methods named OnSessionStart() and OnViewEnter()
+  public void FindSynqBehaviourCallbacks() {
+    if (callbacksFound) return;
+    callbacksFound = true;
+    var synqBehaviours = FindObjectsOfType<SynqBehaviour>(false);
+    Debug.Log($"Found %cy%{synqBehaviours.Length}%gr% SynqBehaviours (for OnSessionStart)".TagColors());
+    foreach (var synqBehaviour in synqBehaviours) {
+      var methods = synqBehaviour.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+      foreach (var method in methods) {
+        if (method.Name == "OnSessionStart") {
+          OnSessionStart += (string viewId) => method.Invoke(synqBehaviour, new object[] { viewId });
+          Debug.Log($"Found %gr%OnSessionStart()%gy% handler in %cy%{synqBehaviour.GetType().Name}".TagColors());
+        } else if (method.Name == "OnViewEnter") {
+          OnViewEnter += (string viewId) => method.Invoke(synqBehaviour, new object[] { viewId });
+          Debug.Log($"Found %gr%OnViewEnter()%gr% handler in %gr%{synqBehaviour.name}%gr%".TagColors());
+        }
+      }
     }
   }
 

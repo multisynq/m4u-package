@@ -38,4 +38,4 @@ public class JsPluginCode {
 
 }
 
-} // namespace MultisynqNS
+} // namespace Multisynq
