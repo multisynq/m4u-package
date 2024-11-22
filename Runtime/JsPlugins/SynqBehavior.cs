@@ -27,7 +27,7 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
   public void CallSynqCommand(Action method) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name);
   }
-  public void RPC(Action m, RpcTarget tgt) { 
+  public void RPC(Action m, RpcTarget tgt = RpcTarget.All) { 
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, tgt, m.Method.Name); 
   }
   // Action method. Single array of parameters.
