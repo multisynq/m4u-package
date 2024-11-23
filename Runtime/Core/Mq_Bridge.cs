@@ -1371,7 +1371,31 @@ public class  Mq_Bridge : MonoBehaviour {
     // Call registered event handlers OnSessionStart += (string viewId) => { ... }
     FindSynqBehaviourCallbacks();
     OnSessionStart(viewId);
+    isInSession = true;
   }
+  public bool showConnectingOverlay = true;
+  bool isInSession = false;
+  void OnGUI() {
+    if (isInSession || !showConnectingOverlay) return;
+    // translucent grey overlay over entire screen
+    GUI.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+    GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+    // in bottom left, show label "Connecting to Multisynq reflector..."
+    GUI.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+    Rect blRect = new Rect(10, Screen.height - 30, 230, 30);
+    GUI.DrawTexture(blRect, Texture2D.whiteTexture);
+    GUI.color = Color.white;
+    string animDots = "";
+    // 1 to 3 dots, cycling every 1.5 seconds
+    float modTm = Time.realtimeSinceStartup % 2.0f;
+    if      (modTm < 0.50f) animDots = ".";
+    else if (modTm < 1.00f) animDots = "..";
+    else if (modTm < 1.50f) animDots = "...";
+    else                    animDots = "";
+    blRect.y += 6;
+    GUI.Label(blRect, $"  Connecting to Multisynq reflector...{animDots}");
+  }
+
   public bool callbacksFound = false;
   // Find all SynqBehaviour and use reflection to find all methods named OnSessionStart() and OnUserJoin()
   public void FindSynqBehaviourCallbacks() {
