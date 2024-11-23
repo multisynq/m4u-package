@@ -66,6 +66,8 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
     GameObject      clone = Instantiate(sb.gameObject);
     SynqBehaviour   newSb = clone.EnsureComp<SynqBehaviour>();
     uint     madeOneNetId = newSb.MakeNewId();
+    clone.name = $"{sb.gameObject.name}_{madeOneNetId}";
+    clone.transform.parent = sb.gameObject.transform.parent;
 
     Vector3    position = clone.transform.position;
     Quaternion rotation = clone.transform.rotation;
@@ -102,7 +104,11 @@ public class SynqClones_Mgr : JsPlugin_Behaviour {
       //===========================================================
       GameObject instance = Instantiate(cloneMeSb.gameObject, position, rotation); // <<<<<<<<<<<<<<<<<<<<<
       //===========================================================
+      // set name and parent
+      instance.name = $"{cloneMeSb.gameObject.name}_{madeOneNetId}";
+      instance.transform.parent = cloneMeSb.gameObject.transform.parent;
       instance.transform.localScale = scale;
+      instance.EnsureComp<SynqBehaviour>().netId = madeOneNetId;
 
       SynqBehaviour newSb = instance.EnsureComp<SynqBehaviour>();
       newSb.netId = madeOneNetId; // Manually set the netId because the other networked object has this netId
