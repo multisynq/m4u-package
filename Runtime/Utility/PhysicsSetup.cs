@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Multisynq;
 
 [System.Serializable]
 public class PhysicsSetupInfo {
@@ -34,7 +35,7 @@ public class PhysicsSetupInfo {
   }
 }
 
-public static class PhysicsSetupInfoExtensions {
+public static class PhysicsSetup {
   public static PhysicsSetupInfo AsPhysicsSetupInfo(this GameObject gob) {
     var info = new PhysicsSetupInfo();
     var rb = gob.GetComponent<Rigidbody>();
@@ -100,7 +101,9 @@ public static class PhysicsSetupInfoExtensions {
   public static HashSet<GameObject> FindAllGameObjectsWithPhysics() {
     var justColliders   = Object.FindObjectsOfType<Collider>().Select(c => c.gameObject).ToHashSet();
     var justRigidBodies = Object.FindObjectsOfType<Rigidbody>().Select(rb => rb.gameObject).ToHashSet();
-    return justColliders.Union(justRigidBodies).ToHashSet();
+    var gobsWithRbOrCol = justColliders.Union(justRigidBodies).ToHashSet();
+    Debug.Log($"%gr%FindAllGameObjectsWithPhysics()%gr%: %yel%[{string.Join(", ", gobsWithRbOrCol.Select(g => g.name))}]%gr%".TagColors());
+    return gobsWithRbOrCol;
   }
 
   // PhysicsSetupInfo[] of all GameObjects with either a Collider, a RigidBody, or both

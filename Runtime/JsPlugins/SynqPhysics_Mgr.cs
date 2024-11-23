@@ -28,13 +28,6 @@ namespace Multisynq {
         SetupCollider(collider.gameObject);
       }
     }
-    // Doesn't belong in a _Mgr, but here for a test for now
-    void OnSessionRunning(string viewId) {
-      Debug.Log($"================== %gr%OnSessionRunning({viewId})%gr%".TagColors());
-    }
-    void OnViewJoined(string viewId) {
-      Debug.Log($"%gr%OnViewJoined({viewId})%gr%".TagColors());
-    }
 
     new static public JsPluginCode GetJsPluginCode() {
       return new(
@@ -47,12 +40,10 @@ namespace Multisynq {
           import { GameModelRoot, AM_InitializationClient } from '../../unity-js/src/game-support-models';
 
           function arr2V3(arr) { return new RAPIER.Vector3(arr[0], arr[1], arr[2]) }
-          // function arr2Q(arr) { return new RAPIER.Quaternion(arr[0], arr[1], arr[2], arr[3]) }
-          function arr2Q(arr) { return new RAPIER.Quaternion(arr[0], arr[1], arr[2], arr[3]) }
-          function arr3(arr) { return [arr[0], arr[1], arr[2]] }
-          function arr4(arr) { return [arr[0], arr[1], arr[2], arr[3]] }
-          /* @type {[number, number, number]} */
+          function arr2Q(arr)  { return new RAPIER.Quaternion(arr[0], arr[1], arr[2], arr[3]) }
           function arrHalfed3(arr) { const hds = arr.map(x => x * 0.5); return [hds[0], hds[1], hds[2]] }
+          // function arr3(arr) { return [arr[0], arr[1], arr[2]] }
+          // function arr4(arr) { return [arr[0], arr[1], arr[2], arr[3]] }
 
           /* @ts-ignore */
           export class SynqPhysics_Mgr_Model extends GameModelRoot {
