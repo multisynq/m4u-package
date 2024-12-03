@@ -9,6 +9,7 @@ export class InitializationManager extends ModelService {
     logWithSyncTag(logType, ...args) {
         // if the vm is being (re)loaded, add "[in SYNC]" prefix.
         // HIGHLY UNOFFICIAL WAY OF DETECTING LOAD.
+        // @ts-ignore
         const { controller } = this.__realm.vm;
         const isLoading = !controller || !!controller.fastForwardHandler;
         if (isLoading) args = ["[in SYNC]", ...args];
@@ -137,10 +138,10 @@ export class InitializationManager extends ModelService {
         if (sceneName !== activeScene || viewId !== initializingView) return;
 
         if (isFirst) this.initBufferCollector = [];
-        this.initBufferCollector.push(buf);
+        this.initBufferCollector?.push(buf);
         if (isLast) {
             // turn the array of chunks into a single buffer
-            const bufs = this.initBufferCollector;
+            const bufs = this.initBufferCollector || [];
             const len = bufs.reduce((acc, cur) => acc + cur.length, 0);
             const all = new Uint8Array(len);
             let ind = 0;
@@ -181,6 +182,7 @@ export class InitializationManager extends ModelService {
                 const [propName, value] = propAndValue.split(':');
                 switch (propName) {
                     case 'ACTOR':
+                        // @ts-ignore
                         try { cls = Actor.classFromID(value) }
                         catch (e) {
                             this.logWithSyncTag('warn', `Actor class not found for init string: ${entityString}`);
@@ -265,6 +267,7 @@ export const AM_InitializationClient = superclass => class extends superclass {
 };
 RegisterMixin(AM_InitializationClient);
 
+// @ts-ignore
 export class GameModelRoot extends ModelRoot {
     static modelServices() {
         return [InitializationManager];
