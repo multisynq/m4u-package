@@ -1095,6 +1095,7 @@ public class  Mq_Bridge : MonoBehaviour {
     else if (command == "setMeasureOptions") SetCSharpMeasureOptions(args[0]);//OUT:METRICS
     else if (command == "joinProgress")      HandleSessionJoinProgress(args[0]);
     else if (command == "sessionRunning")    HandleSessionRunning(args[0]);
+    else if (command == "sessionViewReady")  HandleSessionViewReady(args[0]);
     else if (command == "sceneStateUpdated") HandleSceneStateUpdated(args);
     else if (command == "sceneRunning")      HandleSceneRunning(args[0]);
     else if (command == "tearDownScene")     HandleSceneTeardown();
@@ -1368,11 +1369,17 @@ public class  Mq_Bridge : MonoBehaviour {
         : launchViaMenuIntoScene;
       Croquet.RequestToLoadScene(startupSceneName, true, true);
     }
+  }
+
+  void HandleSessionViewReady(string viewId) {
+    Debug.Log($"%mag%==== Croquet %gr%=== Session View Ready! ===".TagColors());
     // Call registered event handlers OnSessionStart += (string viewId) => { ... }
     FindSynqBehaviourCallbacks();
     OnSessionStart(viewId);
     isInSession = true;
+    // we've been told that the Croquet side has built the real ViewRoot for this view.
   }
+
   public bool showConnectingOverlay = true;
   bool isInSession = false;
   void OnGUI() {

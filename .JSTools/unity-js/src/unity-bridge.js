@@ -1652,6 +1652,8 @@ class PreloadingViewRoot extends View {
     ) {
       globalThis.timedLog(`building real ViewRoot for scene ${activeScene}`);
       this.realViewRoot = new ViewRootClass(this.model);
+
+      theGameEngineBridge.sendCommand("sessionViewReady", this.viewId);
     }
   }
 
