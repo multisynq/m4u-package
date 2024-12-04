@@ -41,30 +41,34 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
   public void CallSynqCommand<T>(Action<T> method, T parameter) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name, new object[] { parameter });
   }
-  public void RPC<T>(Action<T> m, RpcTarget tgt, T p) { 
-    SynqCommand_Mgr.I.PublishSynqCommandCall(this, tgt, m.Method.Name, new object[] { p }); 
-  }
+  public void RPC<T>      (Action<T> m, T p) { RPC_All(m, p); }
+  public void RPC_All<T>  (Action<T> m, T p) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All,    m.Method.Name, new object[] { p }); }
+  public void RPC_Other<T>(Action<T> m, T p) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, m.Method.Name, new object[] { p }); }
+
   // Action<T1, T2> method
   public void CallSynqCommand<T1, T2>(Action<T1, T2> method, T1 param1, T2 param2) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name, new object[] { param1, param2 });
   }
-  public void RPC<T1, T2>(Action<T1, T2> m, RpcTarget tgt, T1 p1, T2 p2) { 
-    SynqCommand_Mgr.I.PublishSynqCommandCall( this, tgt, m.Method.Name, new object[] { p1, p2 }); 
-  }
+  public void RPC<T1, T2>       (Action<T1, T2> m, T1 p1, T2 p2) { RPC_All(m, p1, p2); }
+  public void RPC_All<T1, T2>   (Action<T1, T2> m, T1 p1, T2 p2) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All,    m.Method.Name, new object[] { p1, p2 }); }
+  public void RPC_Other<T1, T2> (Action<T1, T2> m, T1 p1, T2 p2) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, m.Method.Name, new object[] { p1, p2 }); }
+  
   // Action<T1, T2, T3> method
   public void CallSynqCommand<T1, T2, T3>(Action<T1, T2, T3> method, T1 param1, T2 param2, T3 param3) {
       SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name, new object[] { param1, param2, param3 });
   }
-  public void RPC<T1, T2, T3>(Action<T1, T2, T3> m, RpcTarget tgt, T1 p1, T2 p2, T3 p3) { 
-    SynqCommand_Mgr.I.PublishSynqCommandCall( this, tgt, m.Method.Name, new object[] { p1, p2, p3 }); 
-  }
+  public void RPC<T1, T2, T3>       (Action<T1, T2, T3> m, T1 p1, T2 p2, T3 p3) { RPC_All(m, p1, p2, p3); }
+  public void RPC_All<T1, T2, T3>   (Action<T1, T2, T3> m, T1 p1, T2 p2, T3 p3) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All,    m.Method.Name, new object[] { p1, p2, p3 }); }
+  public void RPC_Other<T1, T2, T3> (Action<T1, T2, T3> m, T1 p1, T2 p2, T3 p3) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, m.Method.Name, new object[] { p1, p2, p3 }); }
+  
   // Action<T1, T2, T3, T4> method
   public void CallSynqCommand<T1, T2, T3, T4>(Action<T1, T2, T3, T4> method, T1 param1, T2 param2, T3 param3, T4 param4) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name, new object[] { param1, param2, param3, param4 });
   }
-  public void RPC<T1, T2, T3, T4>(Action<T1, T2, T3, T4> m, RpcTarget tgt, T1 p1, T2 p2, T3 p3, T4 p4) { 
-    SynqCommand_Mgr.I.PublishSynqCommandCall( this, tgt, m.Method.Name, new object[] { p1, p2, p3, p4 }); 
-  }
+  public void RPC<T1, T2, T3, T4>      (Action<T1, T2, T3, T4> m, T1 p1, T2 p2, T3 p3, T4 p4) { RPC_All(m, p1, p2, p3, p4); }
+  public void RPC_All<T1, T2, T3, T4>  (Action<T1, T2, T3, T4> m, T1 p1, T2 p2, T3 p3, T4 p4) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All,    m.Method.Name, new object[] { p1, p2, p3, p4 }); }
+  public void RPC_Other<T1, T2, T3, T4>(Action<T1, T2, T3, T4> m, T1 p1, T2 p2, T3 p3, T4 p4) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, m.Method.Name, new object[] { p1, p2, p3, p4 }); }
+
   #if UNITY_EDITOR
     // At editor time, set a new netId  ONLY IF  it is zero and unititialized
     void OnValidate() {
