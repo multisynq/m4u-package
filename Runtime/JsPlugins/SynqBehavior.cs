@@ -20,16 +20,18 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
   public void CallSynqCommand(string methodName, params object[] parameters) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, methodName, parameters);
   }
-  public void RPC(string mn, RpcTarget tgt, params object[] ps) { 
-    SynqCommand_Mgr.I.PublishSynqCommandCall(this, tgt, mn, ps); 
-  }
+  public void RPC(      string mn, params object[] ps) { RPC_All(mn, ps); }
+  public void RPC_All(  string mn, params object[] ps) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All, mn, ps); }
+  public void RPC_Other(string mn, params object[] ps) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, mn, ps); }
+
   // Action method. No parameters
   public void CallSynqCommand(Action method) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name);
   }
-  public void RPC(Action m, RpcTarget tgt = RpcTarget.All) { 
-    SynqCommand_Mgr.I.PublishSynqCommandCall(this, tgt, m.Method.Name); 
-  }
+  public void RPC(      Action m) { RPC_All(m); }
+  public void RPC_All(  Action m) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All, m.Method.Name); }
+  public void RPC_Other(Action m) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, m.Method.Name); }
+
   // Action method. Single array of parameters.
   public void CallSynqCommand(Action method, params object[] parameters) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name, parameters);
@@ -60,7 +62,7 @@ public class SynqBehaviour : MonoBehaviour, IWithNetId {
   public void RPC<T1, T2, T3>       (Action<T1, T2, T3> m, T1 p1, T2 p2, T3 p3) { RPC_All(m, p1, p2, p3); }
   public void RPC_All<T1, T2, T3>   (Action<T1, T2, T3> m, T1 p1, T2 p2, T3 p3) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.All,    m.Method.Name, new object[] { p1, p2, p3 }); }
   public void RPC_Other<T1, T2, T3> (Action<T1, T2, T3> m, T1 p1, T2 p2, T3 p3) { SynqCommand_Mgr.I.PublishSynqCommandCall(this, RpcTarget.Others, m.Method.Name, new object[] { p1, p2, p3 }); }
-  
+
   // Action<T1, T2, T3, T4> method
   public void CallSynqCommand<T1, T2, T3, T4>(Action<T1, T2, T3, T4> method, T1 param1, T2 param2, T3 param3, T4 param4) {
     SynqCommand_Mgr.I.PublishSynqCommandCall(this, method.Method.Name, new object[] { param1, param2, param3, param4 });
